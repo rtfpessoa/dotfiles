@@ -22,6 +22,9 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 #sudo scutil --set LocalHostName "0x6D746873"
 #sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "0x6D746873"
 
+# Change date format
+defaults write com.apple.menuextra.clock "DateFormat" -string "EEE MMM d h:mm:ss a"
+
 # Disable the sound effects on boot
 sudo nvram SystemAudioVolume=" "
 
@@ -34,8 +37,8 @@ defaults write NSGlobalDomain AppleHighlightColor -string "0.764700 0.976500 0.5
 # Set sidebar icon size to medium
 defaults write NSGlobalDomain NSTableViewDefaultSizeMode -int 2
 
-# Always show scrollbars
-defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
+# Scrollbars
+defaults write NSGlobalDomain AppleShowScrollBars -string "WhenScrolling"
 # Possible values: `WhenScrolling`, `Automatic` and `Always`
 
 # Disable the over-the-top focus ring animation
@@ -111,14 +114,18 @@ defaults write NSGlobalDomain NSAutomaticPeriodSubstitutionEnabled -bool false
 # Disable smart quotes as they’re annoying when typing code
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 
-# Disable auto-correct
-defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+# Enable auto-correct
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool true
 
-# Set a custom wallpaper image. `DefaultDesktop.jpg` is already a symlink, and
-# all wallpapers are in `/Library/Desktop Pictures/`. The default is `Wave.jpg`.
-#rm -rf ~/Library/Application Support/Dock/desktoppicture.db
-#sudo rm -rf /System/Library/CoreServices/DefaultDesktop.jpg
-#sudo ln -s /path/to/your/image /System/Library/CoreServices/DefaultDesktop.jpg
+# Set desktops to change picture from a folder every 30 minutes
+osascript -e 'tell application "System Events"
+    tell every desktop
+		set pictures folder to "~/wallpapers"
+		set picture rotation to 1 -- (0=off, 1=interval, 2=login, 3=sleep)
+		set random order to true
+		set change interval to 1800.0 -- seconds
+	end tell
+end tell'
 
 ###############################################################################
 # Trackpad, mouse, keyboard, Bluetooth accessories, and input                 #
@@ -170,7 +177,7 @@ defaults write NSGlobalDomain AppleMetricUnits -bool true
 sudo defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bool true
 
 # Set the timezone; see `sudo systemsetup -listtimezones` for other values
-sudo systemsetup -settimezone "Europe/Brussels" > /dev/null
+sudo systemsetup -settimezone "Europe/Lisbon" > /dev/null
 
 # Stop iTunes from responding to the keyboard media keys
 #launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
@@ -207,14 +214,14 @@ sudo systemsetup -setcomputersleep Off > /dev/null
 # 0: Disable hibernation (speeds up entering sleep mode)
 # 3: Copy RAM to disk so the system state can still be restored in case of a
 #    power failure.
-sudo pmset -a hibernatemode 0
+sudo pmset -a hibernatemode 3
 
 # Remove the sleep image file to save disk space
-sudo rm /private/var/vm/sleepimage
+# sudo rm /private/var/vm/sleepimage
 # Create a zero-byte file instead…
-sudo touch /private/var/vm/sleepimage
-# …and make sure it can’t be rewritten
-sudo chflags uchg /private/var/vm/sleepimage
+# sudo touch /private/var/vm/sleepimage
+# ...and make sure it can’t be rewritten
+# sudo chflags uchg /private/var/vm/sleepimage
 
 ###############################################################################
 # Screen                                                                      #
@@ -345,8 +352,8 @@ chflags nohidden ~/Library && xattr -d com.apple.FinderInfo ~/Library
 sudo chflags nohidden /Volumes
 
 # Remove Dropbox’s green checkmark icons in Finder
-file=/Applications/Dropbox.app/Contents/Resources/emblem-dropbox-uptodate.icns
-[ -e "${file}" ] && mv -f "${file}" "${file}.bak"
+# file=/Applications/Dropbox.app/Contents/Resources/emblem-dropbox-uptodate.icns
+# [ -e "${file}" ] && mv -f "${file}" "${file}.bak"
 
 # Expand the following File Info panes:
 # “General”, “Open with”, and “Sharing & Permissions”
@@ -417,6 +424,9 @@ defaults write com.apple.dock showhidden -bool true
 
 # Don’t show recent applications in Dock
 defaults write com.apple.dock show-recents -bool false
+
+# Move Dock to left side
+defaults write com.apple.dock orientation -string "left"
 
 # Disable the Launchpad gesture (pinch with thumb and three fingers)
 #defaults write com.apple.dock showLaunchpadGestureEnabled -int 0
@@ -786,33 +796,29 @@ defaults -currentHost write com.apple.ImageCapture disableHotPlug -bool true
 ###############################################################################
 
 # Disable automatic emoji substitution (i.e. use plain text smileys)
-defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false
+# defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false
 
 # Disable smart quotes as it’s annoying for messages that contain code
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticQuoteSubstitutionEnabled" -bool false
 
 # Disable continuous spell checking
-defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false
+# defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "continuousSpellCheckingEnabled" -bool false
 
 ###############################################################################
-# Google Chrome & Google Chrome Canary                                        #
+# Google Chrome
 ###############################################################################
 
 # Disable the all too sensitive backswipe on trackpads
 defaults write com.google.Chrome AppleEnableSwipeNavigateWithScrolls -bool false
-defaults write com.google.Chrome.canary AppleEnableSwipeNavigateWithScrolls -bool false
 
 # Disable the all too sensitive backswipe on Magic Mouse
 defaults write com.google.Chrome AppleEnableMouseSwipeNavigateWithScrolls -bool false
-defaults write com.google.Chrome.canary AppleEnableMouseSwipeNavigateWithScrolls -bool false
 
 # Use the system-native print preview dialog
 defaults write com.google.Chrome DisablePrintPreview -bool true
-defaults write com.google.Chrome.canary DisablePrintPreview -bool true
 
 # Expand the print dialog by default
 defaults write com.google.Chrome PMPrintingExpandedStateForPrint2 -bool true
-defaults write com.google.Chrome.canary PMPrintingExpandedStateForPrint2 -bool true
 
 ###############################################################################
 # GPGMail 2                                                                   #
@@ -820,14 +826,6 @@ defaults write com.google.Chrome.canary PMPrintingExpandedStateForPrint2 -bool t
 
 # Disable signing emails by default
 defaults write ~/Library/Preferences/org.gpgtools.gpgmail SignNewEmailsByDefault -bool false
-
-###############################################################################
-# Opera & Opera Developer                                                     #
-###############################################################################
-
-# Expand the print dialog by default
-defaults write com.operasoftware.Opera PMPrintingExpandedStateForPrint2 -boolean true
-defaults write com.operasoftware.OperaDeveloper PMPrintingExpandedStateForPrint2 -boolean true
 
 ###############################################################################
 # SizeUp.app                                                                  #
@@ -931,11 +929,9 @@ for app in "Activity Monitor" \
 	"Contacts" \
 	"Dock" \
 	"Finder" \
-	"Google Chrome Canary" \
 	"Google Chrome" \
 	"Mail" \
 	"Messages" \
-	"Opera" \
 	"Photos" \
 	"Safari" \
 	"SizeUp" \

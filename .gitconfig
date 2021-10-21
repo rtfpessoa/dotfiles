@@ -1,5 +1,31 @@
 [alias]
 
+	co = checkout
+
+	br = branch
+
+	# Add changes interactively
+	ad = add -p
+
+	# Stage all files
+	ada = add -A .
+
+	st = status -sb
+
+	ps = push -u origin HEAD
+
+	# Bad habits
+	# psf = push --force-with-lease -u origin HEAD
+
+	pl = pull --rebase --autostash
+
+	# Delete previous commit and leave changes from it unstaged
+	uc = reset --soft HEAD^
+
+	rhh = reset --hard HEAD
+
+	fe = fetch --force --prune --prune-tags --tags --recurse-submodules=yes --jobs=8 --progress
+
 	# View abbreviated SHA, description, and history graph of the latest 20 commits.
 	l = log --pretty=oneline -n 20 --graph --abbrev-commit
 
@@ -12,14 +38,15 @@
 	# `git di $number` shows the diff between the state `$number` revisions ago and the current state.
 	di = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
 
-	# Pull in remote changes for the current repository and all its submodules.
-	p = pull --recurse-submodules
+	c = commit
 
-	# Clone a repository including all submodules.
-	c = clone --recursive
+	cm = commit -m
 
-	# Commit all changes.
-	ca = !git add -A && git commit -av
+	ca = commit --amend --no-edit
+
+	amend = commit --amend
+
+	dh = "!f() { git diff -M -C -U10 --patience "HEAD~${1-0}"; }; f"
 
 	# Switch to a branch, creating it if necessary.
 	go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
@@ -29,11 +56,10 @@
 	branches = branch --all
 	remotes = remote --verbose
 
+	grep = grep -Ii
+
 	# List aliases.
 	aliases = config --get-regexp alias
-
-	# Amend the currently staged files to the latest commit.
-	amend = commit --amend --reuse-message=HEAD
 
 	# Credit an author on the latest commit.
 	credit = "!f() { git commit --amend --author \"$1 <$2>\" -C HEAD; }; f"
@@ -65,6 +91,47 @@
 
 	# Show the user email for the current repository.
 	whoami = config user.email
+
+	sl = stash list
+	sa = stash apply
+	ss = stash save
+	sd = stash drop
+
+	## List modified files in last commit
+	dl = "!git ll -1"
+
+	## List all aliases
+	la = "!git config -l | grep alias | cut -c 7-"
+
+	## Grep from root folder
+	gra = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
+
+	## Grep on filename
+	f = "!git ls-files | grep -i"
+
+	## Rename branch tree to done-
+	done = "!f() { git branch | grep "$1" | cut -c 3- | grep -v done | xargs -I{} git branch -m {} done-{}; }; f"
+
+	## Assume aliases
+	assume = update-index --assume-unchanged
+	unassume = update-index --no-assume-unchanged
+
+	## Show assumed files
+	assumed = "!git ls-files -v | grep ^h | cut -c 3-"
+
+	## Unassume all the assumed files
+	unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
+	assumeall = "!git st -s | awk {'print $2'} | xargs git assume"
+
+	lasttag = describe --tags --abbrev=0
+	lt = describe --tags --abbrev=0
+
+	## Merges
+	ours = "!f() { git co --ours $@ && git add $@; }; f"
+	theirs = "!f() { git co --theirs $@ && git add $@; }; f"
+
+	## List remotes
+	rem = "!git config -l | grep remote.*url | tail -n +2"
 
 [apply]
 
@@ -98,6 +165,10 @@
 	# Speed up commands involving untracked files such as `git status`.
 	# https://git-scm.com/docs/git-update-index#_untracked_cache
 	untrackedCache = true
+
+	editor = vim
+	quotepath = false
+	ignorecase = false
 
 [color]
 
@@ -160,23 +231,16 @@
 
 [url "git@github.com:"]
 
+	insteadOf = "git://github.com/"
+	insteadOf = "https://github.com/"
 	insteadOf = "gh:"
-	pushInsteadOf = "github:"
-	pushInsteadOf = "git://github.com/"
-
-[url "git://github.com/"]
-
 	insteadOf = "github:"
 
 [url "git@gist.github.com:"]
 
 	insteadOf = "gst:"
-	pushInsteadOf = "gist:"
-	pushInsteadOf = "git://gist.github.com/"
-
-[url "git://gist.github.com/"]
-
 	insteadOf = "gist:"
+	insteadOf = "git://gist.github.com/"
 
 [init]
 

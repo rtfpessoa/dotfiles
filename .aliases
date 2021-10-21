@@ -1,5 +1,37 @@
 #!/usr/bin/env bash
 
+# Why not?
+alias :q='exit'
+
+# Typos
+alias docekr='docker'
+alias brwe=brew
+
+# Packing
+alias tgz='tar -zcvf'
+# Unpacking
+alias tuz='tar -xvf'
+
+# Let the games begin
+alias k9='kill -9'
+alias sk9='sudo k9'
+alias ka9='killall -9'
+alias ska9='sudo ka9'
+
+# Just the weather
+alias meteo='curl -4 wttr.in/Lisbon'
+
+# Sometimes I forget
+alias where=which
+
+alias hosts='sudo $EDITOR /etc/hosts'
+
+# File size
+alias fs="stat -f \"%z bytes\""
+
+# Recursively delete `.DS_Store` files
+alias cleanup="find . -name '*.DS_Store' -type f -ls -delete"
+
 # Easier navigation: .., ..., ...., ....., ~ and -
 alias ..="cd .."
 alias ...="cd ../.."
@@ -9,10 +41,10 @@ alias ~="cd ~" # `cd` is probably faster to type though
 alias -- -="cd -"
 
 # Shortcuts
-alias d="cd ~/Documents/Dropbox"
+alias dog="cd ~/dd"
 alias dl="cd ~/Downloads"
 alias dt="cd ~/Desktop"
-alias p="cd ~/projects"
+alias dv="cd ~/dev"
 alias g="git"
 
 # Detect which `ls` flavor is in use
@@ -24,8 +56,11 @@ else # macOS `ls`
 	export LSCOLORS='BxBxhxDxfxhxhxhxhxcxcx'
 fi
 
+
 # List all files colorized in long format
-alias l="ls -lF ${colorflag}"
+alias l="ls -lFisah ${colorflag}"
+
+alias lsorted='ls -lisaht'
 
 # List all files colorized in long format, excluding . and ..
 alias la="ls -lAF ${colorflag}"
@@ -48,17 +83,22 @@ alias sudo='sudo '
 # Get week number
 alias week='date +%V'
 
+# Homebrew
+alias brewu='brew update; brew upgrade; brew cleanup; brew doctor'
+
 # Get macOS Software Updates, and update installed Ruby gems, Homebrew, npm, and their installed packages
 alias update='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup; npm install npm -g; npm update -g; sudo gem update --system; sudo gem update; sudo gem cleanup'
 
 # Google Chrome
 alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
-alias canary='/Applications/Google\ Chrome\ Canary.app/Contents/MacOS/Google\ Chrome\ Canary'
 
 # IP addresses
 alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
 alias localip="ipconfig getifaddr en0"
 alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
+
+# All the dig info
+alias dig="dig +nocmd any +multiline +noall +answer"
 
 # Show active network interfaces
 alias ifactive="ifconfig | pcregrep -M -o '^[^\t:]+:([^\n]|\n\t)*status: active'"
