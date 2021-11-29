@@ -1,5 +1,4 @@
-# BEGIN ANSIBLE MANAGED BLOCK
-if [ -r ~/.zshrc ]; then
+if [ -r ~/.zshrc ]
+then
    source ~/.zshrc
 fi
-# END ANSIBLE MANAGED BLOCK

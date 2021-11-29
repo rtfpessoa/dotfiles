@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 # ~/.macos — https://mths.be/macos
 
 # Close any open System Preferences panes, to prevent them from overriding
@@ -23,13 +25,20 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 #sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "0x6D746873"
 
 # Change date format
-defaults write com.apple.menuextra.clock "DateFormat" -string "EEE MMM d h:mm:ss a"
+defaults write com.apple.menuextra.clock "DateFormat" -string "\"EEE MMM d h:mm:ss a\""
+defaults write com.apple.menuextra.clock "FlashDateSeparators" -bool "true"
 
 # Disable the sound effects on boot
 sudo nvram SystemAudioVolume=" "
 
 # Disable transparency in the menu bar and elsewhere on Yosemite
 defaults write com.apple.universalaccess reduceTransparency -bool true
+
+# Show remaining battery time
+defaults write com.apple.menuextra.battery ShowTime -string "YES"
+
+# Show remaining battery percentage
+defaults write com.apple.menuextra.battery ShowPercent -string "YES"
 
 # Set highlight color to green
 defaults write NSGlobalDomain AppleHighlightColor -string "0.764700 0.976500 0.568600"
@@ -120,7 +129,7 @@ defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool true
 # Set desktops to change picture from a folder every 30 minutes
 osascript -e 'tell application "System Events"
     tell every desktop
-		set pictures folder to "~/wallpapers"
+		set pictures folder to "~/Wallpapers"
 		set picture rotation to 1 -- (0=off, 1=interval, 2=login, 3=sleep)
 		set random order to true
 		set change interval to 1800.0 -- seconds
@@ -137,13 +146,15 @@ defaults -currentHost write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 
 # Trackpad: map bottom right corner to right-click
-defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadTwoFingerDoubleTapGesture -int 1
 defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick -bool true
-defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
+defaults write com.apple.AppleMultitouchTrackpad TrackpadTwoFingerDoubleTapGesture -int 1
+defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true
+defaults -currentHost write NSGlobalDomain com.apple.trackpad.twoFingerDoubleTapGesture -int 2
 defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true
 
-# Disable “natural” (Lion-style) scrolling
-defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
+# Enable “natural” (Lion-style) scrolling
+defaults write NSGlobalDomain com.apple.swipescrolldirection -bool true
 
 # Increase sound quality for Bluetooth headphones/headsets
 defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
@@ -168,8 +179,8 @@ defaults write NSGlobalDomain InitialKeyRepeat -int 10
 # Set language and text formats
 # Note: if you’re in the US, replace `EUR` with `USD`, `Centimeters` with
 # `Inches`, `en_GB` with `en_US`, and `true` with `false`.
-defaults write NSGlobalDomain AppleLanguages -array "en" "nl"
-defaults write NSGlobalDomain AppleLocale -string "en_GB@currency=EUR"
+defaults write NSGlobalDomain AppleLanguages -array "en" "pt"
+defaults write NSGlobalDomain AppleLocale -string "en_US@currency=EUR"
 defaults write NSGlobalDomain AppleMeasurementUnits -string "Centimeters"
 defaults write NSGlobalDomain AppleMetricUnits -bool true
 
@@ -186,11 +197,24 @@ sudo systemsetup -settimezone "Europe/Lisbon" > /dev/null
 # Energy saving                                                               #
 ###############################################################################
 
+# Defaults:
+#  standby              	1
+#  Sleep On Power Button 	1
+#  hibernatefile        	/var/vm/sleepimage
+#  powernap             	1
+#  disksleep            	10
+#  sleep                	1 (sleep prevented by sharingd, powerd)
+#  hibernatemode        	3
+#  ttyskeepawake        	1
+#  displaysleep         	2
+#  tcpkeepalive         	1
+#  lowpowermode         	0
+
 # Enable lid wakeup
 sudo pmset -a lidwake 1
 
 # Restart automatically on power loss
-sudo pmset -a autorestart 1
+# sudo pmset -a autorestart 1
 
 # Restart automatically if the computer freezes
 sudo systemsetup -setrestartfreeze on
@@ -199,16 +223,17 @@ sudo systemsetup -setrestartfreeze on
 sudo pmset -a displaysleep 15
 
 # Disable machine sleep while charging
-sudo pmset -c sleep 0
+# sudo pmset -c sleep 0
 
 # Set machine sleep to 5 minutes on battery
+sudo pmset -b displaysleep 3
 sudo pmset -b sleep 5
 
 # Set standby delay to 24 hours (default is 1 hour)
-sudo pmset -a standbydelay 86400
+# sudo pmset -a standbydelay 86400
 
 # Never go into computer sleep mode
-sudo systemsetup -setcomputersleep Off > /dev/null
+# sudo systemsetup -setcomputersleep Off > /dev/null
 
 # Hibernation mode
 # 0: Disable hibernation (speeds up entering sleep mode)
@@ -259,17 +284,21 @@ defaults write com.apple.finder DisableAllAnimations -bool true
 
 # Set Desktop as the default location for new Finder windows
 # For other paths, use `PfLo` and `file:///full/path/here/`
-defaults write com.apple.finder NewWindowTarget -string "PfDe"
-defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/Desktop/"
+defaults write com.apple.finder NewWindowTarget -string "PfHm"
+defaults write com.apple.finder NewWindowTargetPath -string "file://${HOME}/"
+defaults write com.apple.finder PreferencesWindow.LastSelection -string "ADVD"
+defaults write com.apple.finder RecentsArrangeGroupViewBy -string "Date Last Opened"
 
 # Show icons for hard drives, servers, and removable media on the desktop
-defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
-defaults write com.apple.finder ShowHardDrivesOnDesktop -bool true
-defaults write com.apple.finder ShowMountedServersOnDesktop -bool true
-defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true
+defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool false
+defaults write com.apple.finder ShowHardDrivesOnDesktop -bool false
+defaults write com.apple.finder ShowMountedServersOnDesktop -bool false
+defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool false
+defaults write com.apple.finder FXRemoveOldTrashItems -bool true
+defaults write com.apple.finder ShowSidebar -bool true
 
 # Finder: show hidden files by default
-#defaults write com.apple.finder AppleShowAllFiles -bool true
+defaults write com.apple.finder AppleShowAllFiles -bool true
 
 # Finder: show all filename extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
@@ -284,7 +313,7 @@ defaults write com.apple.finder ShowPathbar -bool true
 defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
 
 # Keep folders on top when sorting by name
-defaults write com.apple.finder _FXSortFoldersFirst -bool true
+# defaults write com.apple.finder _FXSortFoldersFirst -bool true
 
 # When performing a search, search the current folder by default
 defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
@@ -366,11 +395,14 @@ defaults write com.apple.finder FXInfoPanesExpanded -dict \
 # Dock, Dashboard, and hot corners                                            #
 ###############################################################################
 
+# Show menu bar in full screen
+defaults write NSGlobalDomain AppleMenuBarVisibleInFullscreen -bool true
+
 # Enable highlight hover effect for the grid view of a stack (Dock)
 defaults write com.apple.dock mouse-over-hilite-stack -bool true
 
-# Set the icon size of Dock items to 36 pixels
-defaults write com.apple.dock tilesize -int 36
+# Set the icon size of Dock items to 48 pixels
+defaults write com.apple.dock tilesize -int 48
 
 # Change minimize/maximize window effect
 defaults write com.apple.dock mineffect -string "scale"
@@ -390,7 +422,7 @@ defaults write com.apple.dock show-process-indicators -bool true
 #defaults write com.apple.dock persistent-apps -array
 
 # Show only open applications in the Dock
-#defaults write com.apple.dock static-only -bool true
+# defaults write com.apple.dock static-only -bool true
 
 # Don’t animate opening applications from the Dock
 defaults write com.apple.dock launchanim -bool false
@@ -651,7 +683,7 @@ tell application "Terminal"
 	(* Open the custom theme so that it gets added to the list
 	   of available terminal themes (note: this will open two
 	   additional terminal windows). *)
-	do shell script "open '$HOME/init/" & themeName & ".terminal'"
+	do shell script "open './init/" & themeName & ".terminal'"
 
 	(* Wait a little bit to ensure that the custom theme is added. *)
 	delay 1
@@ -682,9 +714,12 @@ end tell
 
 EOD
 
+# New window opens in the same directory as the current window
+defaults write com.apple.Terminal NewWindowWorkingDirectoryBehavior -int 2
+
 # Enable “focus follows mouse” for Terminal.app and all X11 apps
 # i.e. hover over a window and start typing in it without clicking first
-#defaults write com.apple.terminal FocusFollowsMouse -bool true
+defaults write com.apple.terminal FocusFollowsMouse -bool true
 #defaults write org.x.X11 wm_ffm -bool true
 
 # Enable Secure Keyboard Entry in Terminal.app
@@ -695,10 +730,61 @@ defaults write com.apple.terminal SecureKeyboardEntry -bool true
 defaults write com.apple.Terminal ShowLineMarks -int 0
 
 # Install the Solarized Dark theme for iTerm
-open "${HOME}/init/Solarized Dark.itermcolors"
+open "./init/Solarized Dark.itermcolors"
 
-# Don’t display the annoying prompt when quitting iTerm
-defaults write com.googlecode.iterm2 PromptOnQuit -bool false
+# iTerm2
+defaults write com.googlecode.iterm2 DoubleClickPerformsSmartSelection -bool true
+defaults write com.googlecode.iterm2 HTMLTabTitles -bool true
+defaults write com.googlecode.iterm2 HideMenuBarInFullscreen -bool false
+defaults write com.googlecode.iterm2 AppleAntiAliasingThreshold -bool true
+defaults write com.googlecode.iterm2 AppleScrollAnimationEnabled -bool false
+defaults write com.googlecode.iterm2 AppleSmoothFixedFontsSizeThreshold -bool true
+defaults write com.googlecode.iterm2 AppleWindowTabbingMode -string "manual"
+defaults write com.googlecode.iterm2 AutoCommandHistory -bool false
+defaults write com.googlecode.iterm2 DimBackgroundWindows -bool true
+defaults write com.googlecode.iterm2 HideTab -bool false
+defaults write com.googlecode.iterm2 NSNavLastRootDirectory -string "~"
+defaults write com.googlecode.iterm2 OnlyWhenMoreTabs -bool false
+defaults write com.googlecode.iterm2 OpenArrangementAtStartup -bool false
+defaults write com.googlecode.iterm2 OpenNoWindowsAtStartup -bool false
+defaults write com.googlecode.iterm2 SUAutomaticallyUpdate -bool true
+defaults write com.googlecode.iterm2 SUEnableAutomaticChecks -bool true
+
+# Note: To print the values, use this:
+# /usr/libexec/PlistBuddy -c "Print :'New Bookmarks':0:'Jobs to Ignore'" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+# Note: This is a naive way to ensure that the array is present on newly images OS
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks' array" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:Rows" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:Rows integer 48" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:Columns" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:Columns integer 160" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Working Directory'" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Working Directory' string ~" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Custom Directory'" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Custom Directory' string Recycle" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Transparency'" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Transparency' bool false" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Unlimited Scrollback'" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Unlimited Scrollback' bool true" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Scrollback Lines'" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Scrollback Lines' integer 0" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Jobs to Ignore'" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore' array" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':0 string screen" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':1 string tmux" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':2 string rlogin" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':3 string ssh" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':4 string slogin" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':5 string telnet" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':5 string zsh" ~/Library/Preferences/com.googlecode.iterm2.plist
 
 ###############################################################################
 # Time Machine                                                                #
@@ -721,11 +807,16 @@ defaults write com.apple.ActivityMonitor OpenMainWindow -bool true
 defaults write com.apple.ActivityMonitor IconType -int 5
 
 # Show all processes in Activity Monitor
-defaults write com.apple.ActivityMonitor ShowCategory -int 0
+# defaults write com.apple.ActivityMonitor ShowCategory -int 0
+# Show all processes hierarchically
+defaults write com.apple.ActivityMonitor ShowCategory -int 101
 
 # Sort Activity Monitor results by CPU usage
 defaults write com.apple.ActivityMonitor SortColumn -string "CPUUsage"
 defaults write com.apple.ActivityMonitor SortDirection -int 0
+
+# Default to showing the Memory tab
+defaults write com.apple.ActivityMonitor SelectedTab -int 1
 
 ###############################################################################
 # Address Book, Dashboard, iCal, TextEdit, and Disk Utility                   #
@@ -782,7 +873,7 @@ defaults write com.apple.SoftwareUpdate ConfigDataInstall -int 1
 defaults write com.apple.commerce AutoUpdate -bool true
 
 # Allow the App Store to reboot machine on macOS updates
-defaults write com.apple.commerce AutoUpdateRestartRequired -bool true
+defaults write com.apple.commerce AutoUpdateRestartRequired -bool false
 
 ###############################################################################
 # Photos                                                                      #
@@ -842,7 +933,7 @@ defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false
 ###############################################################################
 
 # Install Sublime Text settings
-cp -r init/Preferences.sublime-settings ~/Library/Application\ Support/Sublime\ Text*/Packages/User/Preferences.sublime-settings 2> /dev/null
+# cp -r init/Preferences.sublime-settings ~/Library/Application\ Support/Sublime\ Text*/Packages/User/Preferences.sublime-settings 2> /dev/null
 
 ###############################################################################
 # Spectacle.app                                                               #

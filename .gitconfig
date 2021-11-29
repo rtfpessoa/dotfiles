@@ -197,8 +197,8 @@
 
 [commit]
 
-	# https://help.github.com/articles/signing-commits-using-gpg/
-	gpgsign = true
+	# https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key
+	gpgsign = false
 
 [diff]
 
@@ -231,8 +231,8 @@
 
 [url "git@github.com:"]
 
-	insteadOf = "git://github.com/"
-	insteadOf = "https://github.com/"
+	# insteadOf = "git://github.com/"
+	# insteadOf = "https://github.com/"
 	insteadOf = "gh:"
 	insteadOf = "github:"
 

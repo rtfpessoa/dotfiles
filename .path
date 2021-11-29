@@ -1,0 +1,21 @@
+# Add homebrew to PATH
+add_path "$HOMEBREW_PREFIX/bin"
+add_path "$HOMEBREW_PREFIX/sbin"
+
+# Currently done one a per binary basis on .aliases
+# add_path "$HOMEBREW_PREFIX/opt/coreutils/bin"
+
+# Use gnu-sed as sed
+add_path "$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin"
+
+# Currently done as an alias in .aliases
+# add_path "$HOMEBREW_PREFIX/opt/grep/libexec/gnubin"
+
+# Add bintutils to PATH
+add_path "$HOMEBREW_PREFIX/opt/binutils/bin"
+
+# Add `/usr/local/bin` to `PATH`
+add_path "/usr/local/bin"
+
+# Add `$HOME/.local/bin` to `PATH`
+add_path "$HOME/.local/bin"
