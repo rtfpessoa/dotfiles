@@ -33,6 +33,8 @@ brew install bash-completion2
 brew install zsh
 brew install zsh-completions
 
+brew install nsh
+
 # Install `wget` with IRI support.
 brew install wget
 
