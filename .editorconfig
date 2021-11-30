@@ -12,7 +12,7 @@ indent_style = space
 indent_size = 2
 max_line_length = 120
 
-[*.{sh,bash,fish}]
+[*.{sh,zsh,bash,fish,nsh}]
 indent_size = 4
 indent_style = tab
 

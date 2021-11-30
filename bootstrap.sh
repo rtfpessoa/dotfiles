@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "${BASH_SOURCE}")"
-
-git pull origin main
-
 function install_brew() {
 	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 	/bin/bash ./brew.sh
@@ -26,6 +22,17 @@ function setup_git() {
 	git config --global user.name "$name"
 	read -r -p 'Email: ' email
 	git config --global user.email "$email"
+
+	cat > ~/.extra <<- EOF
+	# Git credentials
+	# Not in the repository, to prevent people from accidentally committing under my name
+	export GIT_AUTHOR_NAME="$name"
+	export GIT_COMMITTER_NAME="\$GIT_AUTHOR_NAME"
+	git config --global user.name "\$GIT_AUTHOR_NAME"
+	export GIT_AUTHOR_EMAIL="$email"
+	export GIT_COMMITTER_EMAIL="\$GIT_AUTHOR_EMAIL"
+	git config --global user.email "\$GIT_AUTHOR_EMAIL"
+	EOF
 }
 
 function install_dotfiles() {
@@ -63,7 +70,7 @@ function install_macos_defaults() {
 	/bin/bash .macos
 }
 
-function doIt() {
+function bootstrap() {
 	read -p "Install homebrew and packages? (Y/n) " REPLY
 	[[ ! $REPLY =~ ^[Nn]$ ]] && install_brew
 	read -p "Install asdf and packages? (Y/n) " REPLY
@@ -76,16 +83,18 @@ function doIt() {
 	[[ ! $REPLY =~ ^[Nn]$ ]] && install_macos_defaults
 }
 
-if [ "$1" = "--force" -o "$1" = "-f" ]
+if [ "$1" != "--force" -a "$1" != "-f" ]
 then
-	doIt
-else
 	read -p "This may overwrite existing files in your home directory and install software. Are you sure? (y/N) " REPLY
 	echo ""
-	if [[ $REPLY =~ ^[Yy]$ ]]
+	if [[ ! $REPLY =~ ^[Yy]$ ]]
 	then
-		doIt
+		exit 0
 	fi
 fi
 
-unset doIt
+cd "$(dirname "${BASH_SOURCE}")"
+
+git pull origin main
+
+bootstrap
