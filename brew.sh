@@ -32,6 +32,9 @@ brew install bash-completion2
 # Install a modern version of Zsh.
 brew install zsh
 brew install zsh-completions
+brew install zsh-history-substring-search
+brew install zsh-syntax-highlighting
+brew install zsh-autosuggestions
 
 brew install nsh
 
@@ -104,6 +107,7 @@ brew install --cask visual-studio-code
 brew install --cask vlc
 brew install --cask intellij-idea-ce
 brew install --cask caffeine
+brew install --cask discord
 
 # Remove outdated versions from the cellar.
 brew cleanup

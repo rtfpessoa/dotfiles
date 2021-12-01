@@ -297,3 +297,7 @@ function o() {
 function tre() {
 	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX
 }
+
+function random_mac() {
+    sudo ifconfig en0 ether (openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+}

@@ -239,7 +239,15 @@ sudo pmset -b sleep 5
 # 0: Disable hibernation (speeds up entering sleep mode)
 # 3: Copy RAM to disk so the system state can still be restored in case of a
 #    power failure.
-sudo pmset -a hibernatemode 3
+# 25: Full hibernation
+sudo pmset -a hibernatemode 25
+
+# sudo pmset -a destroyfvkeyonstandby 1
+# sudo pmset -a hibernatemode 25
+# sudo pmset -a powernap 0
+# sudo pmset -a standby 0
+# sudo pmset -a standbydelay 0
+# sudo pmset -a autopoweroff 0
 
 # Remove the sleep image file to save disk space
 # sudo rm /private/var/vm/sleepimage
@@ -247,6 +255,21 @@ sudo pmset -a hibernatemode 3
 # sudo touch /private/var/vm/sleepimage
 # ...and make sure it can’t be rewritten
 # sudo chflags uchg /private/var/vm/sleepimage
+
+# Firewall is enabled. (State = 1)
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+
+# Turning on log mode
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setloggingmode on
+
+# Disabled allow signed built-in applications automatically
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setallowsigned off
+
+# Disabled allow signed downloaded applications automatically
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setallowsignedapp off
+
+# Stealth mode enabled
+# sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
 
 ###############################################################################
 # Screen                                                                      #

@@ -297,3 +297,7 @@ function targz -d "Create a .tar.gz archive"
 
     echo "$tmpFile.gz ("(math $zippedSize / 1000)" kB) created successfully."
 end
+
+function random_mac
+    sudo ifconfig en0 ether (openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+end
