@@ -268,7 +268,7 @@ function getcertnames() {
 
 # Normalize `open` across Linux, macOS, and Windows.
 # This is needed to make the `o` function (see below) cross-platform.
-if [ ! $(uname -s) = 'Darwin' ]
+if [ ! "$(uname -s)" = 'Darwin' ]
 then
 	if grep -q Microsoft /proc/version 2>/dev/null
 	then
@@ -299,5 +299,70 @@ function tre() {
 }
 
 function random_mac() {
-    sudo ifconfig en0 ether (openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+    sudo ifconfig en0 ether $(openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+}
+
+# Manage processes by the ports they are using
+function ports() {
+	case "$1" in
+		ls)
+			lsof -i -n -P
+			;;
+		show)
+			lsof -i :"$2" | tail -n 1
+			;;
+		pid)
+			ports show "$2" | awk '{ print $2; }'
+			;;
+		kill)
+			ports pid "$2" | kill -9
+			;;
+		*)
+			echo "NAME:
+  ports - a tool to easily see what's happening on your computer's ports
+USAGE:
+  ports [global options] command [command options] [arguments...]
+COMMANDS:
+  ls                list all open ports and the processes running in them
+  show <port>       shows which process is running on a given port
+  pid <port>        same as show, but prints only the PID
+  kill <port>       kill the process is running in the given port with kill -9
+GLOBAL OPTIONS:
+  --help,-h         show help"
+			;;
+	esac
+}
+
+function docker() {
+	case "$1" in
+		exit)
+			pkill Docker
+			;;
+
+		prune)
+			_docker_start
+			command docker system prune --volumes -fa
+			;;
+
+		*)
+			_docker_start
+			command docker $@
+			;;
+	esac
+}
+
+function _docker_start() {
+	if "$(uname)" = "Darwin"
+	then
+		if test $(pgrep com.docker.driver | wc -l) -eq 0
+		then
+			open -g -j -a Docker.app
+			while ! command docker stats --no-stream >/dev/null 2>&1
+			do
+				echo -n .
+				sleep 1
+			done
+			echo
+		fi
+	fi
 }

@@ -10,18 +10,17 @@ function install_asdf() {
 }
 
 function setup_git() {
-	local name="$(git config user.name)"
-	local email="$(git config user.email)"
+	local name="${1:-$(git config user.name)}"
+	local email="${2:-$(git config user.email)}"
 
-	if [[ -N "$name" && -n "$email" ]]
+	if [[ -n "$name" && -n "$email" ]]
 	then
+		source ~/.extra
 		return 0
 	fi
 
 	read -r -p 'Name: ' name
-	git config --global user.name "$name"
 	read -r -p 'Email: ' email
-	git config --global user.email "$email"
 
 	cat > ~/.extra <<- EOF
 	# Git credentials
@@ -33,9 +32,14 @@ function setup_git() {
 	export GIT_COMMITTER_EMAIL="\$GIT_AUTHOR_EMAIL"
 	git config --global user.email "\$GIT_AUTHOR_EMAIL"
 	EOF
+
+	source ~/.extra
 }
 
 function install_dotfiles() {
+	local name="$(git config user.name)"
+	local email="$(git config user.email)"
+
 	rsync \
 		--exclude "init/" \
 		--exclude ".git/" \
@@ -49,7 +53,33 @@ function install_dotfiles() {
 		--exclude "README.md" \
 		-avh --no-perms . ~
 
-	setup_git
+	setup_git "$name" "$email"
+}
+
+function setup_fonts() {
+	if test -e ~/.local/share/fonts/Inconsolata[wdth,wght].ttf || test -e ~/Library/Fonts/Inconsolata[wdth,wght].ttf
+	then
+		exit 0
+	fi
+
+	function download_font() {
+		curl -Lso $1/Inconsolata[wdth,wght].ttf https://github.com/google/fonts/raw/master/ofl/inconsolata/Inconsolata%5Bwdth%2Cwght%5D.ttf
+	}
+
+	case "$(uname)" in
+		"Darwin")
+			download_font ~/Library/Fonts
+			;;
+
+		*)
+			mkdir -p ~/.local/share/fonts/ &&
+				download_font ~/.local/share/fonts/
+			if command -qs fc-cache
+			then
+				fc-cache -fv
+			fi
+			;;
+	esac
 }
 
 function set_computer_name() {
@@ -79,9 +109,14 @@ function bootstrap() {
 	[[ ! $REPLY =~ ^[Nn]$ ]] && install_dotfiles
 	read -p "Set computer name? (Y/n) " REPLY
 	[[ ! $REPLY =~ ^[Nn]$ ]] && set_computer_name
+	read -p "Install fonts? (Y/n) " REPLY
+	[[ ! $REPLY =~ ^[Nn]$ ]] && setup_fonts
 	read -p "Install MacOS defaults? (Y/n) " REPLY
 	[[ ! $REPLY =~ ^[Nn]$ ]] && install_macos_defaults
 }
+
+install_dotfiles
+exit 1
 
 if [ "$1" != "--force" -a "$1" != "-f" ]
 then

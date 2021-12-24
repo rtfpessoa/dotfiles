@@ -3,6 +3,8 @@
 # Make vim the default editor.
 export EDITOR='vim'
 export GIT_EDITOR='vim'
+export VISUAL='vim'
+export WEDITOR='code'
 
 # Set ls colors
 export CLICOLOR=1

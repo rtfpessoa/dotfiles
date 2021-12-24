@@ -189,7 +189,7 @@ end
 
 # Normalize `open` across Linux, macOS, and Windows.
 # This is needed to make the `o` function (see below) cross-platform.
-if not test "(uname -s)" = Darwin
+if not test (uname -s) = Darwin
     if grep -q Microsoft /proc/version 2>/dev/null
         # Ubuntu on Windows using the Linux subsystem
         alias open='explorer.exe'
@@ -300,4 +300,56 @@ end
 
 function random_mac
     sudo ifconfig en0 ether (openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+end
+
+function ports -d "manage processes by the ports they are using"
+	switch $argv[1]
+		case ls
+			lsof -i -n -P
+		case show
+			lsof -i :"$argv[2]" | tail -n 1
+		case pid
+			ports show "$argv[2]" | awk '{ print $2; }'
+		case kill
+			ports pid "$argv[2]" | kill -9
+		case '*'
+			echo "NAME:
+  ports - a tool to easily see what's happening on your computer's ports
+USAGE:
+  ports [global options] command [command options] [arguments...]
+COMMANDS:
+  ls                list all open ports and the processes running in them
+  show <port>       shows which process is running on a given port
+  pid <port>        same as show, but prints only the PID
+  kill <port>       kill the process is running in the given port with kill -9
+GLOBAL OPTIONS:
+  --help,-h         show help"
+	end
+end
+
+function docker -w docker
+	switch $argv[1]
+	case 'exit'
+		pkill Docker
+	case prune
+		_docker_start
+		command docker system prune --volumes -fa
+	case '*'
+		_docker_start
+		command docker $argv
+	end
+end
+
+function _docker_start
+	switch (uname)
+	case Darwin
+		if test (pgrep com.docker.driver | wc -l) -eq 0
+			open -g -j -a Docker.app
+			while ! command docker stats --no-stream >/dev/null 2>&1
+				echo -n .
+				sleep 1
+			end
+			echo
+		end
+	end
 end
