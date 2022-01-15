@@ -1,4 +1,6 @@
-source "$HOME/.asdf/asdf.sh"
+#!/usr/bin/env zsh
+
+[ -r "$HOME/.asdf/asdf.sh" ] && [ -f "$HOME/.asdf/asdf.sh" ] && source "$HOME/.asdf/asdf.sh"
 
 # Add tab completion for many commands
 if type brew &>/dev/null
@@ -26,19 +28,34 @@ zstyle ':completion:*:descriptions' format '%U%F{yellow}%d%f%u'
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
-for file in ~/.{functions,exports,path,zsh_prompt,aliases,datadog,extra}
+for file in ~/.{functions,exports,path,zsh_prompt,aliases,extra}
+do
+	[ -r "${file}" ] && [ -f "${file}" ] && source "${file}"
+	[ -r "${file}.sh" ] && [ -f "${file}.sh" ] && source "${file}.sh"
+done
+unset file
+
+for file in "$HOMEBREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh" "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" "$HOME/.asdf/plugins/java/set-java-home.bash"
 do
 	[ -r "$file" ] && [ -f "$file" ] && source "$file"
 done
 unset file
 
-source $HOMEBREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh
-source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source $HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
 
-# Add tab completion for many commands
-source "$HOME/.asdf/plugins/java/set-java-home.bash"
-
+# Immmediatly write to history (cannot be used together with SHARE_HISTORY)
+# setopt INC_APPEND_HISTORY
+# Write to history but also save time (similar to EXTENDED_HISTORY, cannot be used together with SHARE_HISTORY)
+# setopt INC_APPEND_HISTORY_TIME
+# Share history between sessions (cannot be used together with INC_APPEND_HISTORY)
+setopt SHARE_HISTORY
+# Write time of execution of commands (cannot be used together with SHARE_HISTORY or INC_APPEND_HISTORY)
+# setopt EXTENDED_HISTORY
+# Remove dups when navigation history
+setopt HIST_FIND_NO_DUPS
+# Skip dups when saving to history
+setopt HIST_IGNORE_ALL_DUPS
 # Remove superfluous blanks from each command line being added to the history list
 setopt histreduceblanks
 # Remove command lines from the history list when the first character on the

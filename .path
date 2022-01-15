@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Add homebrew to PATH
 add_path "$HOMEBREW_PREFIX/bin"
 add_path "$HOMEBREW_PREFIX/sbin"

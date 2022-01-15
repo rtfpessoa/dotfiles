@@ -2,16 +2,16 @@
 
 # Install command-line tools using Homebrew.
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+# Save Homebrew’s installed location.
+HOMEBREW_PREFIX=$(brew --prefix)
+
+eval "$("$HOMEBREW_PREFIX/bin/brew" shellenv)"
 
 # Make sure we’re using the latest Homebrew.
 brew update
 
 # Upgrade any already-installed formulae.
 brew upgrade
-
-# Save Homebrew’s installed location.
-BREW_PREFIX=$(brew --prefix)
 
 # Install GNU core utilities (those that come with macOS are outdated).
 # Don’t forget to add `$(brew --prefix coreutils)/libexec/gnubin` to `$PATH`.
@@ -95,6 +95,8 @@ brew install ripgrep
 brew install jq
 brew install yq
 
+brew install shellcheck
+
 # akr
 brew install akamai/mfa/akr
 
@@ -113,23 +115,20 @@ brew install --cask discord
 brew cleanup
 
 # Fix permissions
-chmod -R go-w "${BREW_PREFIX}/share"
+chmod -R go-w "${HOMEBREW_PREFIX}/share"
 
 # Add brew-installed bash shell to list
-if ! fgrep -q "${BREW_PREFIX}/bin/bash" /etc/shells
-then
-  echo "${BREW_PREFIX}/bin/bash" | sudo tee -a /etc/shells
+if ! fgrep -q "${HOMEBREW_PREFIX}/bin/bash" /etc/shells; then
+	echo "${HOMEBREW_PREFIX}/bin/bash" | sudo tee -a /etc/shells
 fi
 
 # Add brew-installed zsh shell to list
-if ! fgrep -q "${BREW_PREFIX}/bin/zsh" /etc/shells
-then
-  echo "${BREW_PREFIX}/bin/zsh" | sudo tee -a /etc/shells
+if ! fgrep -q "${HOMEBREW_PREFIX}/bin/zsh" /etc/shells; then
+	echo "${HOMEBREW_PREFIX}/bin/zsh" | sudo tee -a /etc/shells
 fi
 
 # Switch to using brew-installed fish shell as default shell
-if ! fgrep -q "${BREW_PREFIX}/bin/fish" /etc/shells
-then
-  echo "${BREW_PREFIX}/bin/fish" | sudo tee -a /etc/shells
-  chsh -s "${BREW_PREFIX}/bin/fish"
+if ! fgrep -q "${HOMEBREW_PREFIX}/bin/fish" /etc/shells; then
+	echo "${HOMEBREW_PREFIX}/bin/fish" | sudo tee -a /etc/shells
+	chsh -s "${HOMEBREW_PREFIX}/bin/fish"
 fi

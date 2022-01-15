@@ -1,4 +1,5 @@
-if [ -r ~/.zshrc ]
-then
-   source ~/.zshrc
+#!/usr/bin/env zsh
+
+if [ -r ~/.zshrc ]; then
+  source ~/.zshrc
 fi

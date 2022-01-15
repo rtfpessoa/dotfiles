@@ -1,10 +1,12 @@
+#!/usr/bin/env nsh
+
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
 
 # Add directory to PATH
 function add_path() {
-    export PATH="$1:$PATH"
+  export PATH="$1:$PATH"
 }
 
 # [ -r ~/.functions ] && [ -f ~/.functions ] && source ~/.functions
@@ -15,22 +17,17 @@ function add_path() {
 [ -r ~/.extra ] && [ -f ~/.extra ] && source ~/.extra
 
 # Add tab completion for many Bash commands
-out="$(type brew)"
-if [ $? -eq 0 ]
-then
-    HOMEBREW_PREFIX="$(brew --prefix)"
-    if [ -f "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]
-    then
-        source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
-    else
-        for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*
-        do
-            [ -f "${COMPLETION}" ] && source "${COMPLETION}"
-        done
-    fi
-elif [ -f /etc/bash_completion ]
-then
-    source /etc/bash_completion
+if type brew; then
+  HOMEBREW_PREFIX="$(brew --prefix)"
+  if [ -f "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh" ]; then
+    source "${HOMEBREW_PREFIX}/etc/profile.d/bash_completion.sh"
+  else
+    for COMPLETION in "${HOMEBREW_PREFIX}/etc/bash_completion.d/"*; do
+      [ -f "${COMPLETION}" ] && source "${COMPLETION}"
+    done
+  fi
+elif [ -f /etc/bash_completion ]; then
+  source /etc/bash_completion
 fi
 
 # Add tab completion for many Bash commands

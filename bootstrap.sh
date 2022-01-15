@@ -13,32 +13,33 @@ function setup_git() {
 	local name="${1:-$(git config user.name)}"
 	local email="${2:-$(git config user.email)}"
 
-	if [[ -n "$name" && -n "$email" ]]
-	then
-		source ~/.extra
+	if [[ -n "$name" && -n "$email" ]]; then
+		source $HOME/.extra
 		return 0
 	fi
 
 	read -r -p 'Name: ' name
 	read -r -p 'Email: ' email
 
-	cat > ~/.extra <<- EOF
-	# Git credentials
-	# Not in the repository, to prevent people from accidentally committing under my name
-	export GIT_AUTHOR_NAME="$name"
-	export GIT_COMMITTER_NAME="\$GIT_AUTHOR_NAME"
-	git config --global user.name "\$GIT_AUTHOR_NAME"
-	export GIT_AUTHOR_EMAIL="$email"
-	export GIT_COMMITTER_EMAIL="\$GIT_AUTHOR_EMAIL"
-	git config --global user.email "\$GIT_AUTHOR_EMAIL"
+	cat >~/.extra <<-EOF
+		# Git credentials
+		# Not in the repository, to prevent people from accidentally committing under my name
+		export GIT_AUTHOR_NAME="$name"
+		export GIT_COMMITTER_NAME="\$GIT_AUTHOR_NAME"
+		git config --global user.name "\$GIT_AUTHOR_NAME"
+		export GIT_AUTHOR_EMAIL="$email"
+		export GIT_COMMITTER_EMAIL="\$GIT_AUTHOR_EMAIL"
+		git config --global user.email "\$GIT_AUTHOR_EMAIL"
 	EOF
 
-	source ~/.extra
+	source $HOME/.extra
 }
 
 function install_dotfiles() {
-	local name="$(git config user.name)"
-	local email="$(git config user.email)"
+	local name
+	name="$(git config user.name)"
+	local email
+	email="$(git config user.email)"
 
 	rsync \
 		--exclude "init/" \
@@ -57,8 +58,7 @@ function install_dotfiles() {
 }
 
 function setup_fonts() {
-	if test -e ~/.local/share/fonts/Inconsolata[wdth,wght].ttf || test -e ~/Library/Fonts/Inconsolata[wdth,wght].ttf
-	then
+	if test -e $HOME/.local/share/fonts/Inconsolata[wdth,wght].ttf || test -e ~/Library/Fonts/Inconsolata[wdth,wght].ttf; then
 		exit 0
 	fi
 
@@ -67,26 +67,24 @@ function setup_fonts() {
 	}
 
 	case "$(uname)" in
-		"Darwin")
-			download_font ~/Library/Fonts
-			;;
+	"Darwin")
+		download_font ~/Library/Fonts
+		;;
 
-		*)
-			mkdir -p ~/.local/share/fonts/ &&
-				download_font ~/.local/share/fonts/
-			if command -qs fc-cache
-			then
-				fc-cache -fv
-			fi
-			;;
+	*)
+		mkdir -p ~/.local/share/fonts/ &&
+			download_font ~/.local/share/fonts/
+		if command -qs fc-cache; then
+			fc-cache -fv
+		fi
+		;;
 	esac
 }
 
 function set_computer_name() {
 	local name=""
-	read -p "Computer name: " name
-	if [ -z "$name" ]
-	then
+	read -r -p "Computer name: " name
+	if [ -z "$name" ]; then
 		return 0
 	fi
 
@@ -101,35 +99,30 @@ function install_macos_defaults() {
 }
 
 function bootstrap() {
-	read -p "Install homebrew and packages? (Y/n) " REPLY
-	[[ ! $REPLY =~ ^[Nn]$ ]] && install_brew
-	read -p "Install asdf and packages? (Y/n) " REPLY
-	[[ ! $REPLY =~ ^[Nn]$ ]] && install_asdf
-	read -p "Copy dotfiles into $HOME? (Y/n) " REPLY
-	[[ ! $REPLY =~ ^[Nn]$ ]] && install_dotfiles
-	read -p "Set computer name? (Y/n) " REPLY
-	[[ ! $REPLY =~ ^[Nn]$ ]] && set_computer_name
-	read -p "Install fonts? (Y/n) " REPLY
-	[[ ! $REPLY =~ ^[Nn]$ ]] && setup_fonts
-	read -p "Install MacOS defaults? (Y/n) " REPLY
-	[[ ! $REPLY =~ ^[Nn]$ ]] && install_macos_defaults
+	read -r -p "Update repository? (y/N) " REPLY
+	[[ "$REPLY" =~ ^[Yy]$ ]] && git pull origin main
+	read -r -p "Install homebrew and packages? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_brew
+	read -r -p "Install asdf and packages? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_asdf
+	read -r -p "Copy dotfiles into $HOME? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_dotfiles
+	read -r -p "Set computer name? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && set_computer_name
+	read -r -p "Install fonts? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_fonts
+	read -r -p "Install MacOS defaults? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_macos_defaults
 }
 
-install_dotfiles
-exit 1
-
-if [ "$1" != "--force" -a "$1" != "-f" ]
-then
-	read -p "This may overwrite existing files in your home directory and install software. Are you sure? (y/N) " REPLY
+if [ "$1" != "--force" ] && [ "$1" != "-f" ]; then
+	read -r -p "This may overwrite existing files in your home directory and install software. Are you sure? (y/N) " REPLY
 	echo ""
-	if [[ ! $REPLY =~ ^[Yy]$ ]]
-	then
+	if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
 		exit 0
 	fi
 fi
 
 cd "$(dirname "${BASH_SOURCE}")"
-
-git pull origin main
 
 bootstrap

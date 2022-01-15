@@ -2,292 +2,283 @@
 
 # Add directory to PATH
 function add_path() {
-    export PATH="$1:$PATH"
+  export PATH="$1:$PATH"
 }
 
 # Who is using the laptop's iSight camera?
 function camerausedby() {
-	echo "Checking to see who is using the iSight camera… 📷"
-	usedby=$(lsof | grep -w "AppleCamera\|USBVDC\|iSight" | awk '{printf $2"\n"}' | xargs ps)
-	echo -e "Recent camera uses:\n$usedby"
+  echo "Checking to see who is using the iSight camera… 📷"
+  usedby=$(lsof | grep -w "AppleCamera\|USBVDC\|iSight" | awk '{printf $2"\n"}' | xargs ps)
+  echo -e "Recent camera uses:\n$usedby"
 }
 
 # Animated gifs from any video
 # From alex sexton => gist.github.com/SlexAxton/4989674
 function gifify() {
-  if [ -n "$1" ]
-  then
-	if [ "$2" = '--good' ]
-	then
-	  ffmpeg -i "$1" -r 10 -vcodec png out-static-%05d.png
-	  time convert -verbose +dither -layers Optimize -resize 900x900\> out-static*.png  GIF:- | gifsicle --colors 128 --delay=5 --loop --optimize=3 --multifile - > "$1.gif"
-	  rm out-static*.png
-	else
-	  ffmpeg -i "$1" -s 600x400 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 > "$1.gif"
-	fi
+  if [ -n "$1" ]; then
+    if [ "$2" = '--good' ]; then
+      ffmpeg -i "$1" -r 10 -vcodec png out-static-%05d.png
+      time convert -verbose +dither -layers Optimize -resize 900x900\> out-static*.png GIF:- | gifsicle --colors 128 --delay=5 --loop --optimize=3 --multifile - >"$1.gif"
+      rm out-static*.png
+    else
+      ffmpeg -i "$1" -s 600x400 -pix_fmt rgb24 -r 10 -f gif - | gifsicle --optimize=3 --delay=3 >"$1.gif"
+    fi
   else
-	echo "proper usage: gifify <input_movie.mov>. You DO need to include extension."
+    echo "proper usage: gifify <input_movie.mov>. You DO need to include extension."
   fi
 }
 
 # Turn that video into webm.
 #   - brew reinstall ffmpeg --with-libvpx
 function webmify() {
-	ffmpeg -i "$1" -vcodec libvpx -acodec libvorbis -isync -copyts -aq 80 -threads 3 -qmax 30 -y "$2" "$1.webm"
+  ffmpeg -i "$1" -vcodec libvpx -acodec libvorbis -isync -copyts -aq 80 -threads 3 -qmax 30 -y "$2" "$1.webm"
 }
 
 # Create a new directory and enter it
 function mkd() {
-	mkdir -p "$@" && cd "$_"
+  mkdir -p "$@" && cd "$_"
 }
 
 # Timer
 function timed() {
-  { time ( $@ ) } 2>&1
+  { time ("$@"); } 2>&1
 }
 
 # Copy w/ progress
-function cp_p () {
+function cp_p() {
   rsync -WavP --human-readable --progress "$1" "$2"
 }
 
 # Whois a domain or a URL
 function whois() {
-	local domain=$(echo "$1" | awk -F/ '{print $3}') # Get domain from URL
-	if [ -z "$domain" ]
-	then
-		domain="$1"
-	fi
-	echo "Getting whois record for: $domain …"
+  local domain
+  domain=$(echo "$1" | awk -F/ '{print $3}') # Get domain from URL
+  if [ -z "$domain" ]; then
+    domain="$1"
+  fi
+  echo "Getting whois record for: $domain …"
 
-	# Avoid recursion
-	# This is the best whois server
-	# Strip extra fluff
-	whois -h whois.internic.net "$domain" | sed '/NOTICE:/q'
+  # Avoid recursion
+  # This is the best whois server
+  # Strip extra fluff
+  whois -h whois.internic.net "$domain" | sed '/NOTICE:/q'
 }
 
 function strip_diff_leading_symbols() {
-	color_code_regex="(\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K])"
-	reset_color="\x1B\[m"
-	dim_magenta="\x1B\[38;05;146m"
+  color_code_regex="(\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K])"
+  reset_color="\x1B\[m"
+  dim_magenta="\x1B\[38;05;146m"
 
-	# simplify the unified patch diff header
-	sed -r "s/^($color_code_regex)diff --git .*$//g" | \
-		sed -r "s/^($color_code_regex)index .*$/\n\1$(rule)/g" | \
-		sed -r "s/^($color_code_regex)\+\+\+(.*)$/\1+++\5\n\1$(rule)\x1B\[m/g" |\
-	# extra color for @@ context line
-		sed -r "s/@@$reset_color $reset_color(.*$)/@@ $dim_magenta\1/g"  |\
-	# actually strips the leading symbols
-		sed -r "s/^($color_code_regex)[\+\-]/\1 /g"
+  # simplify the unified patch diff header
+  sed -r "s/^($color_code_regex)diff --git .*$//g" |
+    sed -r "s/^($color_code_regex)index .*$/\n\1$(rule)/g" |
+    sed -r "s/^($color_code_regex)\+\+\+(.*)$/\1+++\5\n\1$(rule)\x1B\[m/g" |
+    # extra color for @@ context line
+    sed -r "s/@@$reset_color $reset_color(.*$)/@@ $dim_magenta\1/g" |
+    # actually strips the leading symbols
+    sed -r "s/^($color_code_regex)[\+\-]/\1 /g"
 }
 
 # Extract archives - use: extract <file>
 # Based on http://dotfiles.org/~pseup/.bashrc
 function extract() {
-	if [ -f "$1" ]
-	then
-		local filename=$(basename "$1")
-		local foldername="${filename%%.*}"
-		local fullpath=`perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1"`
-		local didfolderexist=false
-		if [ -d "$foldername" ]
-		then
-			didfolderexist=true
-			read -p "$foldername already exists, do you want to overwrite it? (y/n) " -n 1
-			echo
-			if [[ "$REPLY" =~ ^[Nn]$ ]]
-			then
-				return
-			fi
-		fi
-		mkdir -p "$foldername" && cd "$foldername"
-		case "$1" in
-			*.tar.bz2) tar xjf "$fullpath" ;;
-			*.tar.gz) tar xzf "$fullpath" ;;
-			*.tar.xz) tar Jxvf "$fullpath" ;;
-			*.tar.Z) tar xzf "$fullpath" ;;
-			*.tar) tar xf "$fullpath" ;;
-			*.taz) tar xzf "$fullpath" ;;
-			*.tb2) tar xjf "$fullpath" ;;
-			*.tbz) tar xjf "$fullpath" ;;
-			*.tbz2) tar xjf "$fullpath" ;;
-			*.tgz) tar xzf "$fullpath" ;;
-			*.txz) tar Jxvf "$fullpath" ;;
-			*.zip) unzip "$fullpath" ;;
-			*) echo "'$1' cannot be extracted via extract()" && cd .. && ! "$didfolderexist" && rm -r "$foldername" ;;
-		esac
-	else
-		echo "'$1' is not a valid file"
-	fi
+  if [ -f "$1" ]; then
+    local filename
+    filename=$(basename "$1")
+    local foldername="${filename%%.*}"
+    local fullpath
+    fullpath="$(perl -e 'use Cwd "abs_path";print abs_path(shift)' "$1")"
+    local didfolderexist=false
+    if [ -d "$foldername" ]; then
+      didfolderexist=true
+      read -r -p "$foldername already exists, do you want to overwrite it? (y/n) " -n 1
+      echo
+      if [[ "$REPLY" =~ ^[Nn]$ ]]; then
+        return
+      fi
+    fi
+    mkdir -p "$foldername" && cd "$foldername"
+    case "$1" in
+    *.tar.bz2) tar xjf "$fullpath" ;;
+    *.tar.gz) tar xzf "$fullpath" ;;
+    *.tar.xz) tar Jxvf "$fullpath" ;;
+    *.tar.Z) tar xzf "$fullpath" ;;
+    *.tar) tar xf "$fullpath" ;;
+    *.taz) tar xzf "$fullpath" ;;
+    *.tb2) tar xjf "$fullpath" ;;
+    *.tbz) tar xjf "$fullpath" ;;
+    *.tbz2) tar xjf "$fullpath" ;;
+    *.tgz) tar xzf "$fullpath" ;;
+    *.txz) tar Jxvf "$fullpath" ;;
+    *.zip) unzip "$fullpath" ;;
+    *) echo "'$1' cannot be extracted via extract()" && cd .. && ! "$didfolderexist" && rm -r "$foldername" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
 }
 
 # Change working directory to the top-most Finder window location
 function cdf() { # short for `cdfinder`
-	cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')"
+  cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')"
 }
 
 # Create a .tar.gz archive, using `zopfli`, `pigz` or `gzip` for compression
 function targz() {
-	local tmpFile="${@%/}.tar"
-	tar -cvf "${tmpFile}" --exclude=".DS_Store" "${@}" || return 1
+  local tmpFile="${@%/}.tar"
+  tar -cvf "${tmpFile}" --exclude=".DS_Store" "${@}" || return 1
 
-	size=$(
-		stat -f"%z" "${tmpFile}" 2> /dev/null; # macOS `stat`
-		stat -c"%s" "${tmpFile}" 2> /dev/null;  # GNU `stat`
-	)
+  size=$(
+    stat -f"%z" "${tmpFile}" 2>/dev/null # macOS `stat`
+    stat -c"%s" "${tmpFile}" 2>/dev/null # GNU `stat`
+  )
 
-	local cmd=""
-	if (( size < 52428800 )) && hash zopfli 2> /dev/null
-	then
-		# the .tar file is smaller than 50 MB and Zopfli is available; use it
-		cmd="zopfli"
-	else
-		if hash pigz 2> /dev/null
-		then
-			cmd="pigz"
-		else
-			cmd="gzip"
-		fi
-	fi
+  local cmd=""
+  if ((size < 52428800)) && hash zopfli 2>/dev/null; then
+    # the .tar file is smaller than 50 MB and Zopfli is available; use it
+    cmd="zopfli"
+  else
+    if hash pigz 2>/dev/null; then
+      cmd="pigz"
+    else
+      cmd="gzip"
+    fi
+  fi
 
-	echo "Compressing .tar ($((size / 1000)) kB) using \`${cmd}\`…"
-	"${cmd}" -v "${tmpFile}" || return 1
-	[ -f "${tmpFile}" ] && rm "${tmpFile}"
+  echo "Compressing .tar ($((size / 1000)) kB) using \`${cmd}\`…"
+  "${cmd}" -v "${tmpFile}" || return 1
+  [ -f "${tmpFile}" ] && rm "${tmpFile}"
 
-	zippedSize=$(
-		stat -f"%z" "${tmpFile}.gz" 2> /dev/null; # macOS `stat`
-		stat -c"%s" "${tmpFile}.gz" 2> /dev/null; # GNU `stat`
-	)
+  zippedSize=$(
+    stat -f"%z" "${tmpFile}.gz" 2>/dev/null # macOS `stat`
+    stat -c"%s" "${tmpFile}.gz" 2>/dev/null # GNU `stat`
+  )
 
-	echo "${tmpFile}.gz ($((zippedSize / 1000)) kB) created successfully."
+  echo "${tmpFile}.gz ($((zippedSize / 1000)) kB) created successfully."
 }
 
 # Determine size of a file or total size of a directory
 function fs() {
-	if du -b /dev/null > /dev/null 2>&1
-	then
-		local arg=-sbh
-	else
-		local arg=-sh
-	fi
+  if du -b /dev/null >/dev/null 2>&1; then
+    local arg=-sbh
+  else
+    local arg=-sh
+  fi
 
-	if [ -n "$@" ]
-	then
-		du "$arg" -- "$@"
-	else
-		du "$arg" .[^.]* ./*
-	fi
+  if [ -n "$@" ]; then
+    du "$arg" -- "$@"
+  else
+    du "$arg" .[^.]* ./*
+  fi
 }
 
 # Use Git’s colored diff when available
-hash git &>/dev/null
-if [ $? -eq 0 ]
-then
-	function diff() {
-		git diff --no-index --color-words "$@"
-	}
+if hash git &>/dev/null; then
+  function diff() {
+    git diff --no-index --color-words "$@"
+  }
 fi
 
 # Create a data URL from a file
 function dataurl() {
-	local mimeType=$(file -b --mime-type "$1")
-	if [[ "$mimeType" == text/* ]]
-	then
-		mimeType="${mimeType};charset=utf-8"
-	fi
-	echo "data:${mimeType};base64,$(openssl base64 -in "$1" | tr -d '\n')"
+  local mimeType
+  mimeType="$(file -b --mime-type "$1")"
+  if [[ "$mimeType" == text/* ]]; then
+    mimeType="${mimeType};charset=utf-8"
+  fi
+  echo "data:${mimeType};base64,$(openssl base64 -in "$1" | tr -d '\n')"
 }
 
 # Start an HTTP server from a directory, optionally specifying the port
 function server() {
-	local port="${1:-8000}"
-	sleep 1 && open "http://localhost:${port}/" &
-	# Set the default Content-Type to `text/plain` instead of `application/octet-stream`
-	# And serve everything as UTF-8 (although not technically correct, this doesn’t break anything for binary files)
-	python -c $'import SimpleHTTPServer;\nmap = SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map;\nmap[""] = "text/plain";\nfor key, value in map.items():\n\tmap[key] = value + ";charset=UTF-8";\nSimpleHTTPServer.test();' "$port"
+  local port="${1:-8000}"
+  sleep 1 && open "http://localhost:${port}/" &
+  # Set the default Content-Type to `text/plain` instead of `application/octet-stream`
+  # And serve everything as UTF-8 (although not technically correct, this doesn’t break anything for binary files)
+  python -c $'import SimpleHTTPServer;\nmap = SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map;\nmap[""] = "text/plain";\nfor key, value in map.items():\n\tmap[key] = value + ";charset=UTF-8";\nSimpleHTTPServer.test();' "$port"
 }
 
 # Start a PHP server from a directory, optionally specifying the port
 # (Requires PHP 5.4.0+.)
 function phpserver() {
-	local port="${1:-4000}"
-	local ip=$(ipconfig getifaddr en1)
-	sleep 1 && open "http://${ip}:${port}/" &
-	php -S "${ip}:${port}"
+  local port="${1:-4000}"
+  local ip
+  ip="$(ipconfig getifaddr en1)"
+  sleep 1 && open "http://${ip}:${port}/" &
+  php -S "${ip}:${port}"
 }
 
 # Compare original and gzipped file size
 function gz() {
-	local origsize=$(wc -c < "$1")
-	local gzipsize=$(gzip -c "$1" | wc -c)
-	local ratio=$(echo "$gzipsize * 100 / $origsize" | bc -l)
-	printf "orig: %d bytes\n" "$origsize"
-	printf "gzip: %d bytes (%2.2f%%)\n" "$gzipsize" "$ratio"
+  local origsize
+  origsize="$(wc -c <"$1")"
+  local gzipsize
+  gzipsize="$(gzip -c "$1" | wc -c)"
+  local ratio
+  ratio="$(echo "$gzipsize * 100 / $origsize" | bc -l)"
+  printf "orig: %d bytes\n" "$origsize"
+  printf "gzip: %d bytes (%2.2f%%)\n" "$gzipsize" "$ratio"
 }
 
 # Run `dig` and display the most useful info
 function digga() {
-	dig +nocmd "$1" any +multiline +noall +answer
+  dig +nocmd "$1" any +multiline +noall +answer
 }
 
 # Show all the names (CNs and SANs) listed in the SSL certificate
 # for a given domain
 function getcertnames() {
-	if [ -z "${1}" ]
-	then
-		echo "ERROR: No domain specified."
-		return 1
-	fi
+  if [ -z "${1}" ]; then
+    echo "ERROR: No domain specified."
+    return 1
+  fi
 
-	local domain="${1}"
-	echo "Testing ${domain}…"
-	echo ""; # newline
+  local domain="${1}"
+  echo "Testing ${domain}…"
+  echo "" # newline
 
-	local tmp=$(echo -e "GET / HTTP/1.0\nEOT" \
-		| openssl s_client -connect "${domain}:443" -servername "${domain}" 2>&1)
+  local tmp
+  tmp="$(echo -e "GET / HTTP/1.0\nEOT" | openssl s_client -connect "${domain}:443" -servername "${domain}" 2>&1)"
 
-	if [[ "${tmp}" = *"-----BEGIN CERTIFICATE-----"* ]]
-	then
-		local certText=$(echo "${tmp}" \
-			| openssl x509 -text -certopt "no_aux, no_header, no_issuer, no_pubkey, \
-			no_serial, no_sigdump, no_signame, no_validity, no_version")
-		echo "Common Name:"
-		echo ""; # newline
-		echo "${certText}" | grep "Subject:" | sed -e "s/^.*CN=//" | sed -e "s/\/emailAddress=.*//"
-		echo ""; # newline
-		echo "Subject Alternative Name(s):"
-		echo ""; # newline
-		echo "${certText}" | grep -A 1 "Subject Alternative Name:" \
-			| sed -e "2s/DNS://g" -e "s/ //g" | tr "," "\n" | tail -n +2
-		return 0
-	else
-		echo "ERROR: Certificate not found."
-		return 1
-	fi
+  if [[ "${tmp}" = *"-----BEGIN CERTIFICATE-----"* ]]; then
+    local certText
+    certText="$(echo "${tmp}" |
+      openssl x509 -text -certopt "no_aux, no_header, no_issuer, no_pubkey, \
+			no_serial, no_sigdump, no_signame, no_validity, no_version")"
+    echo "Common Name:"
+    echo "" # newline
+    echo "${certText}" | grep "Subject:" | sed -e "s/^.*CN=//" | sed -e "s/\/emailAddress=.*//"
+    echo "" # newline
+    echo "Subject Alternative Name(s):"
+    echo "" # newline
+    echo "${certText}" | grep -A 1 "Subject Alternative Name:" |
+      sed -e "2s/DNS://g" -e "s/ //g" | tr "," "\n" | tail -n +2
+    return 0
+  else
+    echo "ERROR: Certificate not found."
+    return 1
+  fi
 }
 
 # Normalize `open` across Linux, macOS, and Windows.
 # This is needed to make the `o` function (see below) cross-platform.
-if [ ! "$(uname -s)" = 'Darwin' ]
-then
-	if grep -q Microsoft /proc/version 2>/dev/null
-	then
-		# Ubuntu on Windows using the Linux subsystem
-		alias open='explorer.exe'
-	else
-		alias open='xdg-open'
-	fi
+if [ ! "$(uname -s)" = 'Darwin' ]; then
+  if grep -q Microsoft /proc/version 2>/dev/null; then
+    # Ubuntu on Windows using the Linux subsystem
+    alias open='explorer.exe'
+  else
+    alias open='xdg-open'
+  fi
 fi
 
 # `o` with no arguments opens the current directory, otherwise opens the given
 # location
 function o() {
-	if [ $# -eq 0 ]
-	then
-		open .
-	else
-		open "$@"
-	fi
+  if [ $# -eq 0 ]; then
+    open .
+  else
+    open "$@"
+  fi
 }
 
 # `tre` is a shorthand for `tree` with hidden files and color enabled, ignoring
@@ -295,30 +286,30 @@ function o() {
 # `less` with options to preserve color and line numbers, unless the output is
 # small enough for one screen.
 function tre() {
-	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX
+  tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX
 }
 
 function random_mac() {
-    sudo ifconfig en0 ether $(openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+  sudo ifconfig en0 ether "$(openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')"
 }
 
 # Manage processes by the ports they are using
 function ports() {
-	case "$1" in
-		ls)
-			lsof -i -n -P
-			;;
-		show)
-			lsof -i :"$2" | tail -n 1
-			;;
-		pid)
-			ports show "$2" | awk '{ print $2; }'
-			;;
-		kill)
-			ports pid "$2" | kill -9
-			;;
-		*)
-			echo "NAME:
+  case "$1" in
+  ls)
+    lsof -i -n -P
+    ;;
+  show)
+    lsof -i :"$2" | tail -n 1
+    ;;
+  pid)
+    ports show "$2" | awk '{ print $2; }'
+    ;;
+  kill)
+    ports pid "$2" | xargs -L1 kill -9
+    ;;
+  *)
+    echo "NAME:
   ports - a tool to easily see what's happening on your computer's ports
 USAGE:
   ports [global options] command [command options] [arguments...]
@@ -329,40 +320,37 @@ COMMANDS:
   kill <port>       kill the process is running in the given port with kill -9
 GLOBAL OPTIONS:
   --help,-h         show help"
-			;;
-	esac
+    ;;
+  esac
 }
 
 function docker() {
-	case "$1" in
-		exit)
-			pkill Docker
-			;;
+  case "$1" in
+  exit)
+    pkill Docker
+    ;;
 
-		prune)
-			_docker_start
-			command docker system prune --volumes -fa
-			;;
+  prune)
+    _docker_start
+    command docker system prune --volumes -fa
+    ;;
 
-		*)
-			_docker_start
-			command docker $@
-			;;
-	esac
+  *)
+    _docker_start
+    command docker "$@"
+    ;;
+  esac
 }
 
 function _docker_start() {
-	if "$(uname)" = "Darwin"
-	then
-		if test $(pgrep com.docker.driver | wc -l) -eq 0
-		then
-			open -g -j -a Docker.app
-			while ! command docker stats --no-stream >/dev/null 2>&1
-			do
-				echo -n .
-				sleep 1
-			done
-			echo
-		fi
-	fi
+  if [ "$(uname)" = "Darwin" ]; then
+    if [ "$(pgrep com.docker.driver | wc -l)" -eq 0 ]; then
+      open -g -j -a Docker.app
+      while ! command docker stats --no-stream >/dev/null 2>&1; do
+        echo -n .
+        sleep 1
+      done
+      echo
+    fi
+  fi
 }
