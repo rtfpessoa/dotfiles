@@ -1,0 +1,82 @@
+{
+  "editor.fontLigatures": true,
+  "editor.formatOnSave": false,
+  "editor.minimap.enabled": true,
+  "editor.suggestSelection": "first",
+  "editor.tabSize": 2,
+  "explorer.confirmDelete": true,
+  "files.associations": {
+    "*.env.development": "env",
+    "*.env.production": "env"
+  },
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.factorypath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/_build": true,
+    "**/.elixir_ls": true
+  },
+  "files.insertFinalNewline": true,
+  "files.watcherExclude": {
+    "**/.ammonite": true,
+    "**/.bloop": true,
+    "**/.metals": true
+  },
+  "editor.renderWhitespace": "trailing",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[hocon]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[terraform]": {
+    "editor.formatOnSave": true
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "go.useLanguageServer": true,
+  "go.autocompleteUnimportedPackages": true,
+  "cSpell.userWords": [
+    "deserialization",
+    "oapi",
+    "openapi",
+    "openid",
+    "roadmaps",
+    "rtfpessoa",
+    "structs",
+    "unmarshall"
+  ],
+  "window.zoomLevel": 0,
+  "editor.fontFamily": "'FiraCode-Retina', Menlo, Monaco, 'Courier New', monospace",
+  "terminal.integrated.fontFamily": "'FiraCode-Retina', Menlo, Monaco, 'Courier New', monospace",
+  "window.autoDetectColorScheme": true,
+  "workbench.startupEditor": "newUntitledFile",
+  "workbench.sideBar.location": "left",
+  "workbench.colorTheme": "Monokai"
+}
