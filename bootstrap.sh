@@ -58,12 +58,12 @@ function install_dotfiles() {
 }
 
 function setup_fonts() {
-	if test -e $HOME/.local/share/fonts/Inconsolata[wdth,wght].ttf || test -e ~/Library/Fonts/Inconsolata[wdth,wght].ttf; then
+	if test -e $HOME/.local/share/fonts/FiraCode-Retina.ttf || test -e ~/Library/Fonts/FiraCode-Retina.ttf; then
 		exit 0
 	fi
 
-	function download_font() {
-		curl -Lso $1/Inconsolata[wdth,wght].ttf https://github.com/google/fonts/raw/master/ofl/inconsolata/Inconsolata%5Bwdth%2Cwght%5D.ttf
+	function install_font() {
+		cp -f ./fonts/FiraCode-Retina.ttf "$1/FiraCode-Retina.ttf"
 	}
 
 	case "$(uname)" in

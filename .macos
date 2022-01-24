@@ -744,6 +744,12 @@ tell application "Terminal"
 
 	end repeat
 
+  set ProfilesNames to name of every settings set
+  repeat with ProfileName in ProfilesNames
+      set font name of settings set ProfileName to "FiraCode-Retina"
+      set font size of settings set ProfileName to 13
+  end repeat
+
 end tell
 
 EOD
@@ -809,6 +815,9 @@ defaults write com.googlecode.iterm2 SUEnableAutomaticChecks -bool true
 
 /usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Scrollback Lines'" ~/Library/Preferences/com.googlecode.iterm2.plist
 /usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Scrollback Lines' integer 0" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Normal Font'" ~/Library/Preferences/com.googlecode.iterm2.plist
+/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Normal Font' string FiraCode-Retina 13" ~/Library/Preferences/com.googlecode.iterm2.plist
 
 /usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Jobs to Ignore'" ~/Library/Preferences/com.googlecode.iterm2.plist
 /usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore' array" ~/Library/Preferences/com.googlecode.iterm2.plist
