@@ -50,8 +50,14 @@ export HOMEBREW_REPOSITORY="$HOMEBREW_PREFIX"
 export HOMEBREW_SHELLENV_PREFIX="$HOMEBREW_PREFIX"
 export MANPATH="$HOMEBREW_PREFIX/share/man:$MANPATH"
 export INFOPATH="$HOMEBREW_PREFIX/share/info:$INFOPATH"
-export LDFLAGS="-L$HOMEBREW_PREFIX/opt/binutils/lib"
-export CPPFLAGS="-I$HOMEBREW_PREFIX/opt/binutils/include"
+export LDFLAGS="$LDFLAGS -L$HOMEBREW_PREFIX/opt/binutils/lib"
+export CPPFLAGS="$CPPFLAGS -I$HOMEBREW_PREFIX/opt/binutils/include"
+
+# openssl
+export LDFLAGS="$LDFLAGS -L/opt/homebrew/opt/openssl@3/lib"
+export CPPFLAGS="$CPPFLAGS -I/opt/homebrew/opt/openssl@3/include"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
+add_path "/opt/homebrew/opt/openssl@3/bin"
 
 # Force certain more-secure behaviours from homebrew
 export HOMEBREW_NO_INSECURE_REDIRECT=1
