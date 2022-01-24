@@ -35,6 +35,10 @@ function setup_git() {
 	source $HOME/.extra
 }
 
+function setup_vscode() {
+	cat ./Library/Application\ Support/Code/User/extensions.json | jq -r .recommendations[] | xargs -L 1 code --install-extension
+}
+
 function install_dotfiles() {
 	local name
 	name="$(git config user.name)"
@@ -105,6 +109,8 @@ function bootstrap() {
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_brew
 	read -r -p "Install asdf and packages? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_asdf
+	read -r -p "Install vscode plugins? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_vscode
 	read -r -p "Copy dotfiles into $HOME? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_dotfiles
 	read -r -p "Set computer name? (Y/n) " REPLY
