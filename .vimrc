@@ -1,7 +1,44 @@
 " Use the Solarized Dark theme
 set background=dark
+" Font
+set guifont=FiraCode-Retina:h13
 colorscheme solarized
 let g:solarized_termtrans=1
+
+call plug#begin()
+
+" autopairs
+Plug 'jiangmiao/auto-pairs'
+
+" Supertab
+Plug 'ervandew/supertab'
+
+" ctrlp.vim
+Plug 'ctrlpvim/ctrlp.vim'
+
+" Easymotion
+Plug 'Lokaltog/vim-easymotion'
+
+" airline
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+" surround
+Plug 'tpope/vim-surround'
+
+" nerdcommenter
+Plug 'preservim/nerdcommenter'
+
+" nerdtree
+Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
+
+" gitgutter
+Plug 'airblade/vim-gitgutter'
+
+" General languages support
+Plug 'sheerun/vim-polyglot'
+
+call plug#end()
 
 " Make Vim more useful
 set nocompatible
@@ -9,6 +46,10 @@ set nocompatible
 set clipboard=unnamed
 " Enhance command-line completion
 set wildmenu
+set wildmode=longest,full
+if exists("&wildignorecase")
+  set wildignorecase
+endif
 " Allow cursor keys in insert mode
 set esckeys
 " Allow backspace in insert mode
@@ -21,9 +62,15 @@ set gdefault
 set encoding=utf-8 nobomb
 " Change mapleader
 let mapleader=","
-" Don’t add empty newlines at the end of files
-set binary
-set noeol
+
+" Identation
+set expandtab
+set shiftwidth=2
+set autoindent
+set smartindent
+set smarttab
+set copyindent
+
 " Centralize backups, swapfiles and undo history
 set backupdir=~/.vim/backups
 set directory=~/.vim/swaps
@@ -42,6 +89,7 @@ set exrc
 set secure
 " Enable line numbers
 set number
+" set relativenumber
 " Enable syntax highlighting
 syntax on
 " Highlight current line
@@ -82,6 +130,27 @@ if exists("&relativenumber")
 endif
 " Start scrolling three lines before the horizontal window border
 set scrolloff=3
+
+" Mapings
+let mapleader=","
+map <Leader>n :NERDTreeToggle<CR>
+map <Leader>w :w<CR>
+
+" Split
+set splitbelow
+set splitright
+" gitgutter
+let g:gitgutter_enabled=1
+" airline
+let g:airline#extensions#whitespace#enabled=0
+let g:airline_symbols = {}
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+let g:airline#extensions#tabline#left_sep = ''
+let g:airline#extensions#tabline#left_alt_sep = ''
+let g:airline#extensions#tabline#right_sep = ''
+let g:airline#extensions#tabline#right_alt_sep = ''
+let g:airline_theme='wombat'
 
 " Strip trailing whitespace (,ss)
 function! StripWhitespace()

@@ -39,6 +39,12 @@ function setup_vscode() {
 	cat ./Library/Application\ Support/Code/User/extensions.json | jq -r .recommendations[] | xargs -L 1 code --install-extension
 }
 
+function setup_vim() {
+	curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+		https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+	vim +'PlugInstall --sync' +qa
+}
+
 function install_dotfiles() {
 	local name
 	name="$(git config user.name)"
@@ -113,6 +119,8 @@ function bootstrap() {
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_vscode
 	read -r -p "Copy dotfiles into $HOME? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_dotfiles
+	read -r -p "Install vim plugins? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_vim
 	read -r -p "Set computer name? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && set_computer_name
 	read -r -p "Install fonts? (Y/n) " REPLY
