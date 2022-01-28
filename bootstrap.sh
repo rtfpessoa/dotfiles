@@ -36,7 +36,7 @@ function setup_git() {
 }
 
 function setup_vscode() {
-	cat ./Library/Application\ Support/Code/User/extensions.json | jq -r .recommendations[] | xargs -L 1 code --install-extension
+	cat ./apps/Library/Application\ Support/Code/User/extensions.json | jq -r .recommendations[] | xargs -L 1 code --install-extension
 }
 
 function setup_vim() {
@@ -51,24 +51,20 @@ function install_dotfiles() {
 	local email
 	email="$(git config user.email)"
 
-	rsync \
-		--exclude "init/" \
-		--exclude ".git/" \
-		--exclude ".macos" \
-		--exclude ".DS_Store" \
-		--exclude ".osx" \
-		--exclude "asdf.sh" \
-		--exclude "bootstrap.sh" \
-		--exclude "brew.sh" \
-		--exclude "LICENSE.txt" \
-		--exclude "README.md" \
-		-avh --no-perms . ~
+
+	local stow_dirs
+	stow_dirs=("apps" "bash" "common-sh" "fish" "git" "nsh" "vim" "zsh")
+
+	for stow_dir in "${stow_dirs[@]}"; do
+		stow -D "$stow_dir"
+		stow "$stow_dir"
+	done
 
 	setup_git "$name" "$email"
 }
 
 function setup_fonts() {
-	if test -e $HOME/.local/share/fonts/FiraCode-Retina.ttf || test -e ~/Library/Fonts/FiraCode-Retina.ttf; then
+	if test -e "$HOME/.local/share/fonts/FiraCode-Retina.ttf" || test -e "$HOME/Library/Fonts/FiraCode-Retina.ttf"; then
 		exit 0
 	fi
 
@@ -105,7 +101,7 @@ function set_computer_name() {
 }
 
 function install_macos_defaults() {
-	/bin/bash .macos
+	/bin/bash ./macos.sh
 }
 
 function bootstrap() {
