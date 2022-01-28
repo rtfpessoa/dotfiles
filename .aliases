@@ -152,20 +152,18 @@ alias yes='$HOMEBREW_PREFIX/bin/gyes'
 alias grep='$HOMEBREW_PREFIX/opt/grep/libexec/gnubin/grep --color=auto'
 
 # List all files colorized in long format
-alias l="ls -lFisah --color"
+alias l="ls -lFisah"
 
 alias lsorted='ls -lisaht'
 
 # List all files colorized in long format, excluding . and ..
-alias la="ls -lAF --color"
+alias la="ls -lAF"
 
 # List only directories
-alias lsd="ls -lF --color | grep --color=never '^d'"
+alias lsd="ls -lF | grep --color=never '^d'"
 
-# Always enable colored `grep` output
-# Note: `GREP_OPTIONS="--color=auto"` is deprecated, hence the alias usage.
-alias fgrep='grep -F --color=auto'
-alias egrep='grep -E --color=auto'
+alias fgrep='grep -F'
+alias egrep='grep -E'
 
 # Enable aliases to be sudo’ed
 alias sudo='sudo '
