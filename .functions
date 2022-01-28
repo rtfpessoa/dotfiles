@@ -354,3 +354,10 @@ function _docker_start() {
     fi
   fi
 }
+
+# Retrieve the IP address for the currently active network interface
+function localip() {
+  local activeIf
+  activeIf="$(netstat -rn | grep default | awk '{print $NF}' | head -1)"
+  ipconfig getifaddr "$activeIf"
+}
