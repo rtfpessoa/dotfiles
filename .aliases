@@ -183,7 +183,10 @@ alias update='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup
 alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
 
 # IP addresses
-alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
+# Use ip4 or ip to get your ipv4
+alias ip{4,}='dig @resolver4.opendns.com myip.opendns.com +short -4'
+# From https://unix.stackexchange.com/a/81699
+alias ip6='dig @ns1.google.com TXT o-o.myaddr.l.google.com +short -6'
 alias localip="ipconfig getifaddr en0"
 alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
 
