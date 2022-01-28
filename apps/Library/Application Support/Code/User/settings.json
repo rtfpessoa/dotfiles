@@ -78,5 +78,6 @@
   "window.autoDetectColorScheme": true,
   "workbench.startupEditor": "newUntitledFile",
   "workbench.sideBar.location": "left",
-  "workbench.colorTheme": "Monokai"
+  "workbench.colorTheme": "Monokai Pro (Filter Machine)",
+  "workbench.iconTheme": "Monokai Pro (Filter Machine) Icons"
 }

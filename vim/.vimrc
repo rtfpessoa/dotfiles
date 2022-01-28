@@ -32,11 +32,18 @@ Plug 'preservim/nerdcommenter'
 " nerdtree
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 
+Plug 'tpope/vim-fugitive'
+
 " gitgutter
 Plug 'airblade/vim-gitgutter'
 
 " General languages support
 Plug 'sheerun/vim-polyglot'
+
+Plug 'mbbill/undotree'
+
+" prettier
+Plug 'sbdchd/neoformat'
 
 call plug#end()
 
@@ -163,6 +170,13 @@ endfunction
 noremap <leader>ss :call StripWhitespace()<CR>
 " Save a file as root (,W)
 noremap <leader>W :w !sudo tee % > /dev/null<CR>
+
+nnoremap <leader>u :UndotreeShow<CR>
+
+augroup fmt
+  autocmd!
+  autocmd BufWritePre * undojoin | Neoformat
+augroup END
 
 " Automatic commands
 if has("autocmd")

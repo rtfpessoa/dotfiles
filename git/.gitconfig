@@ -245,3 +245,7 @@
 [init]
 
 	defaultBranch = main
+
+[include]
+
+  path = ~/.gitconfig.extras

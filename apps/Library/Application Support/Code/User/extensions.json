@@ -26,6 +26,7 @@
     "ms-azuretools.vscode-docker",
     "ms-vscode-remote.remote-containers",
     "shakram02.bash-beautify",
-    "timonwong.shellcheck"
+    "timonwong.shellcheck",
+    "monokai.theme-monokai-pro-vscode"
   ]
 }

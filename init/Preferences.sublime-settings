@@ -20,7 +20,7 @@
 		".git",
 		"node_modules"
 	],
-	"font_face": "Monaco",
+	"font_face": "FiraCode-Retina",
 	"font_size": 13,
 	"highlight_modified_tabs": true,
 	"hot_exit": false,

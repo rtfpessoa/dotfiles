@@ -13,26 +13,19 @@ function setup_git() {
 	local name="${1:-$(git config user.name)}"
 	local email="${2:-$(git config user.email)}"
 
-	if [[ -n "$name" && -n "$email" ]]; then
-		source $HOME/.extra
+	if [[ -n "$name" && -n "$email" && -f ~/.gitconfig.extras ]]; then
 		return 0
 	fi
 
 	read -r -p 'Name: ' name
 	read -r -p 'Email: ' email
 
-	cat >~/.extra <<-EOF
-		# Git credentials
-		# Not in the repository, to prevent people from accidentally committing under my name
-		export GIT_AUTHOR_NAME="$name"
-		export GIT_COMMITTER_NAME="\$GIT_AUTHOR_NAME"
-		git config --global user.name "\$GIT_AUTHOR_NAME"
-		export GIT_AUTHOR_EMAIL="$email"
-		export GIT_COMMITTER_EMAIL="\$GIT_AUTHOR_EMAIL"
-		git config --global user.email "\$GIT_AUTHOR_EMAIL"
-	EOF
+	cat >~/.gitconfig.extras <<-EOF
+	[user]
 
-	source $HOME/.extra
+	    name = "$name"
+	    email = "$email"
+	EOF
 }
 
 function setup_vscode() {
@@ -65,7 +58,7 @@ function install_dotfiles() {
 
 function setup_fonts() {
 	if test -e "$HOME/.local/share/fonts/FiraCode-Retina.ttf" || test -e "$HOME/Library/Fonts/FiraCode-Retina.ttf"; then
-		exit 0
+		return 0
 	fi
 
 	function install_font() {
