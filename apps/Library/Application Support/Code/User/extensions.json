@@ -27,6 +27,6 @@
     "ms-vscode-remote.remote-containers",
     "shakram02.bash-beautify",
     "timonwong.shellcheck",
-    "monokai.theme-monokai-pro-vscode"
+    "dracula-theme.theme-dracula"
   ]
 }

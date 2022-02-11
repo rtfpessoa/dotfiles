@@ -2,8 +2,7 @@
 set background=dark
 " Font
 set guifont=FiraCode-Retina:h13
-colorscheme solarized
-let g:solarized_termtrans=1
+colorscheme dracula
 
 call plug#begin()
 
@@ -44,6 +43,9 @@ Plug 'mbbill/undotree'
 
 " prettier
 Plug 'sbdchd/neoformat'
+
+" Dracula theme
+Plug 'dracula/vim', { 'as': 'dracula' }
 
 call plug#end()
 

@@ -701,7 +701,7 @@ sudo mdutil -E / >/dev/null
 # Only use UTF-8 in Terminal.app
 defaults write com.apple.terminal StringEncodings -array 4
 
-# Use a modified version of the Solarized Dark theme by default in Terminal.app
+# Use the Dracula theme by default in Terminal.app
 osascript <<EOD
 
 tell application "Terminal"
@@ -709,7 +709,7 @@ tell application "Terminal"
 	local allOpenedWindows
 	local initialOpenedWindows
 	local windowID
-	set themeName to "Solarized Dark xterm-256color"
+	set themeName to "Dracula"
 
 	(* Store the IDs of all the open terminal windows. *)
 	set initialOpenedWindows to id of every window
@@ -769,8 +769,8 @@ defaults write com.apple.terminal SecureKeyboardEntry -bool true
 # Disable the annoying line marks
 defaults write com.apple.Terminal ShowLineMarks -int 0
 
-# Install the Solarized Dark theme for iTerm
-open "./init/Solarized Dark.itermcolors"
+# Install the Dracula theme for iTerm
+open "./init/Dracula.itermcolors"
 
 # iTerm2
 defaults write com.googlecode.iterm2 DoubleClickPerformsSmartSelection -bool true

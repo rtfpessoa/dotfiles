@@ -108,6 +108,8 @@ prompt() {
 
   setopt PROMPT_SUBST
 
+  NEWLINE=$'\n'
+
   # Set the terminal title and prompt.
   PROMPT=""
   PROMPT+="%{${userStyle}%}%n" # username
@@ -116,8 +118,7 @@ prompt() {
   PROMPT+="%{${white}%} in "
   PROMPT+="%{${green}%}%~"                                                   # working directory full path
   PROMPT+="\$(prompt_git \"%{${white}%} on %{${violet}%}\" \"%{${blue}%}\")" # Git repository details
-  PROMPT+="
-"
+  PROMPT+="${NEWLINE}"
   PROMPT+="%{${white}%}↪ %{${reset}%}"
 }
 

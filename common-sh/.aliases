@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Clean scrollback and print both prompt lines
+alias clear="printf '\\e[2J\\e[3J\\e[H'"
+
 # Why not?
 alias :q='exit'
 

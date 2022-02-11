@@ -1,33 +1,37 @@
-# name: Solarized Dark
-# preferred_background: 002b36
-# url: 'http://ethanschoonover.com/solarized'
-
-# set theme_color_scheme solarized-dark
+# Source: https://raw.githubusercontent.com/dracula/fish/master/conf.d/dracula.fish
 
 set -gx TERM xterm-256color
 
-set fish_color_normal normal
-set fish_color_command normal
-set fish_color_quote brmagenta bryellow # 657b83
-set fish_color_redirection brmagenta # 6c71c4
-set fish_color_end blue # 268bd2
-set fish_color_error dc322f
-set fish_color_param brblue # 839496
-set fish_color_comment brgreen # 586e75
-set fish_color_match --background=brblue
-set fish_color_selection white --bold --background=brblack
-set fish_color_search_match bryellow --background=black
-set fish_color_history_current --bold
-set fish_color_operator 00a6b2
-set fish_color_escape 00a6b2
-set fish_color_cwd green
-set fish_color_cwd_root red
-set fish_color_valid_path --underline
-set fish_color_autosuggestion brgreen # 586e75
-set fish_color_host normal
-set fish_color_user brgreen
-set fish_color_cancel -r
-set fish_pager_color_completion b3a06d
-set fish_pager_color_description b3a06d
-set fish_pager_color_prefix cyan --underline
-set fish_pager_color_progress brwhite --background=cyan
+# Dracula Color Palette
+set -l foreground f8f8f2
+set -l selection 44475a
+set -l comment 6272a4
+set -l red ff5555
+set -l orange ffb86c
+set -l yellow f1fa8c
+set -l green 50fa7b
+set -l purple bd93f9
+set -l cyan 8be9fd
+set -l pink ff79c6
+
+# Syntax Highlighting Colors
+set -g fish_color_normal $foreground
+set -g fish_color_command $cyan
+set -g fish_color_keyword $pink
+set -g fish_color_quote $yellow
+set -g fish_color_redirection $foreground
+set -g fish_color_end $orange
+set -g fish_color_error $red
+set -g fish_color_param $purple
+set -g fish_color_comment $comment
+set -g fish_color_selection --background=$selection
+set -g fish_color_search_match --background=$selection
+set -g fish_color_operator $green
+set -g fish_color_escape $pink
+set -g fish_color_autosuggestion $comment
+
+# Completion Pager Colors
+set -g fish_pager_color_progress $comment
+set -g fish_pager_color_prefix $cyan
+set -g fish_pager_color_completion $foreground
+set -g fish_pager_color_description $comment

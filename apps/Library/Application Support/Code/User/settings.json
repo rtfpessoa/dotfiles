@@ -60,6 +60,9 @@
   "[shellscript]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
+  "[fish]": {
+    "editor.defaultFormatter": "lunaryorn.fish-ide"
+  },
   "go.useLanguageServer": true,
   "go.autocompleteUnimportedPackages": true,
   "cSpell.userWords": [
@@ -78,6 +81,5 @@
   "window.autoDetectColorScheme": true,
   "workbench.startupEditor": "newUntitledFile",
   "workbench.sideBar.location": "left",
-  "workbench.colorTheme": "Monokai Pro (Filter Machine)",
-  "workbench.iconTheme": "Monokai Pro (Filter Machine) Icons"
+  "workbench.colorTheme": "Dracula",
 }
