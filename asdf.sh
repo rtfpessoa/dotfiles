@@ -47,10 +47,12 @@ source $HOME/.asdf/asdf.sh
 
 asdf update
 
-asdf_tools=("github-cli" "golang" "rust" "sbt" "scala" "terraform" "terraform-lsp")
-for tool in ${asdf_tools[@]}; do
+asdf_tools=("github-cli" "golang" "sbt" "scala" "terraform" "terraform-lsp")
+for tool in "${asdf_tools[@]}"; do
 	install_asdf_package $tool
 done
+
+install_asdf_package "rust" "true" stable
 
 # Not available for arm64
 # install_asdf_package "graalvm" "false" ""

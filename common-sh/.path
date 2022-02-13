@@ -21,3 +21,5 @@ add_path "/usr/local/bin"
 
 # Add `$HOME/.local/bin` to `PATH`
 add_path "$HOME/.local/bin"
+
+add_path "$HOME/.asdf/installs/rust/stable/bin"
