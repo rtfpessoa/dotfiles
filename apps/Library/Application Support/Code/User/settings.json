@@ -78,7 +78,7 @@
   "window.zoomLevel": 0,
   "editor.fontFamily": "'FiraCode-Retina', Menlo, Monaco, 'Courier New', monospace",
   "terminal.integrated.fontFamily": "'FiraCode-Retina', Menlo, Monaco, 'Courier New', monospace",
-  "window.autoDetectColorScheme": true,
+  "window.autoDetectColorScheme": false,
   "workbench.startupEditor": "newUntitledFile",
   "workbench.sideBar.location": "left",
   "workbench.colorTheme": "Dracula",

@@ -1,9 +1,3 @@
-" Use the Solarized Dark theme
-set background=dark
-" Font
-set guifont=FiraCode-Retina:h13
-colorscheme dracula
-
 call plug#begin()
 
 " autopairs
@@ -48,6 +42,12 @@ Plug 'sbdchd/neoformat'
 Plug 'dracula/vim', { 'as': 'dracula' }
 
 call plug#end()
+
+" Use the Solarized Dark theme
+set background=dark
+" Font
+set guifont=FiraCode-Retina:h13
+colorscheme dracula
 
 " Make Vim more useful
 set nocompatible
