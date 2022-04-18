@@ -49,6 +49,7 @@ brew install gnupg
 
 # Install more recent versions of some macOS tools.
 brew install vim
+brew install neovim
 # Install GNU `grep`, overwriting the built-in `grep`.
 # Don’t forget to add `$(brew --prefix)/opt/grep/libexec/gnubin` to `$PATH`.
 brew install grep
