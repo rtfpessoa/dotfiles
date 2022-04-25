@@ -49,8 +49,8 @@ function install_dotfiles() {
 	stow_dirs=("apps" "bash" "common-sh" "fish" "git" "nsh" "vim" "zsh")
 
 	for stow_dir in "${stow_dirs[@]}"; do
-		stow -D "$stow_dir"
-		stow "$stow_dir"
+		stow -D "$stow_dir" -t $HOME
+		stow "$stow_dir" -t $HOME
 	done
 
 	setup_git "$name" "$email"

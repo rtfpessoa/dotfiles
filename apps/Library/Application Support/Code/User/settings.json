@@ -63,8 +63,6 @@
   "[fish]": {
     "editor.defaultFormatter": "lunaryorn.fish-ide"
   },
-  "go.useLanguageServer": true,
-  "go.autocompleteUnimportedPackages": true,
   "cSpell.userWords": [
     "deserialization",
     "oapi",
@@ -78,8 +76,8 @@
   "window.zoomLevel": 0,
   "editor.fontFamily": "'FiraCode-Retina', Menlo, Monaco, 'Courier New', monospace",
   "terminal.integrated.fontFamily": "'FiraCode-Retina', Menlo, Monaco, 'Courier New', monospace",
-  "window.autoDetectColorScheme": true,
   "workbench.startupEditor": "newUntitledFile",
   "workbench.sideBar.location": "left",
   "workbench.colorTheme": "Dracula",
+  "window.autoDetectColorScheme": false,
 }

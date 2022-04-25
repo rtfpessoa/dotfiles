@@ -171,6 +171,7 @@
 	editor = vim
 	quotepath = false
 	ignorecase = false
+	hooksPath = /usr/local/dd/global_hooks
 
 [color]
 
@@ -251,3 +252,6 @@
 [include]
 
   path = ~/.gitconfig.extras
+[user]
+	name = Rodrigo Fernandes
+	email = rodrigo.fernandes@datadoghq.com

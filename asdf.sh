@@ -47,21 +47,21 @@ source $HOME/.asdf/asdf.sh
 
 asdf update
 
-asdf_tools=("github-cli" "golang" "sbt" "scala" "terraform" "terraform-lsp")
-for tool in "${asdf_tools[@]}"; do
-	install_asdf_package $tool
-done
+#asdf_tools=("github-cli" "golang" "sbt" "scala" "terraform" "terraform-lsp")
+#for tool in "${asdf_tools[@]}"; do
+#	install_asdf_package $tool
+#done
 
-install_asdf_package "rust" "true" stable
+#install_asdf_package "rust" "true" stable
 
 # Not available for arm64
 # install_asdf_package "graalvm" "false" ""
 
 # Java
-install_asdf_package "java" "false" "zulu-8.58.0.13"
-install_asdf_package "java" "false" "zulu-11.52.13"
-install_asdf_package "java" "true" "zulu-15.36.13"
-install_asdf_package "java" "false" "zulu-17.30.15"
+#install_asdf_package "java" "false" "zulu-8.58.0.13"
+#install_asdf_package "java" "false" "zulu-11.52.13"
+#install_asdf_package "java" "true" "zulu-15.36.13"
+#install_asdf_package "java" "false" "zulu-17.30.15"
 
 # Node.JS
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-previous-release-team-keyring'

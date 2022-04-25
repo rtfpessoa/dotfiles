@@ -35,7 +35,7 @@ do
 done
 unset file
 
-for file in "$HOMEBREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh" "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" "$HOME/.asdf/plugins/java/set-java-home.bash"
+for file in "$HOMEBREW_PREFIX/opt/zsh-history-substring-search/share/zsh-history-substring-search/zsh-history-substring-search.zsh" "$HOMEBREW_PREFIX/opt/zsh-syntax-highlighting/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$HOMEBREW_PREFIX/opt/zsh-autosuggestions/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 do
 	[ -r "$file" ] && [ -f "$file" ] && source "$file"
 done

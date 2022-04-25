@@ -2,7 +2,6 @@
 set background=dark
 " Font
 set guifont=FiraCode-Retina:h13
-colorscheme dracula
 
 call plug#begin()
 
@@ -48,6 +47,8 @@ Plug 'sbdchd/neoformat'
 Plug 'dracula/vim', { 'as': 'dracula' }
 
 call plug#end()
+
+colorscheme dracula
 
 " Make Vim more useful
 set nocompatible

@@ -39,7 +39,7 @@ brew install zsh-history-substring-search
 brew install zsh-syntax-highlighting
 brew install zsh-autosuggestions
 
-brew install nsh
+brew uninstall nsh
 
 # Install `wget` with IRI support.
 brew install wget
@@ -101,18 +101,18 @@ brew install yq
 brew install shellcheck
 
 # akr
-brew install akamai/mfa/akr
+brew uninstall akamai/mfa/akr
 
 # Casks
 brew install --cask docker
-brew install --cask spotify
-brew install --cask brave-browser
+brew uninstall --cask spotify
+brew uninstall --cask brave-browser
 brew install --cask iterm2
 brew install --cask visual-studio-code
 brew install --cask vlc
-brew install --cask intellij-idea-ce
+brew uninstall --cask intellij-idea-ce
 brew install --cask caffeine
-brew install --cask discord
+brew uninstall --cask discord
 
 # Remove outdated versions from the cellar.
 brew cleanup
