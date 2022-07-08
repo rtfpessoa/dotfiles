@@ -82,4 +82,7 @@
   "workbench.startupEditor": "newUntitledFile",
   "workbench.sideBar.location": "left",
   "workbench.colorTheme": "Dracula",
+  "[dockercompose]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
 }
