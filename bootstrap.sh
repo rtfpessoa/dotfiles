@@ -57,23 +57,20 @@ function install_dotfiles() {
 	setup_git "$name" "$email"
 }
 
+function install_font() {
+	# Downloaded from https://github.com/ryanoasis/nerd-fonts/blob/master/patched-fonts/FiraCode/Retina/complete/Fira%20Code%20Retina%20Nerd%20Font%20Complete.ttf
+	cp -f ./fonts/FiraCode-Retina.ttf "$1/FiraCode-Retina.ttf"
+}
+
 function setup_fonts() {
-	if test -e "$HOME/.local/share/fonts/FiraCode-Retina.ttf" || test -e "$HOME/Library/Fonts/FiraCode-Retina.ttf"; then
-		return 0
-	fi
-
-	function install_font() {
-		cp -f ./fonts/FiraCode-Retina.ttf "$1/FiraCode-Retina.ttf"
-	}
-
 	case "$(uname)" in
 	"Darwin")
-		download_font ~/Library/Fonts
+		install_font ~/Library/Fonts
 		;;
 
 	*)
 		mkdir -p ~/.local/share/fonts/ &&
-			download_font ~/.local/share/fonts/
+			install_font ~/.local/share/fonts/
 		if command -qs fc-cache; then
 			fc-cache -fv
 		fi
