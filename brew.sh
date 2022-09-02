@@ -39,7 +39,8 @@ brew install zsh-history-substring-search
 brew install zsh-syntax-highlighting
 brew install zsh-autosuggestions
 
-brew install nsh
+# Shell prompt
+brew install jandedobbeleer/oh-my-posh/oh-my-posh
 
 # Install `wget` with IRI support.
 brew install wget

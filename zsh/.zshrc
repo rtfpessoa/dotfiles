@@ -2,10 +2,17 @@
 
 [ -r "$HOME/.asdf/asdf.sh" ] && [ -f "$HOME/.asdf/asdf.sh" ] && source "$HOME/.asdf/asdf.sh"
 
-# Add tab completion for many commands
-if type brew &>/dev/null
+if [ "$(uname -m)" = 'arm64' ]
 then
-  FPATH="${ASDF_DIR}/completions:$(brew --prefix)/share/zsh/site-functions:$(brew --prefix)/share/zsh-completions:${FPATH}"
+	export HOMEBREW_PREFIX="/opt/homebrew"
+else
+	export HOMEBREW_PREFIX="/usr/local"
+fi
+
+# Add tab completion for many commands
+if [ -f "$HOMEBREW_PREFIX/bin/brew" ]
+then
+  FPATH="${ASDF_DIR}/completions:$HOMEBREW_PREFIX/share/zsh/site-functions:$HOMEBREW_PREFIX/share/zsh-completions:${FPATH}"
 fi
 
 autoload -Uz promptinit && promptinit
@@ -28,12 +35,16 @@ zstyle ':completion:*:descriptions' format '%U%F{yellow}%d%f%u'
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
-for file in ~/.{functions,exports,path,zsh_prompt,aliases,extra}
+for file in ~/.{functions,exports,path,aliases,extra}
 do
 	[ -r "${file}" ] && [ -f "${file}" ] && source "${file}"
 	[ -r "${file}.sh" ] && [ -f "${file}.sh" ] && source "${file}.sh"
 done
 unset file
+
+if type oh-my-posh &>/dev/null; then
+  eval "$(oh-my-posh init zsh --config ~/.config/omp/rtfpessoa.omp.json)"
+fi
 
 for file in "$HOMEBREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh" "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" "$HOME/.asdf/plugins/java/set-java-home.bash"
 do

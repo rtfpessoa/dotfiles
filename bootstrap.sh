@@ -47,7 +47,7 @@ function install_dotfiles() {
 
 
 	local stow_dirs
-	stow_dirs=("apps" "bash" "common-sh" "fish" "git" "nsh" "vim" "zsh")
+	stow_dirs=("apps" "bash" "common-sh" "fish" "git" "oh-my-posh" "vim" "zsh")
 
 	for stow_dir in "${stow_dirs[@]}"; do
 		stow -D "$stow_dir"

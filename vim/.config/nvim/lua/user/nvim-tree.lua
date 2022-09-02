@@ -1,6 +1,18 @@
+local status_ok, chadtree = pcall(require, "chadtree")
+if not status_ok then
+  return
+end
+
 vim.cmd([[
   nmap <leader>v <cmd>CHADopen<cr>
 ]])
+
+local chadtree_settings = {
+  options = { show_hidden = true },
+  theme = { text_colour_set = "solarized_dark_256" },
+  keymap = { v_split = { "<C-v>" }, h_split = { "<C-V>" } },
+}
+vim.api.nvim_set_var("chadtree_settings", chadtree_settings)
 
 -- local status_ok, nvim_tree = pcall(require, "nvim-tree")
 -- if not status_ok then

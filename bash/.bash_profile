@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
 
+if [ "$(uname -m)" = 'arm64' ]
+then
+	export HOMEBREW_PREFIX="/opt/homebrew"
+else
+	export HOMEBREW_PREFIX="/usr/local"
+fi
+
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
-for file in ~/.{functions,exports,path,bash_prompt,aliases,extra}; do
+for file in ~/.{functions,exports,path,aliases,extra}; do
   [ -r "${file}" ] && [ -f "${file}" ] && source "${file}"
   [ -r "${file}.sh" ] && [ -f "${file}.sh" ] && source "${file}.sh"
 done
 unset file
+
+if type oh-my-posh &>/dev/null; then
+  eval "$(oh-my-posh init bash --config ~/.config/omp/rtfpessoa.omp.json)"
+fi
 
 # Case-insensitive globbing (used in pathname expansion)
 shopt -s nocaseglob

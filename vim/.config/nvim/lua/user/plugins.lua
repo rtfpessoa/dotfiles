@@ -51,6 +51,16 @@ return packer.startup(function(use)
 
   -- use({ "kyazdani42/nvim-tree.lua", commit = "bdb6d4a25410da35bbf7ce0dbdaa8d60432bc243" })
   use({ 'ms-jpq/chadtree', branch = 'chad', run = 'python3 -m chadtree deps'})
+  -- use({ "ms-jpq/chadtree", branch= 'chad', run='python3 -m chadtree deps',
+  --   config = function()
+  --     local chadtree_settings = {
+  --       options = { show_hidden = true },
+  --       theme = { text_colour_set = "nord" },
+  --       keymap = { v_split = { "<C-v>" }, h_split = { "<C-V>" } },
+  --     }
+  --     vim.api.nvim_set_var("chadtree_settings", chadtree_settings)
+  --   end
+  -- })
 
 	use({ "akinsho/bufferline.nvim", commit = "c78b3ecf9539a719828bca82fc7ddb9b3ba0c353" })
 	use({ "moll/vim-bbye", commit = "25ef93ac5a87526111f43e5110675032dbcacf56" })

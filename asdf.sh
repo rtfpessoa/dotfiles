@@ -54,30 +54,26 @@ done
 
 install_asdf_package "rust" "true" stable
 
-# Not available for arm64
-# install_asdf_package "graalvm" "false" ""
-
 # Java
-install_asdf_package "java" "false" "zulu-8.58.0.13"
-install_asdf_package "java" "false" "zulu-11.52.13"
-install_asdf_package "java" "true" "zulu-15.36.13"
-install_asdf_package "java" "false" "zulu-17.30.15"
+install_asdf_package "java" "false" "zulu-8.64.0.19"
+install_asdf_package "java" "true" "zulu-17.36.17"
+install_asdf_package "java" "false" "zulu-18.32.13"
 
 # Node.JS
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-previous-release-team-keyring'
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-release-team-keyring'
-install_asdf_package "nodejs" "true" "16.13.2"
+install_asdf_package "nodejs" "false" "16.17.0"
+install_asdf_package "nodejs" "true" "18.8.0"
 install_asdf_package "yarn"
 yarn global add diff2html-cli
 asdf reshim nodejs
 
 # Python
-install_asdf_package "python" "false" "3.10.1"
+install_asdf_package "python" "false" "3.10.6"
 install_asdf_package "python" "false" "2.7.18"
-install_asdf_package "python" "false" "3.7.12"
-asdf global python 3.7.12 2.7.18
+asdf global python 3.10.6 2.7.18
 asdf reshim python
 
 # Ruby
-install_asdf_package "ruby" "true" "3.0.3"
+install_asdf_package "ruby" "true" "3.1.2"
 asdf reshim ruby
