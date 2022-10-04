@@ -250,4 +250,8 @@
 
 [include]
 
-  path = ~/.gitconfig.extras
+	path = ~/.gitconfig.extras
+
+[includeIf "gitdir:~/.gitconfig.datadog"]
+  
+	path = ~/.gitconfig.datadog
