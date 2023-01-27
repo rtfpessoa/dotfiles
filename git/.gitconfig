@@ -59,6 +59,8 @@
 	remotes = remote --verbose
 
 	grep = grep -Ii
+	
+	cmain = "git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
 
 	# List aliases.
 	aliases = config --get-regexp alias
@@ -110,9 +112,6 @@
 
 	## Grep on filename
 	f = "!git ls-files | grep -i"
-
-	## Rename branch tree to done-
-	done = "!f() { git branch | grep "$1" | cut -c 3- | grep -v done | xargs -I{} git branch -m {} done-{}; }; f"
 
 	## Assume aliases
 	assume = update-index --assume-unchanged
