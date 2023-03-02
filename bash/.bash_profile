@@ -65,6 +65,11 @@ if type _git &>/dev/null; then
   complete -o default -o nospace -F _git g
 fi
 
+if type kubectl &>/dev/null; then
+  source <(kubectl completion bash)
+  complete -o default -F __start_kubectl k
+fi
+
 # Add tab completion for SSH hostnames based on ~/.ssh/config, ignoring wildcards
 [ -e "$HOME/.ssh/config" ] && complete -o "default" -o "nospace" -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2- | tr ' ' '\n')" scp sftp ssh
 

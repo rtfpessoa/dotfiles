@@ -276,3 +276,6 @@ alias afk="osascript -e 'tell app \"System Events\" to key code 12 using {contro
 
 # Reload the shell (i.e. invoke as a login shell)
 alias reload='exec $SHELL -l'
+
+alias d=docker
+alias k=kubectl

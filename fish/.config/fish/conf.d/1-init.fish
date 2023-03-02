@@ -34,3 +34,7 @@ for file in "$HOME/.asdf/asdf.fish" "$HOME/.asdf/completions/asdf.fish" "$HOME/.
         source $file
     end
 end
+
+if type -q kubectl
+	kubectl completion fish | source
+end

@@ -52,6 +52,10 @@ do
 done
 unset file
 
+if type kubectl &>/dev/null; then
+  source <(kubectl completion zsh)
+fi
+
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 

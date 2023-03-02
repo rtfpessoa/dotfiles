@@ -107,6 +107,8 @@ brew install akamai/mfa/akr
 
 # Casks
 brew install --cask docker
+# Slow as hell https://github.com/docker/cli/issues/3889
+# brew install docker-completion
 brew install --cask spotify
 brew install --cask brave-browser
 brew install --cask iterm2
