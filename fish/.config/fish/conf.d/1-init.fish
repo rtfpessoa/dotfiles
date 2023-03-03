@@ -1,7 +1,7 @@
-if test (uname -m) = 'arm64'
-	export HOMEBREW_PREFIX="/opt/homebrew"
+if test (uname -m) = arm64
+    export HOMEBREW_PREFIX="/opt/homebrew"
 else
-	export HOMEBREW_PREFIX="/usr/local"
+    export HOMEBREW_PREFIX="/usr/local"
 end
 
 for file in ~/.{exports,path,aliases,extra}

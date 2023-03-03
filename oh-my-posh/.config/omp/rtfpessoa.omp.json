@@ -35,16 +35,14 @@
         {
           "type": "aws",
           "style": "plain",
-          "foreground": "#ffffff",
-          "background": "#f1fa8c",
-          "template": " \uE7AD {{.Profile}}{{if .Region}}@{{.Region}}{{end}}"
+          "foreground": "#f1fa8c",
+          "template": " \uE7AD {{.Profile}}{{if .Region}} :: {{.Region}}{{end}}"
         },
         {
           "type": "kubectl",
           "style": "plain",
-          "foreground": "#000000",
-          "background": "#f1fa8c",
-          "template": " \uFD31 {{.Context}}{{if .Cluster}} :: {{.Cluster}}{{if .Namespace}} :: {{.Namespace}}{{end}} "
+          "foreground": "#bd93f9",
+          "template": " {{if .Cluster}}\uFD31 {{.Cluster}} :: {{.Namespace}}{{end}} "
         }
       ],
       "type": "prompt"

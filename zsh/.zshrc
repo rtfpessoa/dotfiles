@@ -38,7 +38,7 @@ zstyle ':completion:*:descriptions' format '%U%F{yellow}%d%f%u'
 for file in ~/.{functions,exports,path,aliases,extra}
 do
 	[ -r "${file}" ] && [ -f "${file}" ] && source "${file}"
-	[ -r "${file}.sh" ] && [ -f "${file}.sh" ] && source "${file}.sh"
+	[ -r "${file}.zsh" ] && [ -f "${file}.zsh" ] && source "${file}.zsh"
 done
 unset file
 
