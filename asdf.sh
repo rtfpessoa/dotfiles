@@ -47,12 +47,10 @@ source $HOME/.asdf/asdf.sh
 
 asdf update
 
-asdf_tools=("github-cli" "golang" "sbt" "scala" "terraform" "terraform-lsp")
+asdf_tools=("golang" "terraform" "terraform-lsp")
 for tool in "${asdf_tools[@]}"; do
 	install_asdf_package $tool
 done
-
-install_asdf_package "rust" "true" stable
 
 # Java
 install_asdf_package "java" "false" "zulu-8.64.0.19"
@@ -77,3 +75,8 @@ asdf reshim python
 # Ruby
 install_asdf_package "ruby" "true" "3.1.2"
 asdf reshim ruby
+
+if [ -n "$INSTALL_ALL" ]
+then
+	install_asdf_package "rust" "true" stable
+fi

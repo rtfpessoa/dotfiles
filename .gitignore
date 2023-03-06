@@ -1,1 +1,5 @@
 /vim/.config/nvim/plugin/
+/vim/.vim/autoload/plug.vim
+/vim/.vim/plugged/
+/datadog.sh
+/git/.gitconfig.datadog

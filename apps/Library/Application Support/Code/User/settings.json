@@ -85,4 +85,10 @@
   "[dockercompose]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   },
+  "redhat.telemetry.enabled": false,
+  "editor.inlineSuggest.enabled": true,
+  "go.toolsManagement.autoUpdate": true,
+  "gopls": {
+    "ui.semanticTokens": true
+  }
 }

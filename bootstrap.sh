@@ -101,7 +101,12 @@ function bootstrap() {
 	read -r -p "Install homebrew and packages? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_brew
 	read -r -p "Install asdf and packages? (Y/n) " REPLY
-	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_asdf
+	if [[ ! "$REPLY" =~ ^[Nn]$ ]]
+	then
+		read -r -p "Install ALL asdf packages? (y/N) " REPLY
+		[[ "$REPLY" =~ ^[Yy]$ ]] && export INSTALL_ALL=true
+		install_asdf
+	fi
 	read -r -p "Install vscode plugins? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_vscode
 	read -r -p "Copy dotfiles into $HOME? (Y/n) " REPLY
