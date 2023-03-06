@@ -82,10 +82,10 @@ defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 # Automatically quit printer app once the print jobs complete
 defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 
-# Disable the “Are you sure you want to open this application?” dialog
+# Disable the "Are you sure you want to open this application?" dialog
 defaults write com.apple.LaunchServices LSQuarantine -bool false
 
-# Remove duplicates in the “Open With” menu (also see `lscleanup` alias)
+# Remove duplicates in the "Open With" menu (also see `lscleanup` alias)
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user
 
 # Display ASCII control characters using caret notation in standard text views
@@ -99,7 +99,7 @@ defaults write com.apple.systempreferences NSQuitAlwaysKeepsWindows -bool false
 defaults write NSGlobalDomain NSDisableAutomaticTermination -bool true
 
 # Disable the crash reporter
-#defaults write com.apple.CrashReporter DialogType -string "none"
+# defaults write com.apple.CrashReporter DialogType -string "none"
 
 # Set Help Viewer windows to non-floating mode
 defaults write com.apple.helpviewer DevMode -bool true
@@ -107,7 +107,7 @@ defaults write com.apple.helpviewer DevMode -bool true
 # Fix for the ancient UTF-8 bug in QuickLook (https://mths.be/bbo)
 # Commented out, as this is known to cause problems in various Adobe apps :(
 # See https://github.com/mathiasbynens/dotfiles/issues/237
-#echo "0x08000100:0" > ~/.CFUserTextEncoding
+# echo "0x08000100:0" > ~/.CFUserTextEncoding
 
 # Reveal IP address, hostname, OS version, etc. when clicking the clock
 # in the login window
@@ -158,11 +158,11 @@ defaults write com.apple.AppleMultitouchTrackpad TrackpadRightClick -bool true
 defaults -currentHost write NSGlobalDomain com.apple.trackpad.twoFingerDoubleTapGesture -int 2
 defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true
 
-# Enable “natural” (Lion-style) scrolling
+# Enable "natural" (Lion-style) scrolling
 defaults write NSGlobalDomain com.apple.swipescrolldirection -bool true
 
 # Increase sound quality for Bluetooth headphones/headsets
-defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
+# defaults write com.apple.BluetoothAudioAgent "Apple Bitpool Min (editable)" -int 40
 
 # Enable full keyboard access for all controls
 # (e.g. enable Tab in modal dialogs)
@@ -196,7 +196,7 @@ sudo defaults write /Library/Preferences/com.apple.loginwindow showInputMenu -bo
 sudo systemsetup -settimezone "Europe/Lisbon" >/dev/null
 
 # Stop iTunes from responding to the keyboard media keys
-#launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
+# launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
 
 ###############################################################################
 # Energy saving                                                               #
@@ -207,13 +207,15 @@ sudo systemsetup -settimezone "Europe/Lisbon" >/dev/null
 #  Sleep On Power Button 	1
 #  hibernatefile        	/var/vm/sleepimage
 #  powernap             	1
+#  networkoversleep             0
 #  disksleep            	10
-#  sleep                	1 (sleep prevented by sharingd, powerd)
+#  sleep                	10 (sleep prevented by sharingd, powerd)
 #  hibernatemode        	3
 #  ttyskeepawake        	1
-#  displaysleep         	2
+#  displaysleep         	10
 #  tcpkeepalive         	1
 #  lowpowermode         	0
+#  womp                 	0
 
 # Enable lid wakeup
 sudo pmset -a lidwake 1
@@ -224,18 +226,9 @@ sudo pmset -a lidwake 1
 # Restart automatically if the computer freezes
 sudo systemsetup -setrestartfreeze on
 
-# Sleep the display after 15 minutes
-sudo pmset -a displaysleep 15
-
-# Disable machine sleep while charging
-# sudo pmset -c sleep 0
-
-# Set machine sleep to 5 minutes on battery
-sudo pmset -b displaysleep 3
+# Set machine sleep
+sudo pmset -a displaysleep 1
 sudo pmset -b sleep 5
-
-# Set standby delay to 24 hours (default is 1 hour)
-# sudo pmset -a standbydelay 86400
 
 # Never go into computer sleep mode
 # sudo systemsetup -setcomputersleep Off > /dev/null
@@ -245,14 +238,12 @@ sudo pmset -b sleep 5
 # 3: Copy RAM to disk so the system state can still be restored in case of a
 #    power failure.
 # 25: Full hibernation
-sudo pmset -a hibernatemode 25
+sudo pmset -c hibernatemode 3
+sudo pmset -b hibernatemode 25
 
-# sudo pmset -a destroyfvkeyonstandby 1
-# sudo pmset -a hibernatemode 25
-# sudo pmset -a powernap 0
-# sudo pmset -a standby 0
-# sudo pmset -a standbydelay 0
-# sudo pmset -a autopoweroff 0
+# Set standby delay
+sudo pmset -c standbydelay 300  #  5 mins 
+sudo pmset -b standbydelay 1800 # 30 mins
 
 # Remove the sleep image file to save disk space
 # sudo rm /private/var/vm/sleepimage
