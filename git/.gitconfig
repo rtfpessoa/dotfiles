@@ -1,251 +1,236 @@
 [alias]
+co = checkout
 
-	co = checkout
+br = branch
 
-	br = branch
+# Add changes interactively
+ad = add -p
 
-	# Add changes interactively
-	ad = add -p
+# Stage all files
+ada = add -A .
 
-	# Stage all files
-	ada = add -A .
+st = status -sb
 
-	st = status -sb
+ps = push -u origin HEAD
 
-	ps = push -u origin HEAD
+# Bad habits
+# psf = push --force-with-lease -u origin HEAD
 
-	# Bad habits
-	# psf = push --force-with-lease -u origin HEAD
+pl = pull --rebase --autostash
 
-	pl = pull --rebase --autostash
+# Delete previous commit and leave changes from it unstaged
+uc = reset --soft HEAD^
 
-	# Delete previous commit and leave changes from it unstaged
-	uc = reset --soft HEAD^
+rhh = reset --hard HEAD
 
-	rhh = reset --hard HEAD
+fe = fetch --force --prune --prune-tags --tags --recurse-submodules=yes --jobs=8 --progress
 
-	fe = fetch --force --prune --prune-tags --tags --recurse-submodules=yes --jobs=8 --progress
+# View abbreviated SHA, description, and history graph of the latest 20 commits.
+l = log --pretty=oneline -n 20 --graph --abbrev-commit
 
-	# View abbreviated SHA, description, and history graph of the latest 20 commits.
-	l = log --pretty=oneline -n 20 --graph --abbrev-commit
+# View the current working tree status using the short format.
+s = status -s
 
-	# View the current working tree status using the short format.
-	s = status -s
+# Show the diff between the latest commit and the current state.
+d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
 
-	# Show the diff between the latest commit and the current state.
-	d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
+# `git di $number` shows the diff between the state `$number` revisions ago and the current state.
+di = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
 
-	# `git di $number` shows the diff between the state `$number` revisions ago and the current state.
-	di = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
+c = commit
 
-	c = commit
+cm = commit -m
 
-	cm = commit -m
+ca = commit --amend --no-edit
 
-	ca = commit --amend --no-edit
+amend = commit --amend
 
-	amend = commit --amend
+main = "!f() { git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
 
-	main = "!f() { git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
+dh = "!f() { git diff -M -C -U10 --patience "HEAD~${1-0}"; }; f"
 
-	dh = "!f() { git diff -M -C -U10 --patience "HEAD~${1-0}"; }; f"
+# Switch to a branch, creating it if necessary.
+go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
 
-	# Switch to a branch, creating it if necessary.
-	go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
+# Show verbose output about tags, branches or remotes
+tags = tag -l
+branches = branch --all
+remotes = remote --verbose
 
-	# Show verbose output about tags, branches or remotes
-	tags = tag -l
-	branches = branch --all
-	remotes = remote --verbose
+grep = grep -Ii
 
-	grep = grep -Ii
+cmain = "git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
 
-	cmain = "git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
+# List aliases.
+aliases = config --get-regexp alias
 
-	# List aliases.
-	aliases = config --get-regexp alias
+# Credit an author on the latest commit.
+credit = "!f() { git commit --amend --author \"$1 <$2>\" -C HEAD; }; f"
 
-	# Credit an author on the latest commit.
-	credit = "!f() { git commit --amend --author \"$1 <$2>\" -C HEAD; }; f"
+# Interactive rebase with the given number of latest commits.
+reb = "!r() { git rebase -i HEAD~$1; }; r"
 
-	# Interactive rebase with the given number of latest commits.
-	reb = "!r() { git rebase -i HEAD~$1; }; r"
+# Remove the old tag with this name and tag the latest commit with it.
+retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
 
-	# Remove the old tag with this name and tag the latest commit with it.
-	retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
+# Find branches containing commit
+fb = "!f() { git branch -a --contains $1; }; f"
 
-	# Find branches containing commit
-	fb = "!f() { git branch -a --contains $1; }; f"
+# Find tags containing commit
+ft = "!f() { git describe --always --contains $1; }; f"
 
-	# Find tags containing commit
-	ft = "!f() { git describe --always --contains $1; }; f"
+# Find commits by source code
+fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f"
 
-	# Find commits by source code
-	fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f"
+# Find commits by commit message
+fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
 
-	# Find commits by commit message
-	fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
+# Remove branches that have already been merged with main.
+# a.k.a. ‘delete merged’
+dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
 
-	# Remove branches that have already been merged with main.
-	# a.k.a. ‘delete merged’
-	dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
+# List contributors with number of commits.
+contributors = shortlog --summary --numbered
 
-	# List contributors with number of commits.
-	contributors = shortlog --summary --numbered
+# Show the user email for the current repository.
+whoami = config user.email
 
-	# Show the user email for the current repository.
-	whoami = config user.email
+sl = stash list
+sa = stash apply
+ss = stash save
+sd = stash drop
 
-	sl = stash list
-	sa = stash apply
-	ss = stash save
-	sd = stash drop
+## List modified files in last commit
+dl = "!git ll -1"
 
-	## List modified files in last commit
-	dl = "!git ll -1"
+## List all aliases
+la = "!git config -l | grep alias | cut -c 7-"
 
-	## List all aliases
-	la = "!git config -l | grep alias | cut -c 7-"
+## Grep from root folder
+gra = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
 
-	## Grep from root folder
-	gra = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
+## Grep on filename
+f = "!git ls-files | grep -i"
 
-	## Grep on filename
-	f = "!git ls-files | grep -i"
+## Assume aliases
+assume = update-index --assume-unchanged
+unassume = update-index --no-assume-unchanged
 
-	## Assume aliases
-	assume = update-index --assume-unchanged
-	unassume = update-index --no-assume-unchanged
+## Show assumed files
+assumed = "!git ls-files -v | grep ^h | cut -c 3-"
 
-	## Show assumed files
-	assumed = "!git ls-files -v | grep ^h | cut -c 3-"
+## Unassume all the assumed files
+unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
+assumeall = "!git st -s | awk {'print $2'} | xargs git assume"
 
-	## Unassume all the assumed files
-	unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
-	assumeall = "!git st -s | awk {'print $2'} | xargs git assume"
+lasttag = describe --tags --abbrev=0
+lt = describe --tags --abbrev=0
 
-	lasttag = describe --tags --abbrev=0
-	lt = describe --tags --abbrev=0
+## Merges
+ours = "!f() { git co --ours $@ && git add $@; }; f"
+theirs = "!f() { git co --theirs $@ && git add $@; }; f"
 
-	## Merges
-	ours = "!f() { git co --ours $@ && git add $@; }; f"
-	theirs = "!f() { git co --theirs $@ && git add $@; }; f"
-
-	## List remotes
-	rem = "!git config -l | grep remote.*url | tail -n +2"
+## List remotes
+rem = "!git config -l | grep remote.*url | tail -n +2"
 
 [apply]
-
-	# Detect whitespace errors when applying a patch.
-	whitespace = fix
+# Detect whitespace errors when applying a patch.
+whitespace = fix
 
 [branch]
-
-	# Show most recently changed branches first.
-	sort = -committerdate
+# Show most recently changed branches first.
+sort = -committerdate
 
 [core]
+# Use custom `.gitignore` and `.gitattributes`.
+excludesfile = ~/.gitignore
+attributesfile = ~/.gitattributes
 
-	# Use custom `.gitignore` and `.gitattributes`.
-	excludesfile = ~/.gitignore
-	attributesfile = ~/.gitattributes
+# Treat spaces before tabs and all kinds of trailing whitespace as an error.
+# [default] trailing-space: looks for spaces at the end of a line
+# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
+whitespace = space-before-tab,-indent-with-non-tab,trailing-space
 
-	# Treat spaces before tabs and all kinds of trailing whitespace as an error.
-	# [default] trailing-space: looks for spaces at the end of a line
-	# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
-	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+# Make `git rebase` safer on macOS.
+# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+trustctime = false
 
-	# Make `git rebase` safer on macOS.
-	# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
-	trustctime = false
+# Prevent showing files whose names contain non-ASCII symbols as unversioned.
+# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+precomposeunicode = false
 
-	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
-	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
-	precomposeunicode = false
+# Speed up commands involving untracked files such as `git status`.
+# https://git-scm.com/docs/git-update-index#_untracked_cache
+untrackedCache = true
 
-	# Speed up commands involving untracked files such as `git status`.
-	# https://git-scm.com/docs/git-update-index#_untracked_cache
-	untrackedCache = true
-
-	editor = vim
-	quotepath = false
-	ignorecase = false
+editor = vim
+quotepath = false
+ignorecase = false
 
 [color]
-
-	# Use colors in Git commands that are capable of colored output when
-	# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
-	ui = auto
+# Use colors in Git commands that are capable of colored output when
+# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
+ui = auto
 
 [color "branch"]
-
-	current = yellow reverse
-	local = yellow
-	remote = green
+current = yellow reverse
+local = yellow
+remote = green
 
 [color "diff"]
-
-	meta = yellow bold
-	frag = magenta bold # line info
-	old = red # deletions
-	new = green # additions
+meta = yellow bold
+frag = magenta bold # line info
+old = red           # deletions
+new = green         # additions
 
 [color "status"]
-
-	added = yellow
-	changed = green
-	untracked = cyan
+added = yellow
+changed = green
+untracked = cyan
 
 [diff]
-
-	# Detect copies as well as renames.
-	renames = copies
+# Detect copies as well as renames.
+renames = copies
 
 [diff "bin"]
-
-	# Use `hexdump` to diff binary files.
-	textconv = hexdump -v -C
+# Use `hexdump` to diff binary files.
+textconv = hexdump -v -C
 
 [help]
-
-	# Automatically correct and execute mistyped commands.
-	autocorrect = 1
+# Automatically correct and execute mistyped commands.
+autocorrect = 1
 
 [merge]
-
-	# Include summaries of merged commits in newly created merge commit messages
-	log = true
+# Include summaries of merged commits in newly created merge commit messages
+log = true
 
 [push]
-
-	# https://git-scm.com/docs/git-config#git-config-pushdefault
-	default = simple
-	# Make `git push` push relevant annotated tags when pushing branches out.
-	followTags = true
+# https://git-scm.com/docs/git-config#git-config-pushdefault
+default = simple
+# Make `git push` push relevant annotated tags when pushing branches out.
+followTags = true
 
 # URL shorthands
 
 [url "git@github.com:"]
-
-	insteadOf = "git://github.com/"
-	insteadOf = "https://github.com/"
-	insteadOf = "gh:"
-	insteadOf = "github:"
+insteadOf = "git://github.com/"
+insteadOf = "https://github.com/"
+insteadOf = "gh:"
+insteadOf = "github:"
 
 [url "git@gist.github.com:"]
-
-	insteadOf = "gst:"
-	insteadOf = "gist:"
-	insteadOf = "git://gist.github.com/"
+insteadOf = "gst:"
+insteadOf = "gist:"
+insteadOf = "git://gist.github.com/"
 
 [init]
-
-	defaultBranch = main
+defaultBranch = main
 
 [include]
-
-	path = ~/.gitconfig.extras
+path = ~/.gitconfig.extras
 
 [includeIf "gitdir:~/.gitconfig.datadog"]
+path = ~/.gitconfig.datadog
 
-	path = ~/.gitconfig.datadog
+[includeIf "gitdir:~/.gitconfig.home"]
+path = ~/.gitconfig.home
