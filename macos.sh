@@ -31,6 +31,8 @@ done 2>/dev/null &
 # Change date format
 defaults write com.apple.menuextra.clock "DateFormat" -string "\"EEE MMM d h:mm:ss a\""
 defaults write com.apple.menuextra.clock "FlashDateSeparators" -bool "true"
+defaults write com.apple.menuextra.clock "ShowAMPM" -bool "true"
+defaults write com.apple.menuextra.clock "ShowDayOfWeek" -bool "true"
 
 # Disable the sound effects on boot
 sudo nvram SystemAudioVolume=" "
@@ -242,7 +244,7 @@ sudo pmset -c hibernatemode 3
 sudo pmset -b hibernatemode 25
 
 # Set standby delay
-sudo pmset -c standbydelay 300  #  5 mins 
+sudo pmset -c standbydelay 300  #  5 mins
 sudo pmset -b standbydelay 1800 # 30 mins
 
 # Remove the sleep image file to save disk space
@@ -646,7 +648,7 @@ defaults write com.apple.mail SpellCheckingBehavior -string "NoSpellCheckingEnab
 # Disable Spotlight indexing for any volume that gets mounted and has not yet
 # been indexed before.
 # Use `sudo mdutil -i off "/Volumes/foo"` to stop indexing any volume.
-sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
+sudo defaults write /System/Volumes/Data/.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
 # Change indexing order and disable some search results
 # Yosemite-specific search results (remove them if you are using macOS 10.9 or older):
 # 	MENU_DEFINITION
@@ -655,7 +657,7 @@ sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Vol
 # 	MENU_SPOTLIGHT_SUGGESTIONS (send search queries to Apple)
 # 	MENU_WEBSEARCH             (send search queries to Apple)
 # 	MENU_OTHER
-defaults write com.apple.spotlight orderedItems -array \
+defaults write com.apple.Spotlight orderedItems -array \
   '{"enabled" = 1;"name" = "APPLICATIONS";}' \
   '{"enabled" = 1;"name" = "SYSTEM_PREFS";}' \
   '{"enabled" = 1;"name" = "DIRECTORIES";}' \
@@ -690,7 +692,7 @@ sudo mdutil -E / >/dev/null
 ###############################################################################
 
 # Only use UTF-8 in Terminal.app
-defaults write com.apple.terminal StringEncodings -array 4
+defaults write com.apple.Terminal StringEncodings -array 4
 
 # Use the Dracula theme by default in Terminal.app
 osascript <<EOD
@@ -750,12 +752,12 @@ defaults write com.apple.Terminal NewWindowWorkingDirectoryBehavior -int 2
 
 # Enable “focus follows mouse” for Terminal.app and all X11 apps
 # i.e. hover over a window and start typing in it without clicking first
-defaults write com.apple.terminal FocusFollowsMouse -bool true
+defaults write com.apple.Terminal FocusFollowsMouse -bool true
 #defaults write org.x.X11 wm_ffm -bool true
 
 # Enable Secure Keyboard Entry in Terminal.app
 # See: https://security.stackexchange.com/a/47786/8918
-defaults write com.apple.terminal SecureKeyboardEntry -bool true
+defaults write com.apple.Terminal SecureKeyboardEntry -bool true
 
 # Disable the annoying line marks
 defaults write com.apple.Terminal ShowLineMarks -int 0
@@ -857,7 +859,7 @@ defaults write com.apple.ActivityMonitor SelectedTab -int 1
 ###############################################################################
 
 # Enable the debug menu in Address Book
-defaults write com.apple.addressbook ABShowDebugMenu -bool true
+defaults write com.apple.AddressBook ABShowDebugMenu -bool true
 
 # Enable Dashboard dev mode (allows keeping widgets on the desktop)
 defaults write com.apple.dashboard devmode -bool true
@@ -883,10 +885,10 @@ defaults write com.apple.QuickTimePlayerX MGPlayMovieOnOpen -bool true
 ###############################################################################
 
 # Enable the WebKit Developer Tools in the Mac App Store
-defaults write com.apple.appstore WebKitDeveloperExtras -bool true
+defaults write com.apple.AppStore WebKitDeveloperExtras -bool true
 
 # Enable Debug Menu in the Mac App Store
-defaults write com.apple.appstore ShowDebugMenu -bool true
+defaults write com.apple.AppStore ShowDebugMenu -bool true
 
 # Enable the automatic update check
 defaults write com.apple.SoftwareUpdate AutomaticCheckEnabled -bool true
