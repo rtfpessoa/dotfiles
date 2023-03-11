@@ -50,7 +50,10 @@ brew install gnupg
 
 # Install more recent versions of some macOS tools.
 brew install vim
-brew install neovim
+if [ -n "$INSTALL_ALL" ]
+then
+	brew install neovim
+fi
 # Install GNU `grep`, overwriting the built-in `grep`.
 # Don’t forget to add `$(brew --prefix)/opt/grep/libexec/gnubin` to `$PATH`.
 brew install grep
@@ -102,21 +105,22 @@ brew install yq
 
 brew install shellcheck
 
-# akr
-brew install akamai/mfa/akr
-
 # Casks
 brew install --cask docker
 # Slow as hell https://github.com/docker/cli/issues/3889
 # brew install docker-completion
 brew install --cask spotify
-brew install --cask brave-browser
 brew install --cask iterm2
 brew install --cask visual-studio-code
 brew install --cask vlc
-brew install --cask intellij-idea-ce
-brew install --cask caffeine
-brew install --cask discord
+if [ -n "$INSTALL_ALL" ]
+then
+	brew install --cask brave-browser
+	brew install --cask intellij-idea-ce
+	brew install --cask discord
+	brew install --cask dozer
+	brew install --cask keepingyouawake
+fi
 
 # Remove outdated versions from the cellar.
 brew cleanup

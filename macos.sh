@@ -34,6 +34,34 @@ defaults write com.apple.menuextra.clock "FlashDateSeparators" -bool "true"
 defaults write com.apple.menuextra.clock "ShowAMPM" -bool "true"
 defaults write com.apple.menuextra.clock "ShowDayOfWeek" -bool "true"
 
+# Change menubar
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position Battery" -int 201
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position BentoBox" -int 171
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position Bluetooth" -int 279
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position FocusModes" -int 307
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position NowPlaying" -int 275
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position ScreenMirroring" -int 511
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position Sound" -int 241
+defaults write com.apple.controlcenter "NSStatusItem Preferred Position WiFi" -int 203
+defaults write com.apple.controlcenter "NSStatusItem Visible Battery" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible BentoBox" -int 1
+defaults write com.apple.controlcenter "NSStatusItem Visible Bluetooth" -int 1
+defaults write com.apple.controlcenter "NSStatusItem Visible Clock" -int 1
+defaults write com.apple.controlcenter "NSStatusItem Visible FocusModes" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-0" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-1" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-2" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-3" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-4" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-5" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-6" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-7" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Item-8" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible NowPlaying" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible ScreenMirroring" -int 0
+defaults write com.apple.controlcenter "NSStatusItem Visible Sound" -int 1
+defaults write com.apple.controlcenter "NSStatusItem Visible WiFi" -int 1
+
 # Disable the sound effects on boot
 sudo nvram SystemAudioVolume=" "
 
