@@ -229,8 +229,8 @@ defaultBranch = main
 [include]
 path = ~/.gitconfig.extras
 
-[includeIf "gitdir:~/.gitconfig.datadog"]
+[include]
 path = ~/.gitconfig.datadog
 
-[includeIf "gitdir:~/.gitconfig.home"]
+[include]
 path = ~/.gitconfig.home
