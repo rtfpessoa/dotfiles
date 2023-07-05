@@ -90,5 +90,6 @@
   "go.toolsManagement.autoUpdate": true,
   "gopls": {
     "ui.semanticTokens": true
-  }
+  },
+  "vscode-office.openOutline": true
 }

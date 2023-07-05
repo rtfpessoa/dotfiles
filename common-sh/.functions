@@ -324,36 +324,36 @@ GLOBAL OPTIONS:
   esac
 }
 
-function docker() {
-  case "$1" in
-  exit)
-    pkill Docker
-    ;;
+# function docker() {
+#   case "$1" in
+#   exit)
+#     pkill Docker
+#     ;;
 
-  prune)
-    _docker_start
-    command docker system prune --volumes -fa
-    ;;
+#   prune)
+#     _docker_start
+#     command docker system prune --volumes -fa
+#     ;;
 
-  *)
-    _docker_start
-    command docker "$@"
-    ;;
-  esac
-}
+#   *)
+#     _docker_start
+#     command docker "$@"
+#     ;;
+#   esac
+# }
 
-function _docker_start() {
-  if [ "$(uname)" = "Darwin" ]; then
-    if [ "$(pgrep com.docker.driver | wc -l)" -eq 0 ]; then
-      open -g -j -a Docker.app
-      while ! command docker stats --no-stream >/dev/null 2>&1; do
-        echo -n .
-        sleep 1
-      done
-      echo
-    fi
-  fi
-}
+# function _docker_start() {
+#   if [ "$(uname)" = "Darwin" ]; then
+#     if [ "$(pgrep com.docker.driver | wc -l)" -eq 0 ]; then
+#       open -g -j -a Docker.app
+#       while ! command docker stats --no-stream >/dev/null 2>&1; do
+#         echo -n .
+#         sleep 1
+#       done
+#       echo
+#     fi
+#   fi
+# }
 
 # Retrieve the IP address for the currently active network interface
 function localip() {

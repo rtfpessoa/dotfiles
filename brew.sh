@@ -106,9 +106,6 @@ brew install yq
 brew install shellcheck
 
 # Casks
-brew install --cask docker
-# Slow as hell https://github.com/docker/cli/issues/3889
-# brew install docker-completion
 brew install --cask spotify
 brew install --cask iterm2
 brew install --cask visual-studio-code
@@ -143,3 +140,13 @@ if ! fgrep -q "${HOMEBREW_PREFIX}/bin/fish" /etc/shells; then
 	echo "${HOMEBREW_PREFIX}/bin/fish" | sudo tee -a /etc/shells
 	chsh -s "${HOMEBREW_PREFIX}/bin/fish"
 fi
+
+# Docker for Mac
+# brew install --cask docker
+# Slow as hell https://github.com/docker/cli/issues/3889
+# brew install docker-completion
+
+# Install docker cli
+brew install docker
+brew install colima
+# colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64
