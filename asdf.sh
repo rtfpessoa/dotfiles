@@ -47,34 +47,34 @@ source $HOME/.asdf/asdf.sh
 
 asdf update
 
-asdf_tools=("golang" "terraform" "terraform-lsp")
+asdf_tools=("golang" "terraform" "terraform-ls")
 for tool in "${asdf_tools[@]}"; do
 	install_asdf_package $tool
 done
 
 # Java
-install_asdf_package "java" "false" "zulu-8.64.0.19"
-install_asdf_package "java" "true" "zulu-17.36.17"
-install_asdf_package "java" "false" "zulu-18.32.13"
+install_asdf_package "java" "false" "zulu-8.72.0.17"
+install_asdf_package "java" "false" "zulu-17.44.15_1"
+install_asdf_package "java" "true" "zulu-20.32.11_1"
 
 # Node.JS
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-previous-release-team-keyring'
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-release-team-keyring'
-install_asdf_package "nodejs" "false" "16.17.0"
-install_asdf_package "nodejs" "true" "18.8.0"
+install_asdf_package "nodejs" "true" "18.17.1"
+install_asdf_package "nodejs" "false" "20.5.1"
 install_asdf_package "yarn"
 yarn global add diff2html-cli
 asdf reshim nodejs
 
 # Python
-install_asdf_package "python" "false" "3.10.6"
+install_asdf_package "python" "false" "3.10.12"
 install_asdf_package "python" "false" "2.7.18"
-asdf global python 3.10.6 2.7.18
+asdf global python 3.10.12 2.7.18
 asdf reshim python
 
-# Ruby
-install_asdf_package "ruby" "true" "3.1.2"
-asdf reshim ruby
+# Ruby - broken in m1
+# install_asdf_package "ruby" "true" "3.1.2"
+# asdf reshim ruby
 
 if [ -n "$INSTALL_ALL" ]
 then

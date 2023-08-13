@@ -105,6 +105,10 @@ brew install yq
 
 brew install shellcheck
 
+# LazyVim
+brew install fd
+brew install lazygit
+
 # Casks
 brew install --cask spotify
 brew install --cask iterm2
@@ -117,6 +121,7 @@ then
 	brew install --cask discord
 	brew install --cask dozer
 	brew install --cask keepingyouawake
+	brew install --cask linearmouse
 fi
 
 # Remove outdated versions from the cellar.
