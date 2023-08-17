@@ -1,0 +1,16 @@
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+	pattern = { "*.unit.*" },
+
+	callback = function(ev)
+		vim.api.nvim_buf_set_keymap(
+			0,
+			"n",
+			"<C-t>",
+			[[<cmd>TermFileExecToggle yarn\ test:unit\ %file%\ --watch C-t<cr>]],
+			{
+				desc = "yarn test:unit file",
+				noremap = true,
+			}
+		)
+	end,
+})
