@@ -3,7 +3,12 @@
 # Install command-line tools using Homebrew.
 
 # Save Homebrew’s installed location.
-HOMEBREW_PREFIX=$(brew --prefix)
+if [ "$(uname -m)" = 'arm64' ]
+then
+	export HOMEBREW_PREFIX="/opt/homebrew"
+else
+	export HOMEBREW_PREFIX="/usr/local"
+fi
 
 eval "$("$HOMEBREW_PREFIX/bin/brew" shellenv)"
 
@@ -105,23 +110,37 @@ brew install yq
 
 brew install shellcheck
 
+# ruby-build
+brew install openssl@3 readline libyaml gmp
+
 # LazyVim
+brew install nvim
 brew install fd
 brew install lazygit
 
+# Docker for Mac
+# brew install --cask docker
+# Slow as hell https://github.com/docker/cli/issues/3889
+# brew install docker-completion
+
+# Install docker cli
+brew install docker
+brew install colima
+# colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64
+
 # Casks
-brew install --cask spotify
-brew install --cask iterm2
-brew install --cask visual-studio-code
-brew install --cask vlc
+brew install --force --cask spotify
+brew install --force --cask iterm2
+brew install --force --cask visual-studio-code
+brew install --force --cask vlc
 if [ -n "$INSTALL_ALL" ]
 then
-	brew install --cask brave-browser
-	brew install --cask intellij-idea-ce
-	brew install --cask discord
-	brew install --cask dozer
-	brew install --cask keepingyouawake
-	brew install --cask linearmouse
+	brew install --force --cask brave-browser
+	brew install --force --cask intellij-idea-ce
+	brew install --force --cask discord
+	brew install --force --cask dozer
+	brew install --force --cask keepingyouawake
+	brew install --force --cask linearmouse
 fi
 
 # Remove outdated versions from the cellar.
@@ -145,13 +164,3 @@ if ! fgrep -q "${HOMEBREW_PREFIX}/bin/fish" /etc/shells; then
 	echo "${HOMEBREW_PREFIX}/bin/fish" | sudo tee -a /etc/shells
 	chsh -s "${HOMEBREW_PREFIX}/bin/fish"
 fi
-
-# Docker for Mac
-# brew install --cask docker
-# Slow as hell https://github.com/docker/cli/issues/3889
-# brew install docker-completion
-
-# Install docker cli
-brew install docker
-brew install colima
-# colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64

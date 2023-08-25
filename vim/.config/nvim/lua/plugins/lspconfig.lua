@@ -5,13 +5,13 @@ return {
     opts = {
       servers = {
         tsserver = {
-          autostart = false,
+          -- autostart = false,
           init_options = {
             maxTsServerMemory = 12288,
           },
         },
         eslint = {
-          autostart = false,
+          -- autostart = false,
         },
         cssls = {},
         cssmodules_ls = {},
@@ -24,7 +24,7 @@ return {
       setup = {
         ["*"] = function(_, opts)
           -- Never autostart LSP servers. Do so on-demand with :LspStart
-          opts["autostart"] = false
+          -- opts["autostart"] = false
         end,
       },
     },

@@ -1,9 +1,15 @@
 return {
-  { "gbprod/nord.nvim" },
+  -- { "gbprod/nord.nvim" },
+  {
+    "folke/tokyonight.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {},
+  },
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "nord",
+      colorscheme = "tokyonight-storm",
     },
   },
 }

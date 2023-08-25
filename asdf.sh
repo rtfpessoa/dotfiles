@@ -73,8 +73,9 @@ asdf global python 3.10.12 2.7.18
 asdf reshim python
 
 # Ruby - broken in m1
-# install_asdf_package "ruby" "true" "3.1.2"
-# asdf reshim ruby
+export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$HOMEBREW_PREFIX/opt/openssl@3"
+install_asdf_package "ruby" "true" "3.1.2"
+asdf reshim ruby
 
 if [ -n "$INSTALL_ALL" ]
 then

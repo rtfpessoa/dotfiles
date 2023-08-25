@@ -167,6 +167,11 @@ editor = vim
 quotepath = false
 ignorecase = false
 
+# Better performance
+# Src: https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/
+fsmonitor = true
+untrackedcache = true
+
 [color]
 # Use colors in Git commands that are capable of colored output when
 # outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
