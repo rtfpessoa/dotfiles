@@ -164,3 +164,19 @@ if ! fgrep -q "${HOMEBREW_PREFIX}/bin/fish" /etc/shells; then
 	echo "${HOMEBREW_PREFIX}/bin/fish" | sudo tee -a /etc/shells
 	chsh -s "${HOMEBREW_PREFIX}/bin/fish"
 fi
+
+# Docker for Mac
+# brew install --cask docker
+# Slow as hell https://github.com/docker/cli/issues/3889
+# brew install docker-completion
+
+# Install docker cli
+brew install docker
+brew install colima
+brew install docker-buildx
+mkdir -p ~/.docker/cli-plugins
+ln -sfn $(which docker-buildx) ~/.docker/cli-plugins/docker-buildx
+# To keep using the `docker build` install but with buildkit: https://docs.docker.com/engine/reference/commandline/buildx_install/
+docker buildx install
+
+# colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64
