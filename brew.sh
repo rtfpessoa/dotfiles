@@ -100,6 +100,7 @@ brew install xz
 # Install other useful binaries.
 brew install git
 brew install git-lfs
+brew install git-machete
 
 # Others
 brew install fish
