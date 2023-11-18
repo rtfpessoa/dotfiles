@@ -83,7 +83,7 @@
   "workbench.sideBar.location": "left",
   "workbench.colorTheme": "Dracula",
   "[dockercompose]": {
-    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "redhat.telemetry.enabled": false,
   "editor.inlineSuggest.enabled": true,
@@ -91,5 +91,11 @@
   "gopls": {
     "ui.semanticTokens": true
   },
-  "vscode-office.openOutline": true
+  "vscode-office.openOutline": true,
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  }
 }

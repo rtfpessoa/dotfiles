@@ -142,6 +142,7 @@ then
 	brew install --force --cask dozer
 	brew install --force --cask keepingyouawake
 	brew install --force --cask linearmouse
+	brew install --force --cask lulu
 fi
 
 # Remove outdated versions from the cellar.
