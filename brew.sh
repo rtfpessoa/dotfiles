@@ -143,6 +143,8 @@ then
 	brew install --force --cask keepingyouawake
 	brew install --force --cask linearmouse
 	brew install --force --cask lulu
+	brew install --force --cask whisky
+	brew install --force --cask orbstack
 fi
 
 # Remove outdated versions from the cellar.
