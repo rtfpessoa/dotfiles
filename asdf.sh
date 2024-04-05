@@ -62,9 +62,10 @@ bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-previous-releas
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-release-team-keyring'
 install_asdf_package "nodejs" "true" "18.17.1"
 install_asdf_package "nodejs" "false" "20.5.1"
-install_asdf_package "yarn"
-yarn global add diff2html-cli
+corepack enable
 asdf reshim nodejs
+yarn set version stable
+yarn global add diff2html-cli
 
 # Python
 install_asdf_package "python" "false" "3.10.12"
