@@ -38,16 +38,15 @@ Plug 'mbbill/undotree'
 " prettier
 Plug 'sbdchd/neoformat'
 
-" Dracula theme
-Plug 'dracula/vim', { 'as': 'dracula' }
+" Theme
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }
 
 call plug#end()
 
-" Use the Solarized Dark theme
-set background=dark
+set background=light
 " Font
 set guifont=FiraCode-Retina:h13
-colorscheme dracula
+colorscheme catppuccin-latte
 
 " Make Vim more useful
 set nocompatible

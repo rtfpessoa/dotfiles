@@ -53,15 +53,15 @@ for tool in "${asdf_tools[@]}"; do
 done
 
 # Java
-install_asdf_package "java" "false" "zulu-8.72.0.17"
-install_asdf_package "java" "false" "zulu-17.44.15_1"
+install_asdf_package "java" "false" "zulu-17.54.21"
+install_asdf_package "java" "false" "zulu-23.30.13"
 install_asdf_package "java" "true" "zulu-20.32.11_1"
 
 # Node.JS
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-previous-release-team-keyring'
 bash -c '${ASDF_DATA_DIR:=$HOME/.asdf}/plugins/nodejs/bin/import-release-team-keyring'
-install_asdf_package "nodejs" "true" "18.17.1"
-install_asdf_package "nodejs" "false" "20.5.1"
+install_asdf_package "nodejs" "true" "20.18.0"
+install_asdf_package "nodejs" "false" "23.0.0"
 corepack enable
 asdf reshim nodejs
 yarn set version stable
@@ -75,7 +75,7 @@ asdf reshim python
 
 # Ruby - broken in m1
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$HOMEBREW_PREFIX/opt/openssl@3"
-install_asdf_package "ruby" "true" "3.1.2"
+install_asdf_package "ruby" "true" "3.3.5"
 asdf reshim ruby
 
 if [ -n "$INSTALL_ALL" ]

@@ -3,6 +3,8 @@
 function fish_greeting
 end
 
+set -gx TERM xterm-256color
+
 set -g fish_prompt_pwd_dir_length 1
 
 if type oh-my-posh &>/dev/null

@@ -9,12 +9,12 @@
           "type": "session",
           "style": "plain",
           "foreground": "#ffffff",
-          "template": "{{ if .SSHSession }}<#d75f00>{{ .UserName }}</> @ <#FFB86C>{{ .HostName }}</> in{{ end }}"
+          "template": "{{ if .SSHSession }}<#179299>{{ .UserName }}</> @ <#df8e1d>{{ .HostName }}</> in{{ end }}"
         },
         {
           "type": "path",
           "style": "plain",
-          "foreground": "#50fa7b",
+          "foreground": "#ea76cb",
           "template": "\uf115 {{ .Path }} ",
           "properties": {
             "mixed_threshold": 100,
@@ -24,7 +24,7 @@
         {
           "type": "git",
           "style": "plain",
-          "foreground": "#bd93f9",
+          "foreground": "#7287FD",
           "template": "{{ .UpstreamIcon }}{{ .HEAD }}{{ .BranchStatus }}{{ if .Working.Changed }} \uF044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uF046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \uF692 {{ .StashCount }}{{ end }}",
           "properties": {
             "fetch_status": true,
@@ -35,13 +35,13 @@
         {
           "type": "aws",
           "style": "plain",
-          "foreground": "#f1fa8c",
+          "foreground": "#fe640b",
           "template": " \uE7AD {{.Profile}}{{if .Region}} :: {{.Region}}{{end}}"
         },
         {
           "type": "kubectl",
           "style": "plain",
-          "foreground": "#bd93f9",
+          "foreground": "#ea76cb",
           "template": " {{if .Cluster}}\uFD31 {{.Cluster}} :: {{.Namespace}}{{end}} "
         }
       ],
@@ -53,7 +53,7 @@
         {
           "type": "time",
           "style": "plain",
-          "foreground": "#8be9fd",
+          "foreground": "#4c4f69",
           "template": "<#FFFFFF>\u23f1</>  {{ .CurrentDate | date .Format }}",
           "properties": {
             "time_format": "Mon, 02 Jan 2006 15:04:05 MST"
@@ -62,7 +62,7 @@
         {
           "type": "executiontime",
           "style": "plain",
-          "foreground": "#8be9fd",
+          "foreground": "#4c4f69",
           "template": " <#fefefe>\ufbab</> {{ .FormattedMs }}",
           "properties": {
             "threshold": 500,
@@ -79,10 +79,10 @@
         {
           "type": "exit",
           "style": "plain",
-          "foreground": "#ffffff",
-          "template": "<{{ if eq .Code 0 }}#ffffff{{ else }}#ff5555{{ end }}>{{ if .Root }}#{{ else }}↪{{ end }}</> ",
+          "foreground": "#4c4f69",
+          "template": "<{{ if eq .Code 0 }}#4c4f69{{ else }}#d20f39{{ end }}>{{ if .Root }}#{{ else }}↪{{ end }}</> ",
           "properties": {
-            "always_enabled": true
+            "always_enabled": false
           }
         }
       ],

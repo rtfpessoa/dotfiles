@@ -728,7 +728,7 @@ sudo mdutil -E / >/dev/null
 # Only use UTF-8 in Terminal.app
 defaults write com.apple.Terminal StringEncodings -array 4
 
-# Use the Dracula theme by default in Terminal.app
+# Use custom theme by default in Terminal.app
 osascript <<EOD
 
 tell application "Terminal"
@@ -736,7 +736,7 @@ tell application "Terminal"
 	local allOpenedWindows
 	local initialOpenedWindows
 	local windowID
-	set themeName to "Dracula"
+	set themeName to "catppuccin-latte"
 
 	(* Store the IDs of all the open terminal windows. *)
 	set initialOpenedWindows to id of every window
@@ -796,8 +796,8 @@ defaults write com.apple.Terminal SecureKeyboardEntry -bool true
 # Disable the annoying line marks
 defaults write com.apple.Terminal ShowLineMarks -int 0
 
-# Install the Dracula theme for iTerm
-open "./init/Dracula.itermcolors"
+# Use the custom colors in terminal
+open "./init/catppuccin-latte.itermcolors"
 
 # iTerm2
 defaults write com.googlecode.iterm2 DoubleClickPerformsSmartSelection -bool true
