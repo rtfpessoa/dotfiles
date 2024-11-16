@@ -21,6 +21,8 @@ brew upgrade
 # Install dotfiles symlink manager
 brew install stow
 
+brew install binutils
+
 # Install GNU core utilities (those that come with macOS are outdated).
 # Don’t forget to add `$(brew --prefix coreutils)/libexec/gnubin` to `$PATH`.
 brew install coreutils
@@ -54,48 +56,15 @@ brew install wget
 brew install gnupg
 
 # Install more recent versions of some macOS tools.
-brew install vim
-if [ -n "$INSTALL_ALL" ]
-then
-	brew install neovim
-fi
+brew install nvim
+brew install fd
+brew install lazygit
+
 # Install GNU `grep`, overwriting the built-in `grep`.
 # Don’t forget to add `$(brew --prefix)/opt/grep/libexec/gnubin` to `$PATH`.
 brew install grep
 brew install openssh
 brew install screen
-
-# Install font tools.
-brew tap bramstein/webfonttools
-brew install sfnt2woff
-brew install sfnt2woff-zopfli
-brew install woff2
-
-# Install some CTF tools; see https://github.com/ctfs/write-ups.
-# brew install aircrack-ng # Not available for amd64
-brew install bfg
-brew install binutils
-brew install binwalk
-brew install cifer
-brew install dex2jar
-brew install dns2tcp
-brew install fcrackzip
-brew install foremost
-brew install hashpump
-brew install hydra
-brew install john
-brew install knock
-brew install netpbm
-brew install nmap
-brew install pngcheck
-brew install socat
-brew install sqlmap
-brew install tcpflow
-brew install tcpreplay
-brew install tcptrace
-brew install ucspi-tcp # `tcpserver` etc.
-brew install xpdf
-brew install xz
 
 # Install other useful binaries.
 brew install git
@@ -112,12 +81,7 @@ brew install yq
 brew install shellcheck
 
 # ruby-build
-brew install openssl@3 readline libyaml gmp
-
-# LazyVim
-brew install nvim
-brew install fd
-brew install lazygit
+brew install openssl@3 readline libyaml gmp autoconf
 
 # Docker for Mac
 # brew install --cask docker
@@ -125,8 +89,14 @@ brew install lazygit
 # brew install docker-completion
 
 # Install docker cli
-brew install docker
+brew install --formula docker
 brew install colima
+brew install docker-buildx
+mkdir -p ~/.docker/cli-plugins
+ln -sfn $(which docker-buildx) ~/.docker/cli-plugins/docker-buildx
+# To keep using the `docker build` install but with buildkit: https://docs.docker.com/engine/reference/commandline/buildx_install/
+docker buildx install
+
 # colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64
 
 # Casks
@@ -136,15 +106,14 @@ brew install --force --cask visual-studio-code
 brew install --force --cask vlc
 if [ -n "$INSTALL_ALL" ]
 then
-	brew install --force --cask brave-browser
+	brew install --force --cask firefox
 	brew install --force --cask intellij-idea-ce
 	brew install --force --cask discord
-	brew install --force --cask dozer
 	brew install --force --cask keepingyouawake
 	brew install --force --cask linearmouse
-	brew install --force --cask lulu
 	brew install --force --cask whisky
 	brew install --force --cask orbstack
+	brew install --force --cask utm
 fi
 
 # Remove outdated versions from the cellar.
@@ -168,19 +137,3 @@ if ! fgrep -q "${HOMEBREW_PREFIX}/bin/fish" /etc/shells; then
 	echo "${HOMEBREW_PREFIX}/bin/fish" | sudo tee -a /etc/shells
 	chsh -s "${HOMEBREW_PREFIX}/bin/fish"
 fi
-
-# Docker for Mac
-# brew install --cask docker
-# Slow as hell https://github.com/docker/cli/issues/3889
-# brew install docker-completion
-
-# Install docker cli
-brew install docker
-brew install colima
-brew install docker-buildx
-mkdir -p ~/.docker/cli-plugins
-ln -sfn $(which docker-buildx) ~/.docker/cli-plugins/docker-buildx
-# To keep using the `docker build` install but with buildkit: https://docs.docker.com/engine/reference/commandline/buildx_install/
-docker buildx install
-
-# colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64

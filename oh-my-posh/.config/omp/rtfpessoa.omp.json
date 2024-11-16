@@ -3,91 +3,105 @@
   "console_title_template": "{{.PWD}}",
   "blocks": [
     {
+      "type": "prompt",
       "alignment": "left",
       "segments": [
         {
-          "type": "session",
-          "style": "plain",
+          "properties": {
+            "cache_duration": "none"
+          },
+          "template": "{{ if .SSHSession }}<#d75f00>{{ .UserName }}</> @ <#FFB86C>{{ .HostName }}</> in{{ end }}",
           "foreground": "#ffffff",
-          "template": "{{ if .SSHSession }}<#d75f00>{{ .UserName }}</> @ <#FFB86C>{{ .HostName }}</> in{{ end }}"
+          "type": "session",
+          "style": "plain"
         },
         {
-          "type": "path",
-          "style": "plain",
-          "foreground": "#50fa7b",
-          "template": "\uf115 {{ .Path }} ",
           "properties": {
+            "cache_duration": "none",
             "mixed_threshold": 100,
             "style": "mixed"
-          }
+          },
+          "template": "\uf115 {{ .Path }} ",
+          "foreground": "#50fa7b",
+          "type": "path",
+          "style": "plain"
         },
         {
-          "type": "git",
-          "style": "plain",
-          "foreground": "#bd93f9",
-          "template": "{{ .UpstreamIcon }}{{ .HEAD }}{{ .BranchStatus }}{{ if .Working.Changed }} \uF044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uF046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \uF692 {{ .StashCount }}{{ end }}",
           "properties": {
-            "fetch_status": true,
+            "cache_duration": "none",
             "fetch_stash_count": true,
+            "fetch_status": true,
             "fetch_upstream_icon": true
-          }
-        },
-        {
-          "type": "aws",
-          "style": "plain",
-          "foreground": "#f1fa8c",
-          "template": " \uE7AD {{.Profile}}{{if .Region}} :: {{.Region}}{{end}}"
-        },
-        {
-          "type": "kubectl",
-          "style": "plain",
+          },
+          "template": "{{ .UpstreamIcon }}{{ .HEAD }}{{ .BranchStatus }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \uf692 {{ .StashCount }}{{ end }}",
           "foreground": "#bd93f9",
-          "template": " {{if .Cluster}}\uFD31 {{.Cluster}} :: {{.Namespace}}{{end}} "
+          "type": "git",
+          "style": "plain"
+        },
+        {
+          "properties": {
+            "cache_duration": "none"
+          },
+          "template": " \ue7ad {{.Profile}}{{if .Region}} :: {{.Region}}{{end}}",
+          "foreground": "#f1fa8c",
+          "type": "aws",
+          "style": "plain"
+        },
+        {
+          "properties": {
+            "cache_duration": "none"
+          },
+          "template": " {{if .Cluster}}\ufd31 {{.Cluster}} :: {{.Namespace}}{{end}} ",
+          "foreground": "#bd93f9",
+          "type": "kubectl",
+          "style": "plain"
         }
-      ],
-      "type": "prompt"
+      ]
     },
     {
+      "type": "prompt",
       "alignment": "right",
       "segments": [
         {
-          "type": "time",
-          "style": "plain",
-          "foreground": "#8be9fd",
-          "template": "<#FFFFFF>\u23f1</>  {{ .CurrentDate | date .Format }}",
           "properties": {
+            "cache_duration": "none",
             "time_format": "Mon, 02 Jan 2006 15:04:05 MST"
-          }
+          },
+          "template": "<#FFFFFF>\u23f1</>  {{ .CurrentDate | date .Format }}",
+          "foreground": "#8be9fd",
+          "type": "time",
+          "style": "plain"
         },
         {
-          "type": "executiontime",
-          "style": "plain",
-          "foreground": "#8be9fd",
-          "template": " <#fefefe>\ufbab</> {{ .FormattedMs }}",
           "properties": {
-            "threshold": 500,
-            "style": "roundrock"
-          }
+            "cache_duration": "none",
+            "style": "roundrock",
+            "threshold": 500
+          },
+          "template": " <#fefefe>\ufbab</> {{ .FormattedMs }}",
+          "foreground": "#8be9fd",
+          "type": "executiontime",
+          "style": "plain"
         }
-      ],
-      "type": "prompt"
+      ]
     },
     {
+      "type": "prompt",
       "alignment": "left",
-      "newline": true,
       "segments": [
         {
-          "type": "exit",
-          "style": "plain",
-          "foreground": "#ffffff",
-          "template": "<{{ if eq .Code 0 }}#ffffff{{ else }}#ff5555{{ end }}>{{ if .Root }}#{{ else }}↪{{ end }}</> ",
           "properties": {
-            "always_enabled": true
-          }
+            "always_enabled": true,
+            "cache_duration": "none"
+          },
+          "template": "<{{ if eq .Code 0 }}#ffffff{{ else }}#ff5555{{ end }}>{{ if .Root }}#{{ else }}\u21aa{{ end }}</> ",
+          "foreground": "#ffffff",
+          "type": "exit",
+          "style": "plain"
         }
       ],
-      "type": "prompt"
+      "newline": true
     }
   ],
-  "version": 2
+  "version": 3
 }

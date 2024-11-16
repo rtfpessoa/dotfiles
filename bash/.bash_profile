@@ -84,3 +84,5 @@ complete -o "nospace" -W "Contacts Calendar Dock Finder Mail Safari iTunes Syste
 # https://stackoverflow.com/a/42265848/96656
 GPG_TTY="$(tty)"
 export GPG_TTY
+
+test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"

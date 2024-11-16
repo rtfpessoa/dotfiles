@@ -29,14 +29,14 @@ function setup_git() {
 }
 
 function setup_vscode() {
-	cat ./apps/Library/Application\ Support/Code/User/extensions.json | jq -r .recommendations[] | xargs -L 1 code --install-extension
+	cat ./apps/Library/Application\ Support/Code/User/extensions.json | jq -r .recommendations[] | xargs -L 1 code --force --install-extension
 }
 
 function setup_vim() {
 	curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
 		https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-	vim +'PlugInstall --sync' +qa
-	nvim --headless -c 'autocmd User PackerComplete quitall' -c 'PackerSync'
+	vim '+PlugInstall --sync' +qa
+	nvim --headless '+Lazy! sync' +qa
 }
 
 function install_dotfiles() {
@@ -91,6 +91,10 @@ function set_computer_name() {
 	sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "${name}"
 }
 
+function setup_iterm2() {
+	/bin/bash ./iterm2.sh
+}
+
 function install_macos_defaults() {
 	/bin/bash ./macos.sh
 }
@@ -117,6 +121,8 @@ function bootstrap() {
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && set_computer_name
 	read -r -p "Install fonts? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_fonts
+	read -r -p "Setup iterm2? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_iterm2
 	read -r -p "Install MacOS defaults? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_macos_defaults
 }

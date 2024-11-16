@@ -800,6 +800,7 @@ defaults write com.apple.Terminal ShowLineMarks -int 0
 open "./init/Dracula.itermcolors"
 
 # iTerm2
+defaults import com.googlecode.iterm2 ~/.config/iterm2/com.googlecode.iterm2.plist
 defaults write com.googlecode.iterm2 DoubleClickPerformsSmartSelection -bool true
 defaults write com.googlecode.iterm2 HTMLTabTitles -bool true
 defaults write com.googlecode.iterm2 HideMenuBarInFullscreen -bool false
