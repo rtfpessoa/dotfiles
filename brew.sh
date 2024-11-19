@@ -114,6 +114,7 @@ then
 	brew install --force --cask whisky
 	brew install --force --cask orbstack
 	brew install --force --cask utm
+	brew install --force --cask lm-studio
 fi
 
 # Remove outdated versions from the cellar.
