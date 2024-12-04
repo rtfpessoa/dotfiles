@@ -91,11 +91,13 @@ brew install openssl@3 readline libyaml gmp autoconf
 # Install docker cli
 brew install --formula docker
 brew install colima
-brew install docker-buildx
 mkdir -p ~/.docker/cli-plugins
+brew install docker-buildx
 ln -sfn $(which docker-buildx) ~/.docker/cli-plugins/docker-buildx
 # To keep using the `docker build` install but with buildkit: https://docs.docker.com/engine/reference/commandline/buildx_install/
 docker buildx install
+brew install docker-compose
+ln -sfn $(which docker-compose) ~/.docker/cli-plugins/docker-compose
 
 # colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64
 

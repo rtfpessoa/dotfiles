@@ -1019,7 +1019,7 @@
 				<real>0.93725490196078431</real>
 			</dict>
 			<key>Custom Command</key>
-			<string>Yes</string>
+			<string>No</string>
 			<key>Custom Directory</key>
 			<string>Recycle</string>
 			<key>Default Bookmark</key>
@@ -1126,6 +1126,8 @@
 				<key>Red Component</key>
 				<real>0.015686274509803921</real>
 			</dict>
+			<key>Load Shell Integration Automatically</key>
+			<true/>
 			<key>Match Background Color</key>
 			<dict>
 				<key>Alpha Component</key>
