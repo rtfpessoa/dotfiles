@@ -117,6 +117,8 @@ then
 	brew install --force --cask orbstack
 	brew install --force --cask utm
 	brew install --force --cask lm-studio
+	brew install --force --cask ghostty
+	brew install --force --cask nikitabobko/tap/aerospace
 fi
 
 # Remove outdated versions from the cellar.
