@@ -76,6 +76,7 @@ asdf reshim python
 
 # Ruby - broken in m1
 export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$HOMEBREW_PREFIX/opt/openssl@3"
+export CONFIGURE_OPTS="--with-openssl-dir=$HOMEBREW_PREFIX/opt/openssl@3"
 export RUBY_CFLAGS="-Wno-error=implicit-function-declaration"
 install_asdf_package "ruby" "true" "3.3.6"
 asdf reshim ruby
