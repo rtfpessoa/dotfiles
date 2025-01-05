@@ -27,3 +27,5 @@ add_path "$HOME/.asdf/installs/rust/stable/bin"
 add_path "/Applications/Docker.app/Contents/Resources/bin"
 
 add_path "$HOME/.yarn/bin"
+
+add_path "$HOME/.cache/lm-studio/bin"
