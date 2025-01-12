@@ -19,7 +19,8 @@
           "properties": {
             "cache_duration": "none",
             "mixed_threshold": 100,
-            "style": "mixed"
+            "max_depth": 5,
+            "style": "agnoster_short"
           },
           "template": "\uf115 {{ .Path }} ",
           "foreground": "#50fa7b",
