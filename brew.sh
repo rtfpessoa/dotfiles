@@ -80,8 +80,15 @@ brew install yq
 
 brew install shellcheck
 
+brew install openssl@3
+
 # ruby-build
-brew install openssl@3 readline libyaml gmp autoconf
+brew install ruby
+brew install openssl@3 readline libyaml gmp autoconf gcc llvm
+brew unlink llvm && brew link --force llvm
+
+# python
+brew install openssl@3 pkgconf mpdecimal sqlite xz
 
 # Docker for Mac
 # brew install --cask docker
@@ -103,22 +110,21 @@ ln -sfn $(which docker-compose) ~/.docker/cli-plugins/docker-compose
 
 # Casks
 brew install --force --cask spotify
-brew install --force --cask iterm2
+brew install --force --cask ghostty
 brew install --force --cask visual-studio-code
 brew install --force --cask vlc
+brew install --force --cask keepingyouawake
+brew install --force --cask nikitabobko/tap/aerospace
 if [ -n "$INSTALL_ALL" ]
 then
 	brew install --force --cask firefox
 	brew install --force --cask intellij-idea-ce
 	brew install --force --cask discord
-	brew install --force --cask keepingyouawake
 	brew install --force --cask linearmouse
 	brew install --force --cask whisky
 	brew install --force --cask orbstack
 	brew install --force --cask utm
 	brew install --force --cask lm-studio
-	brew install --force --cask ghostty
-	brew install --force --cask nikitabobko/tap/aerospace
 fi
 
 # Remove outdated versions from the cellar.

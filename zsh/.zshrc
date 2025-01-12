@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 
-[ -r "$HOME/.asdf/asdf.sh" ] && [ -f "$HOME/.asdf/asdf.sh" ] && source "$HOME/.asdf/asdf.sh"
+eval "$($HOME/.local/bin/mise activate zsh)"
 
 if [ "$(uname -m)" = 'arm64' ]
 then
@@ -12,7 +12,7 @@ fi
 # Add tab completion for many commands
 if [ -f "$HOMEBREW_PREFIX/bin/brew" ]
 then
-  FPATH="${ASDF_DIR}/completions:$HOMEBREW_PREFIX/share/zsh/site-functions:$HOMEBREW_PREFIX/share/zsh-completions:${FPATH}"
+  FPATH="${HOME}/.config/completions:$HOMEBREW_PREFIX/share/zsh/site-functions:$HOMEBREW_PREFIX/share/zsh-completions:${FPATH}"
 fi
 
 autoload -Uz promptinit && promptinit
@@ -46,7 +46,7 @@ if type oh-my-posh &>/dev/null; then
   eval "$(oh-my-posh init zsh --config ~/.config/omp/rtfpessoa.omp.json)"
 fi
 
-for file in "$HOMEBREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh" "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" "$HOME/.asdf/plugins/java/set-java-home.bash"
+for file in "$HOMEBREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh" "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 do
 	[ -r "$file" ] && [ -f "$file" ] && source "$file"
 done
@@ -116,5 +116,3 @@ setopt rmstarsilent
 # Avoid issues with `gpg` as installed via Homebrew.
 # https://stackoverflow.com/a/42265848/96656
 export GPG_TTY="$(tty)"
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"

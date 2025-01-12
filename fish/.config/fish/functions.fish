@@ -27,7 +27,7 @@ function export --description 'Set env variable. Alias for `set -gx` for bash co
 end
 
 function add_path -d "Add directory to PATH" -a path
-    fish_add_path -pgPm "$path"
+    fish_add_path --global --path --move --prepend "$path"
 end
 
 function md -d "Create a new directory and enter it" -a name

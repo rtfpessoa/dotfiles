@@ -10,7 +10,7 @@
 
 ### Using Git and the bootstrap script
 
-You can clone the repository wherever you want. (I like to keep it in `~/Projects/dotfiles`, with `~/dotfiles` as a symlink.) The bootstrapper script will pull in the latest version, copy the dotfiles to your home folder and install the brew and asdf tools.
+You can clone the repository wherever you want. (I like to keep it in `~/Projects/dotfiles`, with `~/dotfiles` as a symlink.) The bootstrapper script will pull in the latest version, copy the dotfiles to your home folder and install the brew and mise tools.
 
 ```bash
 git clone https://github.com/rtfpessoa/dotfiles.git && cd dotfiles && bash bootstrap.sh

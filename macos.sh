@@ -722,7 +722,7 @@ sudo mdutil -i on / >/dev/null
 sudo mdutil -E / >/dev/null
 
 ###############################################################################
-# Terminal & iTerm 2                                                          #
+# Terminal                                                                    #
 ###############################################################################
 
 # Only use UTF-8 in Terminal.app
@@ -795,67 +795,6 @@ defaults write com.apple.Terminal SecureKeyboardEntry -bool true
 
 # Disable the annoying line marks
 defaults write com.apple.Terminal ShowLineMarks -int 0
-
-# Install the Dracula theme for iTerm
-open "./init/Dracula.itermcolors"
-
-# iTerm2
-defaults import com.googlecode.iterm2 ~/.config/iterm2/com.googlecode.iterm2.plist
-defaults write com.googlecode.iterm2 DoubleClickPerformsSmartSelection -bool true
-defaults write com.googlecode.iterm2 HTMLTabTitles -bool true
-defaults write com.googlecode.iterm2 HideMenuBarInFullscreen -bool false
-defaults write com.googlecode.iterm2 AppleAntiAliasingThreshold -bool true
-defaults write com.googlecode.iterm2 AppleScrollAnimationEnabled -bool false
-defaults write com.googlecode.iterm2 AppleSmoothFixedFontsSizeThreshold -bool true
-defaults write com.googlecode.iterm2 AppleWindowTabbingMode -string "manual"
-defaults write com.googlecode.iterm2 AutoCommandHistory -bool false
-defaults write com.googlecode.iterm2 DimBackgroundWindows -bool true
-defaults write com.googlecode.iterm2 HideTab -bool false
-defaults write com.googlecode.iterm2 NSNavLastRootDirectory -string "~"
-defaults write com.googlecode.iterm2 OnlyWhenMoreTabs -bool false
-defaults write com.googlecode.iterm2 OpenArrangementAtStartup -bool false
-defaults write com.googlecode.iterm2 OpenNoWindowsAtStartup -bool false
-defaults write com.googlecode.iterm2 SUAutomaticallyUpdate -bool true
-defaults write com.googlecode.iterm2 SUEnableAutomaticChecks -bool true
-
-# Note: To print the values, use this:
-# /usr/libexec/PlistBuddy -c "Print :'New Bookmarks':0:'Jobs to Ignore'" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-# Note: This is a naive way to ensure that the array is present on newly images OS
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks' array" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:Rows" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:Rows integer 48" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:Columns" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:Columns integer 160" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Working Directory'" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Working Directory' string ~" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Custom Directory'" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Custom Directory' string Recycle" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Transparency'" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Transparency' bool false" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Unlimited Scrollback'" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Unlimited Scrollback' bool true" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Scrollback Lines'" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Scrollback Lines' integer 0" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Normal Font'" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Normal Font' string FiraCode-Retina 13" ~/Library/Preferences/com.googlecode.iterm2.plist
-
-/usr/libexec/PlistBuddy -c "Delete :'New Bookmarks':0:'Jobs to Ignore'" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore' array" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':0 string screen" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':1 string tmux" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':2 string rlogin" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':3 string ssh" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':4 string slogin" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':5 string telnet" ~/Library/Preferences/com.googlecode.iterm2.plist
-/usr/libexec/PlistBuddy -c "Add :'New Bookmarks':0:'Jobs to Ignore':5 string zsh" ~/Library/Preferences/com.googlecode.iterm2.plist
 
 ###############################################################################
 # Time Machine                                                                #
@@ -998,13 +937,6 @@ defaults write com.irradiatedsoftware.SizeUp StartAtLogin -bool true
 
 # Don’t show the preferences window on next start
 defaults write com.irradiatedsoftware.SizeUp ShowPrefsOnNextStart -bool false
-
-###############################################################################
-# Sublime Text                                                                #
-###############################################################################
-
-# Install Sublime Text settings
-# cp -r init/Preferences.sublime-settings ~/Library/Application\ Support/Sublime\ Text*/Packages/User/Preferences.sublime-settings 2> /dev/null
 
 ###############################################################################
 # Spectacle.app                                                               #

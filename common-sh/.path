@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Add `/usr/local/bin` to `PATH`
+add_path "/usr/local/bin"
+
 # Add homebrew to PATH
 add_path "$HOMEBREW_PREFIX/bin"
 add_path "$HOMEBREW_PREFIX/sbin"
@@ -16,16 +19,11 @@ add_path "$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin"
 # Add bintutils to PATH
 add_path "$HOMEBREW_PREFIX/opt/binutils/bin"
 
-# Add `/usr/local/bin` to `PATH`
-add_path "/usr/local/bin"
+add_path "$HOME/.cache/lm-studio/bin"
+
+add_path "$HOMEBREW_PREFIX/opt/llvm/bin"
+
+add_path "$HOME/.local/share/mise/shims"
 
 # Add `$HOME/.local/bin` to `PATH`
 add_path "$HOME/.local/bin"
-
-add_path "$HOME/.asdf/installs/rust/stable/bin"
-
-add_path "/Applications/Docker.app/Contents/Resources/bin"
-
-add_path "$HOME/.yarn/bin"
-
-add_path "$HOME/.cache/lm-studio/bin"

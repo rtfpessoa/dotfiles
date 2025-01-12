@@ -5,8 +5,8 @@ function install_brew() {
 	/bin/bash ./brew.sh
 }
 
-function install_asdf() {
-	/bin/bash ./asdf.sh
+function install_mise() {
+	/bin/bash ./mise.sh
 }
 
 function setup_git() {
@@ -50,8 +50,7 @@ function install_dotfiles() {
 	stow_dirs=("apps" "bash" "common-sh" "fish" "git" "oh-my-posh" "vim" "zsh")
 
 	for stow_dir in "${stow_dirs[@]}"; do
-		stow -D "$stow_dir"
-		stow "$stow_dir"
+		stow -R "$stow_dir"
 	done
 
 	setup_git "$name" "$email"
@@ -91,10 +90,6 @@ function set_computer_name() {
 	sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server NetBIOSName -string "${name}"
 }
 
-function setup_iterm2() {
-	/bin/bash ./iterm2.sh
-}
-
 function install_macos_defaults() {
 	/bin/bash ./macos.sh
 }
@@ -104,12 +99,12 @@ function bootstrap() {
 	[[ "$REPLY" =~ ^[Yy]$ ]] && git pull origin main
 	read -r -p "Install homebrew and packages? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_brew
-	read -r -p "Install asdf and packages? (Y/n) " REPLY
+	read -r -p "Install mise and packages? (Y/n) " REPLY
 	if [[ ! "$REPLY" =~ ^[Nn]$ ]]
 	then
-		read -r -p "Install ALL asdf packages? (y/N) " REPLY
+		read -r -p "Install ALL mise packages? (y/N) " REPLY
 		[[ "$REPLY" =~ ^[Yy]$ ]] && export INSTALL_ALL=true
-		install_asdf
+		install_mise
 	fi
 	read -r -p "Install vscode plugins? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_vscode
@@ -121,8 +116,6 @@ function bootstrap() {
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && set_computer_name
 	read -r -p "Install fonts? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_fonts
-	read -r -p "Setup iterm2? (Y/n) " REPLY
-	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_iterm2
 	read -r -p "Install MacOS defaults? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_macos_defaults
 }

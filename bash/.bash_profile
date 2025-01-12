@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
-if [ "$(uname -m)" = 'arm64' ]
-then
-	export HOMEBREW_PREFIX="/opt/homebrew"
+eval "$($HOME/.local/bin/mise activate bash)"
+
+if [ "$(uname -m)" = 'arm64' ]; then
+  export HOMEBREW_PREFIX="/opt/homebrew"
 else
-	export HOMEBREW_PREFIX="/usr/local"
+  export HOMEBREW_PREFIX="/usr/local"
 fi
 
 # Load the shell dotfiles, and then some:
@@ -49,16 +50,13 @@ if type brew &>/dev/null; then
       [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
     done
   fi
-elif [ -f /etc/bash_completion ]; then
-  source /etc/bash_completion
-fi
+else
+  [[ -r "/etc/bash_completion" ]] && source "/etc/bash_completion"
 
-# TODO: Revert when asdf bash completions are working again
-# for file in "$HOME/.asdf/asdf.sh" "$HOME/.asdf/completions/asdf.bash" "$HOME/.asdf/plugins/java/set-java-home.bash"; do
-for file in "$HOME/.asdf/asdf.sh" "$HOME/.asdf/plugins/java/set-java-home.bash"; do
-  [ -r "$file" ] && [ -f "$file" ] && source "$file"
-done
-unset file
+  for COMPLETION in "/etc/bash_completion.d/"*; do
+    [[ -r "${COMPLETION}" ]] && source "${COMPLETION}"
+  done
+fi
 
 # Enable tab completion for `g` by marking it as an alias for `git`
 if type _git &>/dev/null; then
@@ -84,5 +82,3 @@ complete -o "nospace" -W "Contacts Calendar Dock Finder Mail Safari iTunes Syste
 # https://stackoverflow.com/a/42265848/96656
 GPG_TTY="$(tty)"
 export GPG_TTY
-
-test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
