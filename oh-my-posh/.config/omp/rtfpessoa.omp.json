@@ -5,31 +5,50 @@
     {
       "type": "prompt",
       "alignment": "left",
+      "overflow": "break",
       "segments": [
         {
           "properties": {
-            "cache_duration": "none"
+            "prefix": "",
+            "postfix": ""
           },
-          "template": "{{ if .SSHSession }}<#d75f00>{{ .UserName }}</> @ <#FFB86C>{{ .HostName }}</> in{{ end }}",
-          "foreground": "#ffffff",
+          "template": "{{ if .SSHSession }}[ssh] {{ end }}",
           "type": "session",
           "style": "plain"
         },
         {
           "properties": {
-            "cache_duration": "none",
-            "mixed_threshold": 100,
-            "max_depth": 5,
-            "style": "agnoster_short"
+            "postfix": "",
+            "prefix": ""
           },
-          "template": "\uf115 {{ .Path }} ",
+          "template": "{{ if .SSHSession }}<#d75f00>{{ .UserName }}</> @ <#FFB86C>{{ .HostName }}</> in {{ end }}",
+          "foreground": "#ffffff",
+          "type": "session",
+          "style": "plain",
+          "foreground_templates": ["{{if .Root}}#ff5555{{end}}"]
+        },
+        {
+          "properties": {
+            "postfix": "",
+            "prefix": "",
+            "mixed_threshold": 12,
+            "style": "mixed",
+            "mapped_locations": {
+              "~/go/src/github.com/DataDog": " 🐕",
+              "~/dd": " 🐕",
+              "~/Downloads": " 💾",
+              "~/dev": " 🧑‍💻"
+            }
+          },
+          "template": "\uf115  {{ .Path }} ",
           "foreground": "#50fa7b",
           "type": "path",
           "style": "plain"
         },
         {
           "properties": {
-            "cache_duration": "none",
+            "postfix": "",
+            "prefix": " ",
             "fetch_stash_count": true,
             "fetch_status": true,
             "fetch_upstream_icon": true
@@ -41,19 +60,12 @@
         },
         {
           "properties": {
+            "postfix": "",
+            "prefix": " ",
             "cache_duration": "none"
           },
-          "template": " \ue7ad {{.Profile}}{{if .Region}} :: {{.Region}}{{end}}",
+          "template": "{{if .Cluster}} \ufd31 {{.Cluster}} :: {{.Namespace}} {{end}}",
           "foreground": "#f1fa8c",
-          "type": "aws",
-          "style": "plain"
-        },
-        {
-          "properties": {
-            "cache_duration": "none"
-          },
-          "template": " {{if .Cluster}}\ufd31 {{.Cluster}} :: {{.Namespace}}{{end}} ",
-          "foreground": "#bd93f9",
           "type": "kubectl",
           "style": "plain"
         }
@@ -65,7 +77,8 @@
       "segments": [
         {
           "properties": {
-            "cache_duration": "none",
+            "postfix": "",
+            "prefix": " ",
             "time_format": "Mon, 02 Jan 2006 15:04:05 MST"
           },
           "template": "<#FFFFFF>\u23f1</>  {{ .CurrentDate | date .Format }}",
@@ -75,7 +88,6 @@
         },
         {
           "properties": {
-            "cache_duration": "none",
             "style": "roundrock",
             "threshold": 500
           },
@@ -89,9 +101,17 @@
     {
       "type": "prompt",
       "alignment": "left",
+      "segments": [],
+      "newline": true
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
       "segments": [
         {
           "properties": {
+            "postfix": "",
+            "prefix": " ",
             "always_enabled": true,
             "cache_duration": "none"
           },
@@ -102,6 +122,97 @@
         }
       ],
       "newline": true
+    }
+  ],
+  "tooltips": [
+    {
+      "properties": {
+        "display_mode": "always",
+        "home_enabled": true,
+        "missing_command_text": "✕ Go"
+      },
+      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
+      "foreground": "black",
+      "background": "cyan",
+      "type": "go",
+      "style": "plain",
+      "tips": ["go"]
+    },
+    {
+      "properties": {
+        "display_mode": "always",
+        "home_enabled": true,
+        "missing_command_text": "✕ Java"
+      },
+      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
+      "foreground": "black",
+      "background": "yellow",
+      "type": "java",
+      "style": "plain",
+      "tips": ["java"]
+    },
+    {
+      "properties": {
+        "display_mode": "always",
+        "home_enabled": true,
+        "missing_command_text": "✕ Node"
+      },
+      "template": " {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} ",
+      "foreground": "black",
+      "background": "green",
+      "type": "node",
+      "style": "plain",
+      "tips": ["node", "npm", "yarn"]
+    },
+    {
+      "properties": {
+        "display_mode": "always",
+        "home_enabled": true,
+        "missing_command_text": "✕ Python"
+      },
+      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }} ",
+      "foreground": "black",
+      "background": "blue",
+      "type": "python",
+      "style": "plain",
+      "tips": ["python", "pip", "python2", "python3"]
+    },
+    {
+      "properties": {
+        "display_mode": "always",
+        "home_enabled": true,
+        "missing_command_text": "✕ Ruby"
+      },
+      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
+      "foreground": "black",
+      "background": "red",
+      "type": "ruby",
+      "style": "plain",
+      "tips": ["ruby", "gem"]
+    },
+    {
+      "properties": {
+        "display_mode": "always",
+        "home_enabled": true,
+        "missing_command_text": "✕ Rust"
+      },
+      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
+      "foreground": "black",
+      "background": "magenta",
+      "type": "rust",
+      "style": "plain",
+      "tips": ["rust"]
+    },
+    {
+      "properties": {
+        "parse_kubeconfig": true
+      },
+      "template": " {{ .Context }}{{ if .Namespace }} :: {{ .Namespace }}{{ end }} ",
+      "foreground": "white",
+      "background": "darkGray",
+      "type": "kubectl",
+      "style": "plain",
+      "tips": ["kubectl", "k", "kubens", "kubectx"]
     }
   ],
   "version": 3
