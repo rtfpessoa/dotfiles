@@ -215,10 +215,13 @@ shift-down = ['volume set 0', 'mode main']
 # Custom configuration
 
 [workspace-to-monitor-force-assignment]
-# main, secondary
-T = ['secondary', 'built-in display']
-W = ['main', 'built-in display']
-S = ['secondary', 'built-in display']
+T = ['built-in retina display']
+W = ['DELL U2723QE', 'built-in retina display']
+I = ['DELL U2723QE', 'built-in retina display']
+V = ['DELL U2723QE', 'built-in retina display']
+F = ['built-in retina display']
+M = ['built-in retina display']
+S = ['built-in retina display']
 
 [[on-window-detected]]
 if.app-id = 'com.mitchellh.ghostty'
@@ -242,4 +245,8 @@ run = 'move-node-to-workspace F'
 
 [[on-window-detected]]
 if.app-id = 'com.spotify.client'
+run = 'move-node-to-workspace M'
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
 run = 'move-node-to-workspace S'
