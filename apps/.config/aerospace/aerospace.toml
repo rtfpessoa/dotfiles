@@ -215,13 +215,22 @@ shift-down = ['volume set 0', 'mode main']
 # Custom configuration
 
 [workspace-to-monitor-force-assignment]
+1 = ['built-in retina display']
+2 = ['built-in retina display']
+3 = ['built-in retina display']
+4 = ['DELL P2721Q \(1\)', 'DELL U2723QE']
+5 = ['DELL P2721Q \(1\)', 'DELL U2723QE']
+6 = ['DELL P2721Q \(1\)', 'DELL U2723QE']
+7 = ['DELL P2721Q \(2\)', 'DELL U2723QE']
+8 = ['DELL P2721Q \(2\)', 'DELL U2723QE']
+9 = ['DELL P2721Q \(2\)', 'DELL U2723QE']
 T = ['built-in retina display']
-W = ['DELL U2723QE', 'built-in retina display']
-I = ['DELL U2723QE', 'built-in retina display']
-V = ['DELL U2723QE', 'built-in retina display']
+W = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'built-in retina display']
+I = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'built-in retina display']
+V = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'built-in retina display']
 F = ['built-in retina display']
-M = ['built-in retina display']
-S = ['built-in retina display']
+M = ['DELL P2721Q \(2\)', 'built-in retina display']
+S = ['DELL P2721Q \(2\)', 'built-in retina display']
 
 [[on-window-detected]]
 if.app-id = 'com.mitchellh.ghostty'
@@ -229,6 +238,10 @@ run = 'move-node-to-workspace T'
 
 [[on-window-detected]]
 if.app-id = 'org.mozilla.firefox'
+run = 'move-node-to-workspace W'
+
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
 run = 'move-node-to-workspace W'
 
 [[on-window-detected]]
