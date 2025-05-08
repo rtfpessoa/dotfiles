@@ -9,7 +9,7 @@ after-login-command = []
 # You can use it to add commands that run after AeroSpace startup.
 # 'after-startup-command' is run after 'after-login-command'
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
-after-startup-command = []
+# after-startup-command = []
 
 # Start AeroSpace at login
 start-at-login = true
@@ -242,12 +242,12 @@ shift-down = ['volume set 0', 'mode main']
 
 [workspace-to-monitor-force-assignment]
 1 = ['built-in retina display']
-2 = ['DELL P2721Q \(1\)', 'DELL U2723QE']
+2 = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE']
 3 = ['DELL P2721Q \(2\)']
 T = ['built-in retina display']
-W = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'built-in retina display']
-I = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'built-in retina display']
-V = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'built-in retina display']
+W = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE', 'built-in retina display']
+I = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE', 'built-in retina display']
+V = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE', 'built-in retina display']
 M = ['DELL P2721Q \(2\)', 'built-in retina display']
 S = ['DELL P2721Q \(2\)', 'built-in retina display']
 # F = ['built-in retina display']
@@ -299,3 +299,7 @@ run = 'move-node-to-workspace 1'
 [[on-window-detected]]
 if.app-id = 'com.apple.Safari'
 run = 'move-node-to-workspace 3'
+
+[[on-window-detected]]
+if.app-id = 'com.todesktop.230313mzl4w4u92'
+run = 'move-node-to-workspace B'

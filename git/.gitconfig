@@ -141,6 +141,63 @@ whitespace = fix
 # Show most recently changed branches first.
 sort = -committerdate
 
+[index]
+# Use index version 4, which is required for untrackedCache and other features.
+# Modern Git versions might default to this.
+version = 4
+
+# Enable parallel index operations if supported by your Git version.
+# Set to true or to the number of cores.
+threads = true # or <number_of_cores>
+
+[feature]
+# Enable optimizations for repositories with many files.
+manyFiles = true
+
+# Enable writing commit-graph data, which speeds up history traversal.
+# This is typically on by default in modern Git.
+commitGraph = true # Implicitly handled by maintenance tasks
+
+# Enable using multi-pack indexes, beneficial for repos with many packfiles.
+# This is typically on by default in modern Git.
+multiPackIndex = true # Implicitly handled by maintenance tasks
+
+[pack]
+threads=8
+
+[gc]
+# Enable automatic garbage collection. Git will run 'git gc --auto'
+# when it deems necessary (e.g., too many loose objects).
+# This is crucial for keeping the repository optimized.
+auto = 6700
+
+# (Optional) How long to keep unreachable objects before pruning.
+# Default is "2.weeks.ago". Be cautious if changing this.
+pruneExpire = "2.weeks.ago"
+
+# Write a commit-graph when running 'git gc'. Enabled by default.
+# writeCommitGraph = true
+
+[maintenance]
+# Enable automatic background maintenance tasks (recommended).
+# This will schedule tasks like prefetching, gc, commit-graph updates, etc.
+# You need to register each large repository with 'git maintenance register'
+# for these tasks to run on it.
+auto = true
+
+[fetch]
+# Number of parallel jobs to use when fetching.
+# Set this to the number of CPU cores or a preferred value.
+parallel = 0 # 0 means use all available cores
+
+# (Optional, use with caution) Disable checking objects for consistency during fetch.
+# This can speed up fetches but relies on the remote repository being healthy.
+# fsckobjects = false
+
+# (Optional) Write commit-graph after fetch if new refs were fetched.
+# Often enabled by default or handled by maintenance tasks.
+# writeCommitGraph = true
+
 [core]
 # Use custom `.gitignore` and `.gitattributes`.
 excludesfile = ~/.gitignore
@@ -159,18 +216,25 @@ trustctime = false
 # http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
 precomposeunicode = false
 
+# Enable untracked cache to speed up 'git status' by caching untracked file information.
+# Requires index version 4.
 # Speed up commands involving untracked files such as `git status`.
 # https://git-scm.com/docs/git-update-index#_untracked_cache
 untrackedCache = true
 
+# Enable the File System Monitor (FSMonitor) if you have it installed.
+# This helps Git quickly determine what files have changed.
+# On Windows and macOS, Git often includes a built-in FSMonitor.
+# For Linux, you might need to install a third-party tool like 'watchman'.
+# Src: https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/
+fsmonitor = true
+
+# Speeds up operations like 'git status' by preloading the index in parallel.
+preloadindex = true
+
 editor = vim
 quotepath = false
 ignorecase = false
-
-# Better performance
-# Src: https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/
-fsmonitor = true
-untrackedcache = true
 
 [color]
 # Use colors in Git commands that are capable of colored output when

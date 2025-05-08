@@ -56,6 +56,10 @@ if type kubectl &>/dev/null; then
   source <(kubectl completion zsh)
 fi
 
+if type direnv &>/dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 

@@ -68,6 +68,8 @@ if type kubectl &>/dev/null; then
   complete -o default -F __start_kubectl k
 fi
 
+eval "$(direnv hook bash)"
+
 # Add tab completion for SSH hostnames based on ~/.ssh/config, ignoring wildcards
 [ -e "$HOME/.ssh/config" ] && complete -o "default" -o "nospace" -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2- | tr ' ' '\n')" scp sftp ssh
 
