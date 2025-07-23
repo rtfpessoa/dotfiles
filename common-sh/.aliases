@@ -178,7 +178,7 @@ alias week='date +%V'
 
 # Homebrew
 alias brewlock='rm -rf "$(brew --prefix)/var/homebrew/locks"'
-alias brewu='brew update; brew upgrade; brew cleanup; brew doctor'
+alias brewu='brew update; brew upgrade --greedy; brew cleanup; brew doctor'
 
 # Get macOS Software Updates, and update installed Ruby gems, Homebrew, npm, and their installed packages
 alias update='sudo softwareupdate -i -a'

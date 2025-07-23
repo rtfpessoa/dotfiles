@@ -113,10 +113,10 @@ brew install --force --cask spotify
 brew install --force --cask ghostty
 brew install --force --cask visual-studio-code
 brew install --force --cask vlc
-brew install --force --cask keepingyouawake
 brew install --force --cask nikitabobko/tap/aerospace
 if [ -n "$INSTALL_ALL" ]
 then
+	brew install --force --cask keepingyouawake
 	brew install --force --cask firefox
 	brew install --force --cask intellij-idea-ce
 	brew install --force --cask discord
