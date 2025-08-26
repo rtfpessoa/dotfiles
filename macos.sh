@@ -263,8 +263,8 @@ sudo pmset -a lidwake 1
 sudo systemsetup -setrestartfreeze on
 
 # Set machine sleep
-sudo pmset -a displaysleep 1
-sudo pmset -b sleep 5
+sudo pmset -a displaysleep 10
+sudo pmset -b sleep 20
 
 # Never go into computer sleep mode
 # sudo systemsetup -setcomputersleep Off > /dev/null
@@ -278,7 +278,7 @@ sudo pmset -c hibernatemode 3
 sudo pmset -b hibernatemode 25
 
 # Set standby delay
-sudo pmset -c standbydelay 300  #  5 mins
+sudo pmset -c standbydelay 1800 # 30 mins
 sudo pmset -b standbydelay 1800 # 30 mins
 
 # Remove the sleep image file to save disk space
