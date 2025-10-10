@@ -42,14 +42,17 @@ mise reshim
 corepack enable
 mise reshim
 npm install -g diff2html-cli
+npm install -g neovim
 mise reshim
 
 # Python
 mise use -g python@3.13 python@3.12 python@3.11 python@3.10 python@2.7
+pip install neovim
 mise reshim
 
 # Ruby
 mise use -g ruby@3.4.1
+gem install neovim
 mise reshim
 
 mise reshim -f

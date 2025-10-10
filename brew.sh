@@ -58,7 +58,12 @@ brew install gnupg
 # Install more recent versions of some macOS tools.
 brew install nvim
 brew install fd
+brew install fzf
 brew install lazygit
+brew install ast-grep
+brew install luarocks
+
+brew install zlib
 
 # Install GNU `grep`, overwriting the built-in `grep`.
 # Don’t forget to add `$(brew --prefix)/opt/grep/libexec/gnubin` to `$PATH`.

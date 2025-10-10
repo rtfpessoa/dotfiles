@@ -1,8 +1,19 @@
+# Datadog
+/datadog.sh
+
+# neovim
 /vim/.config/nvim/plugin/
+
+# vim
+/vim/.vim/undodir/
 /vim/.vim/autoload/plug.vim
 /vim/.vim/plugged/
-/datadog.sh
+
+# Git
 /git/.gitconfig.datadog
 /git/.gitconfig.home
+
+# Apps
 /apps/.local/bin/
 !/apps/.local/bin/code
+/apps/.ssh/known_hosts

@@ -35,7 +35,15 @@ function setup_vscode() {
 function setup_vim() {
 	curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
 		https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+	vim -c "call plug#begin()" \
+		-c "Plug 'dracula/vim', { 'as': 'dracula' }" \
+		-c "call plug#end()" \
+		-c "PlugInstall" \
+		+qa
 	vim '+PlugInstall --sync' +qa
+
+	cargo install --locked tree-sitter-cli
+
 	nvim --headless '+Lazy! sync' +qa
 }
 
