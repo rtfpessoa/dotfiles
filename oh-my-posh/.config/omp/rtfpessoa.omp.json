@@ -51,9 +51,10 @@
             "prefix": " ",
             "fetch_stash_count": true,
             "fetch_status": true,
+            "fetch_push_status": true,
             "fetch_upstream_icon": true
           },
-          "template": "{{ .UpstreamIcon }}{{ .HEAD }}{{ .BranchStatus }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \uf692 {{ .StashCount }}{{ end }}",
+          "template": "{{ .UpstreamIcon }} {{ .Ref }}{{if or (gt .Behind 0) (gt .Ahead 0) }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}{{ if .BranchStatus }} |{{ end }} ✏️{{ .Working.String }}{{ end }}{{ if .Staging.Changed }}{{ if or (.BranchStatus) (.Working.Changed) }} |{{ end }} \uf046{{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }}{{ if or (or (.BranchStatus) (.Working.Changed)) (.Staging.Changed) }} |{{ end }} 🎒{{ .StashCount }}{{ end }}",
           "foreground": "#bd93f9",
           "type": "git",
           "style": "plain"
@@ -64,9 +65,10 @@
             "prefix": " ",
             "cache_duration": "none"
           },
-          "template": "{{if .Cluster}} \ufd31 {{.Cluster}} :: {{.Namespace}} {{end}}",
+          "template": "{{if .Cluster}} 🐳 {{.Cluster}} :: {{.Namespace}} {{end}}",
           "foreground": "#f1fa8c",
           "type": "kubectl",
+          "cache": { "duration": "30m", "strategy": "session" },
           "style": "plain"
         }
       ]
@@ -122,97 +124,6 @@
         }
       ],
       "newline": true
-    }
-  ],
-  "tooltips": [
-    {
-      "properties": {
-        "display_mode": "always",
-        "home_enabled": true,
-        "missing_command_text": "✕ Go"
-      },
-      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
-      "foreground": "black",
-      "background": "cyan",
-      "type": "go",
-      "style": "plain",
-      "tips": ["go"]
-    },
-    {
-      "properties": {
-        "display_mode": "always",
-        "home_enabled": true,
-        "missing_command_text": "✕ Java"
-      },
-      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
-      "foreground": "black",
-      "background": "yellow",
-      "type": "java",
-      "style": "plain",
-      "tips": ["java"]
-    },
-    {
-      "properties": {
-        "display_mode": "always",
-        "home_enabled": true,
-        "missing_command_text": "✕ Node"
-      },
-      "template": " {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} ",
-      "foreground": "black",
-      "background": "green",
-      "type": "node",
-      "style": "plain",
-      "tips": ["node", "npm", "yarn"]
-    },
-    {
-      "properties": {
-        "display_mode": "always",
-        "home_enabled": true,
-        "missing_command_text": "✕ Python"
-      },
-      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }} ",
-      "foreground": "black",
-      "background": "blue",
-      "type": "python",
-      "style": "plain",
-      "tips": ["python", "pip", "python2", "python3"]
-    },
-    {
-      "properties": {
-        "display_mode": "always",
-        "home_enabled": true,
-        "missing_command_text": "✕ Ruby"
-      },
-      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
-      "foreground": "black",
-      "background": "red",
-      "type": "ruby",
-      "style": "plain",
-      "tips": ["ruby", "gem"]
-    },
-    {
-      "properties": {
-        "display_mode": "always",
-        "home_enabled": true,
-        "missing_command_text": "✕ Rust"
-      },
-      "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} ",
-      "foreground": "black",
-      "background": "magenta",
-      "type": "rust",
-      "style": "plain",
-      "tips": ["rust"]
-    },
-    {
-      "properties": {
-        "parse_kubeconfig": true
-      },
-      "template": " {{ .Context }}{{ if .Namespace }} :: {{ .Namespace }}{{ end }} ",
-      "foreground": "white",
-      "background": "darkGray",
-      "type": "kubectl",
-      "style": "plain",
-      "tips": ["kubectl", "k", "kubens", "kubectx"]
     }
   ],
   "version": 3

@@ -1,5 +1,6 @@
 # font-family = FiraCode Nerd Font
-font-family = Menlo Regular
+font-family = "Menlo"
+#font-family = "MesloLGL Nerd Font Mono"
 font-size = 13
 theme = Dracula
 scrollback-limit = 100000000

@@ -214,42 +214,16 @@ shift-down = ['volume set 0', 'mode main']
 
 # Custom configuration
 
-# alt-shift-r = [
-#   "move-workspace-to-monitor --workspace 1 \"built-in retina display\"",
-#   'move-workspace-to-monitor --workspace 2 "DELL P2721Q \(1\)"',
-#   'move-workspace-to-monitor --workspace 3 "DELL P2721Q \(2\)"',
-#   'move-workspace-to-monitor --workspace T "built-in retina display"',
-#   'move-workspace-to-monitor --workspace W "(DELL P2721Q \(1\)|DELL U2723QE)"',
-#   'move-workspace-to-monitor --workspace I "(DELL P2721Q \(1\)|DELL U2723QE)"',
-#   'move-workspace-to-monitor --workspace V "(DELL P2721Q \(1\)|DELL U2723QE)"',
-#   'move-workspace-to-monitor --workspace M "DELL P2721Q \(2\)"',
-#   'move-workspace-to-monitor --workspace S "DELL P2721Q \(2\)"',
-#   'move-workspace-to-monitor --workspace F "built-in retina display"'
-# ]
-
-# after-startup-command = [
-#   "move-workspace-to-monitor --workspace 1 ['built-in retina display']",
-#   'move-workspace-to-monitor --workspace 2 "DELL P2721Q \(1\)"',
-#   'move-workspace-to-monitor --workspace 3 "DELL P2721Q \(2\)"',
-#   'move-workspace-to-monitor --workspace T "built-in retina display"',
-#   'move-workspace-to-monitor --workspace W "DELL P2721Q \(1\)" "DELL U2723QE)"',
-#   'move-workspace-to-monitor --workspace I "DELL P2721Q \(1\)" "DELL U2723QE)"',
-#   'move-workspace-to-monitor --workspace V "DELL P2721Q \(1\)" "DELL U2723QE)"',
-#   'move-workspace-to-monitor --workspace M "DELL P2721Q \(2\)"',
-#   'move-workspace-to-monitor --workspace S "DELL P2721Q \(2\)"',
-#   'move-workspace-to-monitor --workspace F "built-in retina display"'
-# ]
-
 [workspace-to-monitor-force-assignment]
-1 = ['built-in retina display']
-2 = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE']
-3 = ['DELL P2721Q \(2\)']
+1 = ['built-in retina display', 'DELL U2725QE \(2\)']
+2 = ['DELL P2721Q \(2\)', 'DELL U2725QE \(1\)']
+3 = ['DELL P2721Q \(1\)', 'built-in retina display']
 T = ['built-in retina display']
-W = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE', 'built-in retina display']
-I = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE', 'built-in retina display']
-V = ['DELL P2721Q \(1\)', 'DELL U2723QE', 'DELL U2725QE', 'built-in retina display']
-M = ['DELL P2721Q \(2\)', 'built-in retina display']
-S = ['DELL P2721Q \(2\)', 'built-in retina display']
+W = ['DELL P2721Q \(2\)', 'DELL U2725QE \(2\)', 'built-in retina display']
+I = ['DELL P2721Q \(2\)', 'DELL U2725QE \(2\)', 'built-in retina display']
+V = ['DELL P2721Q \(2\)', 'DELL U2725QE \(2\)', 'built-in retina display']
+M = ['DELL P2721Q \(1\)', 'DELL U2725QE \(1\)', 'built-in retina display']
+S = ['DELL P2721Q \(1\)', 'DELL U2725QE \(1\)', 'built-in retina display']
 # F = ['built-in retina display']
 
 [[on-window-detected]]

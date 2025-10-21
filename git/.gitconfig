@@ -185,10 +185,17 @@ pruneExpire = "2.weeks.ago"
 # for these tasks to run on it.
 auto = true
 
+[rebase]
+autosquash=true
+autostash=true
+missingcommitscheck=error
+#updaterefs=true
+
 [fetch]
 # Number of parallel jobs to use when fetching.
 # Set this to the number of CPU cores or a preferred value.
 parallel = 0 # 0 means use all available cores
+prune = true
 
 # (Optional, use with caution) Disable checking objects for consistency during fetch.
 # This can speed up fetches but relies on the remote repository being healthy.
