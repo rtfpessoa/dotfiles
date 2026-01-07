@@ -1,9 +1,9 @@
 $HOME/.local/bin/mise activate fish | source
 
 if test (uname -m) = arm64
-    set -gx HOMEBREW_PREFIX "/opt/homebrew"
+    set -gx HOMEBREW_PREFIX /opt/homebrew
 else
-    set -gx HOMEBREW_PREFIX "/usr/local"
+    set -gx HOMEBREW_PREFIX /usr/local
 end
 
 for file in ~/.{exports,path,aliases,extra}
@@ -32,9 +32,9 @@ if test -d (brew --prefix)"/share/fish/completions"
 end
 
 if type -q kubectl
-	kubectl completion fish | source
+    kubectl completion fish | source
 end
 
 if type -q direnv
-	direnv hook fish | source
+    direnv hook fish | source
 end

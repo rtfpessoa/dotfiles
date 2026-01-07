@@ -3,8 +3,7 @@
 # Install command-line tools using Homebrew.
 
 # Save Homebrew’s installed location.
-if [ "$(uname -m)" = 'arm64' ]
-then
+if [ "$(uname -m)" = 'arm64' ]; then
 	export HOMEBREW_PREFIX="/opt/homebrew"
 else
 	export HOMEBREW_PREFIX="/usr/local"
@@ -114,13 +113,12 @@ ln -sfn $(which docker-compose) ~/.docker/cli-plugins/docker-compose
 # colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64
 
 # Casks
-brew install --force --cask spotify
 brew install --force --cask ghostty
-brew install --force --cask visual-studio-code
 brew install --force --cask vlc
 brew install --force --cask nikitabobko/tap/aerospace
-if [ -n "$INSTALL_ALL" ]
-then
+if [ -n "$INSTALL_ALL" ]; then
+	brew install --force --cask visual-studio-code
+	brew install --force --cask spotify
 	brew install --force --cask keepingyouawake
 	brew install --force --cask firefox
 	brew install --force --cask intellij-idea-ce

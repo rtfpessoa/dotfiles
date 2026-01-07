@@ -8,16 +8,16 @@
       "overflow": "break",
       "segments": [
         {
-          "properties": {
-            "prefix": "",
-            "postfix": ""
+          "options": {
+            "postfix": "",
+            "prefix": ""
           },
           "template": "{{ if .SSHSession }}[ssh] {{ end }}",
           "type": "session",
           "style": "plain"
         },
         {
-          "properties": {
+          "options": {
             "postfix": "",
             "prefix": ""
           },
@@ -25,20 +25,22 @@
           "foreground": "#ffffff",
           "type": "session",
           "style": "plain",
-          "foreground_templates": ["{{if .Root}}#ff5555{{end}}"]
+          "foreground_templates": [
+            "{{if .Root}}#ff5555{{end}}"
+          ]
         },
         {
-          "properties": {
+          "options": {
+            "mapped_locations": {
+              "~/Downloads": " 💾",
+              "~/dd": " 🐕",
+              "~/dev": " 🧑\u200d💻",
+              "~/go/src/github.com/DataDog": " 🐕"
+            },
+            "mixed_threshold": 12,
             "postfix": "",
             "prefix": "",
-            "mixed_threshold": 12,
-            "style": "mixed",
-            "mapped_locations": {
-              "~/go/src/github.com/DataDog": " 🐕",
-              "~/dd": " 🐕",
-              "~/Downloads": " 💾",
-              "~/dev": " 🧑‍💻"
-            }
+            "style": "mixed"
           },
           "template": "\uf115  {{ .Path }} ",
           "foreground": "#50fa7b",
@@ -46,29 +48,32 @@
           "style": "plain"
         },
         {
-          "properties": {
-            "postfix": "",
-            "prefix": " ",
+          "options": {
+            "fetch_push_status": true,
             "fetch_stash_count": true,
             "fetch_status": true,
-            "fetch_push_status": true,
-            "fetch_upstream_icon": true
+            "fetch_upstream_icon": true,
+            "postfix": "",
+            "prefix": " "
           },
-          "template": "{{ .UpstreamIcon }} {{ .Ref }}{{if or (gt .Behind 0) (gt .Ahead 0) }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}{{ if .BranchStatus }} |{{ end }} ✏️{{ .Working.String }}{{ end }}{{ if .Staging.Changed }}{{ if or (.BranchStatus) (.Working.Changed) }} |{{ end }} \uf046{{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }}{{ if or (or (.BranchStatus) (.Working.Changed)) (.Staging.Changed) }} |{{ end }} 🎒{{ .StashCount }}{{ end }}",
+          "template": "{{ .UpstreamIcon }} {{ .Ref }}{{if or (gt .Behind 0) (gt .Ahead 0) }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}{{ if .BranchStatus }} |{{ end }} ✏\ufe0f{{ .Working.String }}{{ end }}{{ if .Staging.Changed }}{{ if or (.BranchStatus) (.Working.Changed) }} |{{ end }} \uf046{{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }}{{ if or (or (.BranchStatus) (.Working.Changed)) (.Staging.Changed) }} |{{ end }} 🎒{{ .StashCount }}{{ end }}",
           "foreground": "#bd93f9",
           "type": "git",
           "style": "plain"
         },
         {
-          "properties": {
+          "options": {
+            "cache_duration": "none",
             "postfix": "",
-            "prefix": " ",
-            "cache_duration": "none"
+            "prefix": " "
+          },
+          "cache": {
+            "duration": "30m",
+            "strategy": "session"
           },
           "template": "{{if .Cluster}} 🐳 {{.Cluster}} :: {{.Namespace}} {{end}}",
           "foreground": "#f1fa8c",
           "type": "kubectl",
-          "cache": { "duration": "30m", "strategy": "session" },
           "style": "plain"
         }
       ]
@@ -78,7 +83,7 @@
       "alignment": "right",
       "segments": [
         {
-          "properties": {
+          "options": {
             "postfix": "",
             "prefix": " ",
             "time_format": "Mon, 02 Jan 2006 15:04:05 MST"
@@ -89,7 +94,7 @@
           "style": "plain"
         },
         {
-          "properties": {
+          "options": {
             "style": "roundrock",
             "threshold": 500
           },
@@ -103,7 +108,6 @@
     {
       "type": "prompt",
       "alignment": "left",
-      "segments": [],
       "newline": true
     },
     {
@@ -111,11 +115,11 @@
       "alignment": "left",
       "segments": [
         {
-          "properties": {
-            "postfix": "",
-            "prefix": " ",
+          "options": {
             "always_enabled": true,
-            "cache_duration": "none"
+            "cache_duration": "none",
+            "postfix": "",
+            "prefix": " "
           },
           "template": "<{{ if eq .Code 0 }}#ffffff{{ else }}#ff5555{{ end }}>{{ if .Root }}#{{ else }}\u21aa{{ end }}</> ",
           "foreground": "#ffffff",
@@ -126,5 +130,5 @@
       "newline": true
     }
   ],
-  "version": 3
+  "version": 4
 }

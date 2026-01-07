@@ -15,9 +15,6 @@ if type oh-my-posh &>/dev/null
     oh-my-posh init fish --config ~/.config/omp/rtfpessoa.omp.json | source
 end
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/opt/homebrew/share/google-cloud-sdk/path.fish.inc' ]; . '/opt/homebrew/share/google-cloud-sdk/path.fish.inc'; end
-
 # Toggle an Oh My Posh segment twice (forces a re-render) safely.
 function __omp_reset
     oh-my-posh init fish --config ~/.config/omp/rtfpessoa.omp.json | source
