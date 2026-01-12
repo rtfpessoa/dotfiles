@@ -11,13 +11,13 @@ source ~/.config/fish/functions.fish
 
 source ~/.config/fish/init.fish
 
-if type oh-my-posh &>/dev/null
-    oh-my-posh init fish --config ~/.config/omp/rtfpessoa.omp.json | source
-end
-
 # Toggle an Oh My Posh segment twice (forces a re-render) safely.
 function __omp_reset
     oh-my-posh init fish --config ~/.config/omp/rtfpessoa.omp.json | source
+end
+
+if type oh-my-posh &>/dev/null
+	__omp_reset
 end
 
 # Invalidate OMP cache after switching K8s context/namespace

@@ -4,8 +4,8 @@
 add_path "/usr/local/bin"
 
 # Add homebrew to PATH
-add_path "$HOMEBREW_PREFIX/bin"
 add_path "$HOMEBREW_PREFIX/sbin"
+add_path "$HOMEBREW_PREFIX/bin"
 
 # Currently done one a per binary basis on .aliases
 # add_path "$HOMEBREW_PREFIX/opt/coreutils/bin"

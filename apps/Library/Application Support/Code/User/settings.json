@@ -58,7 +58,7 @@
     "editor.formatOnSave": true
   },
   "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
+    "editor.defaultFormatter": "shakram02.bash-beautify"
   },
   "[fish]": {
     "editor.defaultFormatter": "lunaryorn.fish-ide"
@@ -100,5 +100,9 @@
   },
   "workbench.editorAssociations": {
     "{git,gitlens}:/**/*.{md,csv}": "default"
+  },
+  "security.workspace.trust.untrustedFiles": "open",
+  "[github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
   }
 }

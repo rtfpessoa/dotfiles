@@ -1,3 +1,12 @@
+" =========================
+" Auto-install vim-plug
+" =========================
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source ~/.vimrc
+endif
+
 call plug#begin()
 
 " autopairs
@@ -47,7 +56,12 @@ call plug#end()
 set background=dark
 " Font
 set guifont=FiraCode-Retina:h13
-colorscheme dracula
+
+try
+  colorscheme dracula
+catch /^Vim\%((\a\+)\)\=:E185/
+  colorscheme habamax
+endtry
 
 " Make Vim more useful
 set nocompatible

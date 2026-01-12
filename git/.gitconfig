@@ -2,6 +2,8 @@
 co = checkout
 
 br = branch
+brd = branch -D
+brdr = !"f() { git branch -D $1; git push origin --delete $1; }; f"
 
 # Add changes interactively
 ad = add -p
@@ -13,9 +15,6 @@ st = status -sb
 
 ps = push -u origin HEAD
 
-# Bad habits
-# psf = push --force-with-lease -u origin HEAD
-
 pl = pull --rebase --autostash
 
 # Delete previous commit and leave changes from it unstaged
@@ -23,7 +22,9 @@ uc = reset --soft HEAD^
 
 rhh = reset --hard HEAD
 
-fe = fetch --force --prune --prune-tags --tags --recurse-submodules=yes --jobs=8 --progress
+fe = fetch --force --prune --jobs=8 --progress
+
+fea = fetch --force --prune --prune-tags --tags --recurse-submodules=yes --jobs=8 --progress
 
 # View abbreviated SHA, description, and history graph of the latest 20 commits.
 l = log --pretty=oneline -n 20 --graph --abbrev-commit
@@ -46,6 +47,10 @@ ca = commit --amend --no-edit
 amend = commit --amend
 
 main = "!f() { git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
+m = main
+um = "!f() { git fetch origin $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"):$(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
+mr = "!f() { git um && git rebase $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
+pm = "!f() { echo $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
 
 dh = "!f() { git diff -M -C -U10 --patience "HEAD~${1-0}"; }; f"
 
@@ -58,8 +63,6 @@ branches = branch --all
 remotes = remote --verbose
 
 grep = grep -Ii
-
-cmain = "git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')"
 
 # List aliases.
 aliases = config --get-regexp alias
@@ -163,7 +166,7 @@ commitGraph = true # Implicitly handled by maintenance tasks
 multiPackIndex = true # Implicitly handled by maintenance tasks
 
 [pack]
-threads=8
+threads=10
 
 [gc]
 # Enable automatic garbage collection. Git will run 'git gc --auto'
@@ -189,7 +192,7 @@ auto = true
 autosquash=true
 autostash=true
 missingcommitscheck=error
-#updaterefs=true
+updaterefs=true
 
 [fetch]
 # Number of parallel jobs to use when fetching.
@@ -274,7 +277,7 @@ textconv = hexdump -v -C
 
 [help]
 # Automatically correct and execute mistyped commands.
-autocorrect = 1
+autocorrect = 0
 
 [merge]
 # Include summaries of merged commits in newly created merge commit messages
