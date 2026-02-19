@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+
+# macOS-specific aliases
+# Sourced only on Darwin (macOS) systems
+
+# File size (macOS stat syntax)
+alias fs='stat -f "%z bytes"'
+
+# Prefer GNU binaries to Macintosh binaries
+alias base64='$HOMEBREW_PREFIX/bin/gbase64'
+alias basename='$HOMEBREW_PREFIX/bin/gbasename'
+alias cat='$HOMEBREW_PREFIX/bin/gcat'
+alias chcon='$HOMEBREW_PREFIX/bin/gchcon'
+alias chgrp='$HOMEBREW_PREFIX/bin/gchgrp'
+alias chmod='$HOMEBREW_PREFIX/bin/gchmod'
+alias chown='$HOMEBREW_PREFIX/bin/gchown'
+alias chroot='$HOMEBREW_PREFIX/bin/gchroot'
+alias cksum='$HOMEBREW_PREFIX/bin/gcksum'
+alias comm='$HOMEBREW_PREFIX/bin/gcomm'
+alias cp='$HOMEBREW_PREFIX/bin/gcp'
+alias csplit='$HOMEBREW_PREFIX/bin/gcsplit'
+alias cut='$HOMEBREW_PREFIX/bin/gcut'
+alias date='$HOMEBREW_PREFIX/bin/gdate'
+alias dd='$HOMEBREW_PREFIX/bin/gdd'
+alias df='$HOMEBREW_PREFIX/bin/gdf'
+alias dir='$HOMEBREW_PREFIX/bin/gdir'
+alias dircolors='$HOMEBREW_PREFIX/bin/gdircolors'
+alias dirname='$HOMEBREW_PREFIX/bin/gdirname'
+alias du='$HOMEBREW_PREFIX/bin/gdu'
+alias echo='$HOMEBREW_PREFIX/bin/gecho'
+alias env='$HOMEBREW_PREFIX/bin/genv'
+alias expand='$HOMEBREW_PREFIX/bin/gexpand'
+alias expr='$HOMEBREW_PREFIX/bin/gexpr'
+alias factor='$HOMEBREW_PREFIX/bin/gfactor'
+alias false='$HOMEBREW_PREFIX/bin/gfalse'
+alias fmt='$HOMEBREW_PREFIX/bin/gfmt'
+alias fold='$HOMEBREW_PREFIX/bin/gfold'
+alias groups='$HOMEBREW_PREFIX/bin/ggroups'
+alias head='$HOMEBREW_PREFIX/bin/ghead'
+alias hostid='$HOMEBREW_PREFIX/bin/ghostid'
+alias id='$HOMEBREW_PREFIX/bin/gid'
+alias install='$HOMEBREW_PREFIX/bin/ginstall'
+alias join='$HOMEBREW_PREFIX/bin/gjoin'
+alias kill='$HOMEBREW_PREFIX/bin/gkill'
+alias link='$HOMEBREW_PREFIX/bin/glink'
+alias ln='$HOMEBREW_PREFIX/bin/gln'
+alias logname='$HOMEBREW_PREFIX/bin/glogname'
+# alias ls='$HOMEBREW_PREFIX/bin/gls'
+# Always use color output for `ls`
+alias ls='$HOMEBREW_PREFIX/bin/gls --color'
+alias md5sum='$HOMEBREW_PREFIX/bin/gmd5sum'
+alias mkdir='$HOMEBREW_PREFIX/bin/gmkdir'
+alias mkfifo='$HOMEBREW_PREFIX/bin/gmkfifo'
+alias mknod='$HOMEBREW_PREFIX/bin/gmknod'
+alias mktemp='$HOMEBREW_PREFIX/bin/gmktemp'
+alias mv='$HOMEBREW_PREFIX/bin/gmv'
+alias nice='$HOMEBREW_PREFIX/bin/gnice'
+alias nl='$HOMEBREW_PREFIX/bin/gnl'
+alias nohup='$HOMEBREW_PREFIX/bin/gnohup'
+alias od='$HOMEBREW_PREFIX/bin/god'
+alias paste='$HOMEBREW_PREFIX/bin/gpaste'
+alias pathchk='$HOMEBREW_PREFIX/bin/gpathchk'
+alias pinky='$HOMEBREW_PREFIX/bin/gpinky'
+alias pr='$HOMEBREW_PREFIX/bin/gpr'
+alias printenv='$HOMEBREW_PREFIX/bin/gprintenv'
+# Breaks bash completion
+# alias printf='$HOMEBREW_PREFIX/bin/gprintf'
+alias ptx='$HOMEBREW_PREFIX/bin/gptx'
+alias pwd='$HOMEBREW_PREFIX/bin/gpwd'
+alias readlink='$HOMEBREW_PREFIX/bin/greadlink'
+alias rm='$HOMEBREW_PREFIX/bin/grm'
+alias rmdir='$HOMEBREW_PREFIX/bin/grmdir'
+alias runcon='$HOMEBREW_PREFIX/bin/gruncon'
+alias seq='$HOMEBREW_PREFIX/bin/gseq'
+alias sha1sum='$HOMEBREW_PREFIX/bin/gsha1sum'
+alias sha224sum='$HOMEBREW_PREFIX/bin/gsha224sum'
+alias sha256sum='$HOMEBREW_PREFIX/bin/gsha256sum'
+alias sha384sum='$HOMEBREW_PREFIX/bin/gsha384sum'
+alias sha512sum='$HOMEBREW_PREFIX/bin/gsha512sum'
+alias shred='$HOMEBREW_PREFIX/bin/gshred'
+alias shuf='$HOMEBREW_PREFIX/bin/gshuf'
+alias sleep='$HOMEBREW_PREFIX/bin/gsleep'
+alias sort='$HOMEBREW_PREFIX/bin/gsort'
+alias split='$HOMEBREW_PREFIX/bin/gsplit'
+# Breaks homebrew update
+# alias stat='$HOMEBREW_PREFIX/bin/gstat'
+alias stty='$HOMEBREW_PREFIX/bin/gstty'
+alias sum='$HOMEBREW_PREFIX/bin/gsum'
+alias sync='$HOMEBREW_PREFIX/bin/gsync'
+alias tac='$HOMEBREW_PREFIX/bin/gtac'
+alias tail='$HOMEBREW_PREFIX/bin/gtail'
+alias tee='$HOMEBREW_PREFIX/bin/gtee'
+# alias test='$HOMEBREW_PREFIX/bin/gtest'
+alias touch='$HOMEBREW_PREFIX/bin/gtouch'
+alias tr='$HOMEBREW_PREFIX/bin/gtr'
+alias true='$HOMEBREW_PREFIX/bin/gtrue'
+alias tsort='$HOMEBREW_PREFIX/bin/gtsort'
+alias tty='$HOMEBREW_PREFIX/bin/gtty'
+alias uname='$HOMEBREW_PREFIX/bin/guname'
+alias unexpand='$HOMEBREW_PREFIX/bin/gunexpand'
+alias uniq='$HOMEBREW_PREFIX/bin/guniq'
+alias unlink='$HOMEBREW_PREFIX/bin/gunlink'
+alias uptime='$HOMEBREW_PREFIX/bin/guptime'
+alias users='$HOMEBREW_PREFIX/bin/gusers'
+alias vdir='$HOMEBREW_PREFIX/bin/gvdir'
+alias wc='$HOMEBREW_PREFIX/bin/gwc'
+alias who='$HOMEBREW_PREFIX/bin/gwho'
+alias whoami='$HOMEBREW_PREFIX/bin/gwhoami'
+alias yes='$HOMEBREW_PREFIX/bin/gyes'
+# alias '['='$HOMEBREW_PREFIX/bin/g['
+# Use gnu-grep as grep and always color output
+alias grep='$HOMEBREW_PREFIX/opt/grep/libexec/gnubin/grep --color=auto'
+
+# Homebrew
+alias brewlock='rm -rf "$(brew --prefix)/var/homebrew/locks"'
+alias brewu='brew update; brew upgrade --greedy; brew cleanup; brew doctor'
+
+# Get macOS Software Updates, and update installed Ruby gems, Homebrew, npm, and their installed packages
+alias update='sudo softwareupdate -i -a'
+
+# Google Chrome
+alias chrome='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
+
+# Flush Directory Service cache
+alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
+
+# Clean up LaunchServices to remove duplicates in the "Open With" menu
+alias lscleanup="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
+
+# Trim new lines and copy to clipboard
+alias c="tr -d '\n' | pbcopy"
+
+# Empty the Trash on all mounted volumes and the main HDD.
+# Also, clear Apple's System Logs to improve shell startup speed.
+# Finally, clear download history from quarantine. https://mths.be/bum
+alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl; sqlite3 ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV* 'delete from LSQuarantineEvent'"
+
+# Show/hide hidden files in Finder
+alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
+alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
+
+# Hide/show all desktop icons (useful when presenting)
+alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
+alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
+
+# URL-encode strings
+alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
+
+# Merge PDF files, preserving hyperlinks
+# Usage: `mergepdf input{1,2,3}.pdf`
+alias mergepdf='gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=_merged.pdf'
+
+# Disable Spotlight
+alias spotoff="sudo mdutil -a -i off"
+# Enable Spotlight
+alias spoton="sudo mdutil -a -i on"
+
+# PlistBuddy alias, because sometimes `defaults` just doesn't cut it
+alias plistbuddy="/usr/libexec/PlistBuddy"
+
+# Airport CLI alias
+alias airport='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport'
+
+# Stuff I never really use but cannot delete either because of http://xkcd.com/530/
+alias stfu="osascript -e 'set volume output muted true'"
+alias pumpitup="osascript -e 'set volume output volume 100'"
+
+# Kill all the tabs in Chrome to free up memory
+# [C] explained: http://www.commandlinefu.com/commands/view/402/exclude-grep-from-your-grepped-output-of-ps-alias-included-in-description
+alias chromekill="ps ux | grep '[C]hrome Helper (Renderer)' | grep -v extension-process | tr -s ' ' | cut -d ' ' -f2 | xargs kill"
+
+# Lock the screen (when going AFK)
+alias afk="osascript -e 'tell app \"System Events\" to key code 12 using {control down, command down}'"

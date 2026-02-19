@@ -17,3 +17,4 @@
 /apps/.local/bin/
 !/apps/.local/bin/code
 /apps/.ssh/known_hosts
+.plans/

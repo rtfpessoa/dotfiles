@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# Linux-specific aliases
+# Sourced only on Linux systems
+
+# File size (GNU stat syntax)
+alias fs='stat -c "%s bytes"'
+
+# Always use color output for `ls`
+alias ls='ls --color=auto'
+
+# Always use color output for `grep`
+alias grep='grep --color=auto'
+
+# On Debian/Ubuntu, bat is installed as batcat
+command -v bat >/dev/null || alias bat='batcat'
+
+# On Debian/Ubuntu, fd is installed as fdfind
+command -v fd >/dev/null || alias fd='fdfind'
