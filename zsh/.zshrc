@@ -1,17 +1,19 @@
 #!/usr/bin/env zsh
 
-eval "$($HOME/.local/bin/mise activate zsh)"
+if [ -x "$HOME/.local/bin/mise" ]; then
+  eval "$($HOME/.local/bin/mise activate zsh)"
+fi
 
-if [ "$(uname -m)" = 'arm64' ]
-then
-	export HOMEBREW_PREFIX="/opt/homebrew"
-else
-	export HOMEBREW_PREFIX="/usr/local"
+if [ "$(uname -s)" = 'Darwin' ]; then
+  if [ "$(uname -m)" = 'arm64' ]; then
+    export HOMEBREW_PREFIX="/opt/homebrew"
+  else
+    export HOMEBREW_PREFIX="/usr/local"
+  fi
 fi
 
 # Add tab completion for many commands
-if [ -f "$HOMEBREW_PREFIX/bin/brew" ]
-then
+if [ -f "${HOMEBREW_PREFIX:-}/bin/brew" ]; then
   FPATH="${HOME}/.config/completions:$HOMEBREW_PREFIX/share/zsh/site-functions:$HOMEBREW_PREFIX/share/zsh-completions:${FPATH}"
 fi
 
@@ -34,19 +36,28 @@ zstyle ':completion:*:descriptions' format '%U%F{yellow}%d%f%u'
 
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
-# * ~/.extra can be used for other settings you don’t want to commit.
+# * ~/.extra can be used for other settings you don't want to commit.
+_os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 for file in ~/.{functions,exports,path,aliases,extra}
 do
 	[ -r "${file}" ] && [ -f "${file}" ] && source "${file}"
 	[ -r "${file}.zsh" ] && [ -f "${file}.zsh" ] && source "${file}.zsh"
+	[ -r "${file}.${_os}" ] && [ -f "${file}.${_os}" ] && source "${file}.${_os}"
 done
-unset file
+unset file _os
 
 if type oh-my-posh &>/dev/null; then
   eval "$(oh-my-posh init zsh --config ~/.config/omp/rtfpessoa.omp.json)"
 fi
 
-for file in "$HOMEBREW_PREFIX/share/zsh-history-substring-search/zsh-history-substring-search.zsh" "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+# Zsh plugins — try Homebrew paths first, then system paths (apt-installed)
+for file in \
+  "${HOMEBREW_PREFIX:-}/share/zsh-history-substring-search/zsh-history-substring-search.zsh" \
+  "/usr/share/zsh-history-substring-search/zsh-history-substring-search.zsh" \
+  "${HOMEBREW_PREFIX:-}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
+  "/usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
+  "${HOMEBREW_PREFIX:-}/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+  "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 do
 	[ -r "$file" ] && [ -f "$file" ] && source "$file"
 done
