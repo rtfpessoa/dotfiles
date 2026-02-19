@@ -302,6 +302,20 @@ main() {
   install_apt_packages
   install_binaries
   install_zsh_history_substring_search
+  # Remove files that conflict with stow symlinks
+  if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
+    info "Moving existing ~/.gitconfig to ~/.gitconfig.datadog"
+    mv "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
+  fi
+  if [ -f "$HOME/.bashrc" ] && [ ! -L "$HOME/.bashrc" ]; then
+    info "Removing existing ~/.bashrc"
+    rm "$HOME/.bashrc"
+  fi
+  if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+    info "Removing existing ~/.zshrc"
+    rm "$HOME/.zshrc"
+  fi
+
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
   setup_vim
