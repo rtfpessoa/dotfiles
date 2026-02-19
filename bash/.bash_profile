@@ -1,21 +1,27 @@
 #!/usr/bin/env bash
 
-eval "$($HOME/.local/bin/mise activate bash)"
+if [ -x "$HOME/.local/bin/mise" ]; then
+  eval "$($HOME/.local/bin/mise activate bash)"
+fi
 
-if [ "$(uname -m)" = 'arm64' ]; then
-  export HOMEBREW_PREFIX="/opt/homebrew"
-else
-  export HOMEBREW_PREFIX="/usr/local"
+if [ "$(uname -s)" = 'Darwin' ]; then
+  if [ "$(uname -m)" = 'arm64' ]; then
+    export HOMEBREW_PREFIX="/opt/homebrew"
+  else
+    export HOMEBREW_PREFIX="/usr/local"
+  fi
 fi
 
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
-# * ~/.extra can be used for other settings you don’t want to commit.
+# * ~/.extra can be used for other settings you don't want to commit.
+_os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 for file in ~/.{functions,exports,path,aliases,extra}; do
   [ -r "${file}" ] && [ -f "${file}" ] && source "${file}"
   [ -r "${file}.sh" ] && [ -f "${file}.sh" ] && source "${file}.sh"
+  [ -r "${file}.${_os}" ] && [ -f "${file}.${_os}" ] && source "${file}.${_os}"
 done
-unset file
+unset file _os
 
 if type oh-my-posh &>/dev/null; then
   eval "$(oh-my-posh init bash --config ~/.config/omp/rtfpessoa.omp.json)"
@@ -68,7 +74,9 @@ if type kubectl &>/dev/null; then
   complete -o default -F __start_kubectl k
 fi
 
-eval "$(direnv hook bash)"
+if type direnv &>/dev/null; then
+  eval "$(direnv hook bash)"
+fi
 
 # Add tab completion for SSH hostnames based on ~/.ssh/config, ignoring wildcards
 [ -e "$HOME/.ssh/config" ] && complete -o "default" -o "nospace" -W "$(grep "^Host" ~/.ssh/config | grep -v "[?*]" | cut -d " " -f2- | tr ' ' '\n')" scp sftp ssh
