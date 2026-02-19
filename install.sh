@@ -315,6 +315,10 @@ main() {
     info "Removing existing ~/.zshrc"
     rm "$HOME/.zshrc"
   fi
+  if [ -d "$HOME/.config/fish" ] && [ ! -L "$HOME/.config/fish" ]; then
+    info "Removing existing ~/.config/fish"
+    rm -rf "$HOME/.config/fish"
+  fi
 
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
