@@ -197,8 +197,8 @@ install_ast_grep() {
   else
     arch_sg="aarch64"
   fi
-  curl -fsSL "https://github.com/ast-grep/ast-grep/releases/latest/download/app-${arch_sg}-unknown-linux-gnu.tar.gz" -o "$tmpdir/ast-grep.tar.gz"
-  tar -xzf "$tmpdir/ast-grep.tar.gz" -C "$tmpdir"
+  curl -fsSL "https://github.com/ast-grep/ast-grep/releases/latest/download/app-${arch_sg}-unknown-linux-gnu.zip" -o "$tmpdir/ast-grep.zip"
+  unzip -q "$tmpdir/ast-grep.zip" -d "$tmpdir"
   local found
   found="$(find "$tmpdir" -name 'sg' -o -name 'ast-grep' | head -1)"
   if [ -n "$found" ]; then
