@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# macOS-specific PATH additions
+# Sourced only on Darwin (macOS) systems
+# Requires HOMEBREW_PREFIX to be set
+
+# Add homebrew to PATH
+add_path "$HOMEBREW_PREFIX/sbin"
+add_path "$HOMEBREW_PREFIX/bin"
+
+# Use gnu-sed as sed
+add_path "$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin"
+
+# Add binutils to PATH
+add_path "$HOMEBREW_PREFIX/opt/binutils/bin"
+
+add_path "$HOME/.cache/lm-studio/bin"
+
+add_path "$HOMEBREW_PREFIX/opt/llvm/bin"

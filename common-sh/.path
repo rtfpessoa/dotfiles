@@ -3,26 +3,6 @@
 # Add `/usr/local/bin` to `PATH`
 add_path "/usr/local/bin"
 
-# Add homebrew to PATH
-add_path "$HOMEBREW_PREFIX/sbin"
-add_path "$HOMEBREW_PREFIX/bin"
-
-# Currently done one a per binary basis on .aliases
-# add_path "$HOMEBREW_PREFIX/opt/coreutils/bin"
-
-# Use gnu-sed as sed
-add_path "$HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin"
-
-# Currently done as an alias in .aliases
-# add_path "$HOMEBREW_PREFIX/opt/grep/libexec/gnubin"
-
-# Add bintutils to PATH
-add_path "$HOMEBREW_PREFIX/opt/binutils/bin"
-
-add_path "$HOME/.cache/lm-studio/bin"
-
-add_path "$HOMEBREW_PREFIX/opt/llvm/bin"
-
 add_path "$HOME/.local/share/mise/shims"
 
 # Add `$HOME/.local/bin` to `PATH`
