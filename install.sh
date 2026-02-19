@@ -307,6 +307,24 @@ main() {
   setup_vim
   setup_fonts
 
+  # Set fish as the default shell
+  local fish_bin
+  fish_bin="$(which fish 2>/dev/null)"
+  if [ -n "$fish_bin" ]; then
+    if [ "$SHELL" != "$fish_bin" ]; then
+      if ! grep -qxF "$fish_bin" /etc/shells; then
+        info "Adding $fish_bin to /etc/shells..."
+        echo "$fish_bin" | $SUDO tee -a /etc/shells >/dev/null
+      fi
+      info "Setting default shell to fish..."
+      $SUDO chsh -s "$fish_bin" "$(whoami)"
+    else
+      info "fish is already the default shell"
+    fi
+  else
+    warn "fish not found, skipping default shell change"
+  fi
+
   info "Installation complete!"
   info "Start a new shell session to apply changes: exec \$SHELL -l"
 }
