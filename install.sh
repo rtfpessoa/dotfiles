@@ -253,7 +253,7 @@ install_zsh_history_substring_search() {
   info "Installing zsh-history-substring-search from git..."
   local tmpdir
   tmpdir="$(mktemp -d)"
-  git clone --depth 1 https://github.com/zsh-users/zsh-history-substring-search.git "$tmpdir"
+  git -c url."https://github.com/".insteadOf="git@github.com:" clone --depth 1 https://github.com/zsh-users/zsh-history-substring-search.git "$tmpdir"
   $SUDO mkdir -p "$dest"
   $SUDO cp "$tmpdir/zsh-history-substring-search.zsh" "$dest/"
   rm -rf "$tmpdir"
