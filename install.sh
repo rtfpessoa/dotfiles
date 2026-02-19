@@ -65,7 +65,6 @@ install_apt_packages() {
     luarocks
     zsh-autosuggestions
     zsh-syntax-highlighting
-    zsh-history-substring-search
     curl
     unzip
     tar
@@ -242,7 +241,26 @@ install_binaries() {
 }
 
 # --------------------------------------------------------------------------
-# 3. Git setup (non-interactive)
+# 3. zsh-history-substring-search (not in apt, install from git)
+# --------------------------------------------------------------------------
+
+install_zsh_history_substring_search() {
+  local dest="/usr/share/zsh-history-substring-search"
+  if [ -d "$dest" ]; then
+    info "zsh-history-substring-search already installed, skipping"
+    return 0
+  fi
+  info "Installing zsh-history-substring-search from git..."
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  git clone --depth 1 https://github.com/zsh-users/zsh-history-substring-search.git "$tmpdir"
+  $SUDO mkdir -p "$dest"
+  $SUDO cp "$tmpdir/zsh-history-substring-search.zsh" "$dest/"
+  rm -rf "$tmpdir"
+}
+
+# --------------------------------------------------------------------------
+# 4. Git setup (non-interactive)
 # --------------------------------------------------------------------------
 
 setup_git() {
@@ -283,6 +301,7 @@ main() {
 
   install_apt_packages
   install_binaries
+  install_zsh_history_substring_search
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
   setup_vim
