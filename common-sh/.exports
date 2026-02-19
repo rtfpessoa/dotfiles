@@ -37,40 +37,5 @@ export LESSCHARSET="utf-8"
 export LESSHISTFILE=-
 export LESSSECURE=1
 
-# Don’t clear the screen after quitting a manual page.
+# Don't clear the screen after quitting a manual page.
 export MANPAGER='less -X'
-
-# Hide the “default interactive shell is now zsh” warning on macOS.
-export BASH_SILENCE_DEPRECATION_WARNING=1
-
-# Homebrew
-export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar"
-export HOMEBREW_REPOSITORY="$HOMEBREW_PREFIX"
-export HOMEBREW_SHELLENV_PREFIX="$HOMEBREW_PREFIX"
-export MANPATH="$HOMEBREW_PREFIX/share/man:$MANPATH"
-export INFOPATH="$HOMEBREW_PREFIX/share/info:$INFOPATH"
-export LDFLAGS="$LDFLAGS -L$HOMEBREW_PREFIX/opt/binutils/lib"
-export CPPFLAGS="$CPPFLAGS -I$HOMEBREW_PREFIX/opt/binutils/include"
-export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
-export CPATH="$HOMEBREW_PREFIX/include:$CPATH"
-export LIBRARY_PATH="$HOMEBREW_PREFIX/lib:$LIBRARY_PATH"
-
-# openssl
-export LDFLAGS="$LDFLAGS -L$HOMEBREW_PREFIX/opt/openssl@3/lib"
-export CPPFLAGS="$CPPFLAGS -I$HOMEBREW_PREFIX/opt/openssl@3/include"
-export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/opt/openssl@3/lib/pkgconfig:$PKG_CONFIG_PATH"
-add_path "$HOMEBREW_PREFIX/opt/openssl@3/bin"
-
-# zlib
-export LDFLAGS="$LDFLAGS -L$HOMEBREW_PREFIX/opt/zlib/lib"
-export CPPFLAGS="$CPPFLAGS -I$HOMEBREW_PREFIX/opt/zlib/include"
-export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/opt/zlib/lib/pkgconfig:$PKG_CONFIG_PATH"
-
-# readline
-export LDFLAGS="$LDFLAGS -L$HOMEBREW_PREFIX/opt/readline/lib"
-export CPPFLAGS="$CPPFLAGS -I$HOMEBREW_PREFIX/opt/readline/include"
-export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/opt/readline/lib/pkgconfig:$PKG_CONFIG_PATH"
-
-# Force certain more-secure behaviours from homebrew
-export HOMEBREW_NO_INSECURE_REDIRECT=1
-export HOMEBREW_CASK_OPTS=--require-sha
