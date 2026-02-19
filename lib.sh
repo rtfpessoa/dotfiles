@@ -19,7 +19,7 @@ install_dotfiles() {
   fi
 
   for stow_dir in "${stow_dirs[@]}"; do
-    stow -R -d "$SCRIPT_DIR" "$stow_dir"
+    stow -R -d "$SCRIPT_DIR" -t "$HOME" "$stow_dir"
   done
 }
 
