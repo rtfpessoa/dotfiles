@@ -250,13 +250,13 @@ install_zsh_history_substring_search() {
     info "zsh-history-substring-search already installed, skipping"
     return 0
   fi
-  info "Installing zsh-history-substring-search from git..."
-  local tmpdir
-  tmpdir="$(mktemp -d)"
-  git -c url."https://github.com/".insteadOf="git@github.com:" clone --depth 1 https://github.com/zsh-users/zsh-history-substring-search.git "$tmpdir"
+  info "Installing zsh-history-substring-search..."
   $SUDO mkdir -p "$dest"
-  $SUDO cp "$tmpdir/zsh-history-substring-search.zsh" "$dest/"
-  rm -rf "$tmpdir"
+  if ! curl -fsSL "https://raw.githubusercontent.com/zsh-users/zsh-history-substring-search/master/zsh-history-substring-search.zsh" \
+    | $SUDO tee "$dest/zsh-history-substring-search.zsh" >/dev/null; then
+    error "Failed to download zsh-history-substring-search"
+    return 1
+  fi
 }
 
 # --------------------------------------------------------------------------
