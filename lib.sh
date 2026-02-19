@@ -28,7 +28,7 @@ install_dotfiles() {
 # --------------------------------------------------------------------------
 setup_vim() {
   if command -v vim &>/dev/null; then
-    vim '+PlugInstall --sync' +qa 2>/dev/null || true
+    vim -es '+PlugInstall --sync' +qa </dev/null 2>/dev/null || true
   fi
 
   if command -v nvim &>/dev/null; then
