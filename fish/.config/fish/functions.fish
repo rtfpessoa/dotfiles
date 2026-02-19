@@ -42,13 +42,15 @@ function f -d "find shorthand" -a iname type
     find . $typeArgs -iname "$iname" 2>/dev/null
 end
 
-function server -d "Start an HTTP server from a directory, optionally specifying the port" -a port
-    set -q port[1]
-    or set port 8000
-    open "http://localhost:$port/"
-    # Set the default Content-Type to `text/plain` instead of `application/octet-stream`
-    # And serve everything as UTF-8 (although not technically correct, this doesn’t break anything for binary files)
-    python -c \$'import SimpleHTTPServer;\nmap = SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map;\nmap[""] = "text/plain";\nfor key, value in map.items():\n\tmap[key] = value + ";charset=UTF-8";\nSimpleHTTPServer.test();' "$port"
+if test (uname -s) = Darwin
+    function server -d "Start an HTTP server from a directory, optionally specifying the port" -a port
+        set -q port[1]
+        or set port 8000
+        open "http://localhost:$port/"
+        # Set the default Content-Type to `text/plain` instead of `application/octet-stream`
+        # And serve everything as UTF-8 (although not technically correct, this doesn't break anything for binary files)
+        python -c \$'import SimpleHTTPServer;\nmap = SimpleHTTPServer.SimpleHTTPRequestHandler.extensions_map;\nmap[""] = "text/plain";\nfor key, value in map.items():\n\tmap[key] = value + ";charset=UTF-8";\nSimpleHTTPServer.test();' "$port"
+    end
 end
 
 function cp_p -d "Copy w/ progress" -a source destination
@@ -88,10 +90,12 @@ function strip_diff_leading_symbols
         sed -r "s/^($color_code_regex)[\+\-]/\1 /g"
 end
 
-function camerausedby -d "Who is using the laptop's iSight camera?"
-    echo "Checking to see who is using the iSight camera… 📷"
-    set usedby (lsof | grep -w "AppleCamera\|USBVDC\|iSight" | awk '{printf $2"\n"}' | xargs ps)
-    echo -e "Recent camera uses:\n$usedby"
+if test (uname -s) = Darwin
+    function camerausedby -d "Who is using the laptop's iSight camera?"
+        echo "Checking to see who is using the iSight camera… 📷"
+        set usedby (lsof | grep -w "AppleCamera\|USBVDC\|iSight" | awk '{printf $2"\n"}' | xargs ps)
+        echo -e "Recent camera uses:\n$usedby"
+    end
 end
 
 # From alex sexton gist.github.com/SlexAxton/4989674
@@ -124,9 +128,11 @@ function timed -d "Time a command"
     end 2>&1
 end
 
-# Short for `cdfinder`
-function cdf -d "Change working directory to the top-most Finder window location"
-    cd (osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')
+if test (uname -s) = Darwin
+    # Short for `cdfinder`
+    function cdf -d "Change working directory to the top-most Finder window location"
+        cd (osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')
+    end
 end
 
 function fs -d "Determine size of a file or total size of a directory"
@@ -298,8 +304,10 @@ function targz -d "Create a .tar.gz archive"
     echo "$tmpFile.gz ("(math $zippedSize / 1000)" kB) created successfully."
 end
 
-function random_mac
-    sudo ifconfig en0 ether (openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+if test (uname -s) = Darwin
+    function random_mac
+        sudo ifconfig en0 ether (openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
+    end
 end
 
 function ports -d "manage processes by the ports they are using"
@@ -354,7 +362,9 @@ end
 #     end
 # end
 
-function localip -d "Retrieve the IP address for the currently active network interface"
-    set -lx activeIf (netstat -rn | grep default | awk '{print $NF}' | head -1)
-    ipconfig getifaddr "$activeIf"
+if test (uname -s) = Darwin
+    function localip -d "Retrieve the IP address for the currently active network interface"
+        set -lx activeIf (netstat -rn | grep default | awk '{print $NF}' | head -1)
+        ipconfig getifaddr "$activeIf"
+    end
 end
