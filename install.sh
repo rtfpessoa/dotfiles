@@ -302,23 +302,29 @@ main() {
   install_apt_packages
   install_binaries
   install_zsh_history_substring_search
-  # Remove files that conflict with stow symlinks
+  # Remove files/directories/symlinks that conflict with stow symlinks.
+  # On reinstall, rm -rf ~/dotfiles leaves broken symlinks behind, so we
+  # must handle real files, real directories, AND stale symlinks.
+  remove_if_not_symlink() {
+    local path="$1"
+    if [ -L "$path" ]; then
+      # Existing symlink (possibly broken) — remove so stow can recreate
+      info "Removing stale symlink $path"
+      rm -f "$path"
+    elif [ -e "$path" ]; then
+      # Real file or directory
+      info "Removing existing $path"
+      rm -rf "$path"
+    fi
+  }
+
   if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
     info "Moving existing ~/.gitconfig to ~/.gitconfig.datadog"
     mv "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
   fi
-  if [ -f "$HOME/.bashrc" ] && [ ! -L "$HOME/.bashrc" ]; then
-    info "Removing existing ~/.bashrc"
-    rm "$HOME/.bashrc"
-  fi
-  if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
-    info "Removing existing ~/.zshrc"
-    rm "$HOME/.zshrc"
-  fi
-  if [ -d "$HOME/.config/fish" ] && [ ! -L "$HOME/.config/fish" ]; then
-    info "Removing existing ~/.config/fish"
-    rm -rf "$HOME/.config/fish"
-  fi
+  remove_if_not_symlink "$HOME/.bashrc"
+  remove_if_not_symlink "$HOME/.zshrc"
+  remove_if_not_symlink "$HOME/.config/fish"
 
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
