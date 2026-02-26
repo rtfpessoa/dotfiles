@@ -80,6 +80,8 @@ function bootstrap() {
 	fi
 	read -r -p "Install vim plugins? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_vim
+	read -r -p "Install AI coding configs (code-factory)? (Y/n) " REPLY
+	[[ ! "$REPLY" =~ ^[Nn]$ ]] && install_code_factory
 	read -r -p "Set computer name? (Y/n) " REPLY
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && set_computer_name
 	read -r -p "Install fonts? (Y/n) " REPLY

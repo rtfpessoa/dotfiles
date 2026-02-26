@@ -8,6 +8,16 @@
 #
 
 # --------------------------------------------------------------------------
+# Logging helpers
+# --------------------------------------------------------------------------
+info() { printf '\033[1;34m[info]\033[0m %s\n' "$*"; }
+warn() { printf '\033[1;33m[warn]\033[0m %s\n' "$*"; }
+error() { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; }
+
+CODE_FACTORY_DIR="$HOME/.code-factory"
+CODE_FACTORY_REPO="https://github.com/rtfpessoa/code-factory.git"
+
+# --------------------------------------------------------------------------
 # Stow dotfiles
 # --------------------------------------------------------------------------
 # Usage: install_dotfiles dir1 dir2 dir3 ...
@@ -60,4 +70,20 @@ setup_fonts() {
       fi
       ;;
   esac
+}
+
+# --------------------------------------------------------------------------
+# AI coding configs (code-factory)
+# --------------------------------------------------------------------------
+install_code_factory() {
+  if [ -d "$CODE_FACTORY_DIR" ]; then
+    info "Updating code-factory..."
+    git -C "$CODE_FACTORY_DIR" pull --ff-only origin main || true
+  else
+    info "Cloning code-factory..."
+    git clone "$CODE_FACTORY_REPO" "$CODE_FACTORY_DIR"
+  fi
+
+  info "Running code-factory init..."
+  bash "$CODE_FACTORY_DIR/init.sh"
 }
