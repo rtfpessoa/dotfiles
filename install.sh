@@ -167,9 +167,14 @@ install_neovim() {
     return 0
   fi
   info "Installing neovim..."
-  local tmpdir
+  local tmpdir arch_nv
   tmpdir="$(mktemp -d)"
-  curl -fsSL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${ARCH_ALT}.tar.gz" -o "$tmpdir/nvim.tar.gz"
+  if [ "$ARCH_ALT" = "x86_64" ]; then
+    arch_nv="x86_64"
+  else
+    arch_nv="arm64"
+  fi
+  curl -fsSL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-${arch_nv}.tar.gz" -o "$tmpdir/nvim.tar.gz"
   tar -xzf "$tmpdir/nvim.tar.gz" -C "$tmpdir"
   # nvim tarball extracts to nvim-linux-x86_64/ or similar
   local nvim_dir
