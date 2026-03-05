@@ -237,6 +237,16 @@ install_tree_sitter_cli() {
   rm -rf "$tmpdir"
 }
 
+install_rust() {
+  if command -v cargo &>/dev/null; then
+    info "Rust toolchain already installed, skipping"
+    return 0
+  fi
+  info "Installing Rust toolchain via rustup..."
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+  export PATH="$HOME/.cargo/bin:$PATH"
+}
+
 install_binaries() {
   install_oh_my_posh
   install_yq
@@ -244,6 +254,7 @@ install_binaries() {
   install_neovim
   install_ast_grep
   install_tree_sitter_cli
+  install_rust
 }
 
 # --------------------------------------------------------------------------
