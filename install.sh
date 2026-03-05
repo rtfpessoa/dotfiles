@@ -148,10 +148,15 @@ install_lazygit() {
     info "lazygit already installed, skipping"
     return 0
   fi
-  local version
+  local version arch_lg
   version="$(curl -fsSL https://api.github.com/repos/jesseduffield/lazygit/releases/latest | jq -r '.tag_name' | sed 's/^v//')"
+  if [ "$ARCH_ALT" = "x86_64" ]; then
+    arch_lg="x86_64"
+  else
+    arch_lg="arm64"
+  fi
   install_from_tarball "lazygit" \
-    "https://github.com/jesseduffield/lazygit/releases/download/v${version}/lazygit_${version}_Linux_${ARCH_ALT}.tar.gz" \
+    "https://github.com/jesseduffield/lazygit/releases/download/v${version}/lazygit_${version}_Linux_${arch_lg}.tar.gz" \
     "lazygit" \
     "$BIN_DIR/lazygit"
 }
