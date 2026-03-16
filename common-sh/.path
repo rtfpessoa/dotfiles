@@ -3,7 +3,5 @@
 # Add `/usr/local/bin` to `PATH`
 add_path "/usr/local/bin"
 
-add_path "$HOME/.local/share/mise/shims"
-
 # Add `$HOME/.local/bin` to `PATH`
 add_path "$HOME/.local/bin"

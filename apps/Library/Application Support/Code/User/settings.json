@@ -104,5 +104,6 @@
   "security.workspace.trust.untrustedFiles": "open",
   "[github-actions-workflow]": {
     "editor.defaultFormatter": "redhat.vscode-yaml"
-  }
+  },
+  "update.showReleaseNotes": false
 }

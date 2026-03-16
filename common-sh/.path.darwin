@@ -17,3 +17,5 @@ add_path "$HOMEBREW_PREFIX/opt/binutils/bin"
 add_path "$HOME/.cache/lm-studio/bin"
 
 add_path "$HOMEBREW_PREFIX/opt/llvm/bin"
+
+add_path "$HOME/.local/share/mise/shims"
