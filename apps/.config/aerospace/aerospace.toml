@@ -250,6 +250,10 @@ if.app-id = 'com.microsoft.VSCode'
 run = 'move-node-to-workspace V'
 
 [[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = 'move-node-to-workspace V'
+
+[[on-window-detected]]
 if.app-id = 'com.apple.finder'
 run = 'move-node-to-workspace F'
 

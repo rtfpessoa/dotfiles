@@ -8,6 +8,7 @@
 /vim/.vim/undodir/
 /vim/.vim/autoload/plug.vim
 /vim/.vim/plugged/
+/vim/.vim/swaps/
 
 # Git
 /git/.gitconfig.datadog
