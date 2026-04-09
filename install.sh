@@ -338,6 +338,9 @@ main() {
   if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
     info "Moving existing ~/.gitconfig to ~/.gitconfig.datadog"
     mv "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
+	git config --file "$HOME/.gitconfig.datadog" user.signingkey 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN'
+	git config --file "$HOME/.gitconfig.datadog" --remove-section gpg.ssh
+	git config --file "$HOME/.gitconfig.datadog" --remove-section dd-gitsign
   fi
   remove_if_not_symlink "$HOME/.bashrc"
   remove_if_not_symlink "$HOME/.zshrc"
