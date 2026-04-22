@@ -58,8 +58,6 @@
   "[fish]": {
     "editor.defaultFormatter": "lunaryorn.fish-ide"
   },
-  "go.useLanguageServer": true,
-  "go.autocompleteUnimportedPackages": true,
   "cSpell.userWords": [
     "deserialization",
     "oapi",
@@ -101,10 +99,9 @@
     "editor.defaultFormatter": "redhat.vscode-yaml"
   },
   "update.showReleaseNotes": false,
+  "go.useLanguageServer": true,
+  "go.autocompleteUnimportedPackages": true,
   "go.alternateTools": {
-    "gopls": "/opt/homebrew/bin/dd-gopls"
-  },
-  "go.toolsEnvVars": {
-    "GOPLS_DISABLE_MODULE_LOADS": "1"
+    "gopls": "/opt/homebrew/bin/gopls-rs"
   }
 }
