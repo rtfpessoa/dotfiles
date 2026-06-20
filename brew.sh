@@ -104,13 +104,25 @@ brew install --formula docker
 brew install colima
 mkdir -p ~/.docker/cli-plugins
 brew install docker-buildx
-ln -sfn $(which docker-buildx) ~/.docker/cli-plugins/docker-buildx
+ln -sfn "$(which docker-buildx)" ~/.docker/cli-plugins/docker-buildx
 # To keep using the `docker build` install but with buildkit: https://docs.docker.com/engine/reference/commandline/buildx_install/
 docker buildx install
 brew install docker-compose
-ln -sfn $(which docker-compose) ~/.docker/cli-plugins/docker-compose
+ln -sfn "$(which docker-compose)" ~/.docker/cli-plugins/docker-compose
 
 # colima start --arch=aarch64 --vm-type=vz --vz-rosetta --mount-type virtiofs --memory 16 --cpu 4 --disk 64
+
+brew install ollama
+# Generic Small
+# gemma4:12b-nvfp4
+# Generic
+# gemma4:31b-mxfp8
+# glm-4.7-flash:q8_0
+# Coding
+# ollama pull qwen3.6:27b-coding-mxfp8
+# Novelties
+# north-mini-code-1.0:mlx-mxfp8
+brew install --cask handy
 
 # Casks
 brew install --force --cask ghostty
@@ -127,7 +139,6 @@ if [ -n "$INSTALL_ALL" ]; then
 	brew install --force --cask whisky
 	brew install --force --cask orbstack
 	brew install --force --cask utm
-	brew install --force --cask lm-studio
 fi
 
 # Remove outdated versions from the cellar.
@@ -137,17 +148,17 @@ brew cleanup
 chmod -R go-w "${HOMEBREW_PREFIX}/share"
 
 # Add brew-installed bash shell to list
-if ! fgrep -q "${HOMEBREW_PREFIX}/bin/bash" /etc/shells; then
+if ! grep -F -q "${HOMEBREW_PREFIX}/bin/bash" /etc/shells; then
 	echo "${HOMEBREW_PREFIX}/bin/bash" | sudo tee -a /etc/shells
 fi
 
 # Add brew-installed zsh shell to list
-if ! fgrep -q "${HOMEBREW_PREFIX}/bin/zsh" /etc/shells; then
+if ! grep -F -q "${HOMEBREW_PREFIX}/bin/zsh" /etc/shells; then
 	echo "${HOMEBREW_PREFIX}/bin/zsh" | sudo tee -a /etc/shells
 fi
 
 # Switch to using brew-installed fish shell as default shell
-if ! fgrep -q "${HOMEBREW_PREFIX}/bin/fish" /etc/shells; then
+if ! grep -F -q "${HOMEBREW_PREFIX}/bin/fish" /etc/shells; then
 	echo "${HOMEBREW_PREFIX}/bin/fish" | sudo tee -a /etc/shells
 	chsh -s "${HOMEBREW_PREFIX}/bin/fish"
 fi

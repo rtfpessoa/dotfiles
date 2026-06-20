@@ -24,34 +24,38 @@ mise completion zsh  > "${HOME}/.config/completions/_mise"
 mkdir -p "${HOME}/.config/fish/completions"
 mise completion fish > "${HOME}/.config/fish/completions/mise.fish"
 
-tools=("go" "terraform" "terraform-ls" "rust")
+tools=("go" "rust")
 for tool in "${tools[@]}"; do
 	mise use --global $tool@latest
 	mise reshim
 done
 
 # Java
-mise use --global java@zulu-23.30.13
+mise use --global java@zulu-26
 mise reshim
 
 # Node.JS
-mise install node@18.20.5
-mise install node@20.18.1
-mise use --global node@22.13.0
+mise install node@20
+mise install node@22
+mise use --global node@24
 mise reshim
 corepack enable
 mise reshim
 npm install -g diff2html-cli
 npm install -g neovim
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+npm install -g --ignore-scripts @earendil-works/pi-agent-core
+npm install -g --ignore-scripts @earendil-works/pi-ai
+pi install git:github.com/earendil-works/pi-review
 mise reshim
 
 # Python
-mise use -g python@3.13 python@3.12 python@3.11 python@3.10 python@2.7
+mise use -g python@3.14 python@3.10 python@2.7
 pip install neovim
 mise reshim
 
 # Ruby
-mise use -g ruby@3.4.1
+mise use -g ruby@4
 gem install neovim
 mise reshim
 
