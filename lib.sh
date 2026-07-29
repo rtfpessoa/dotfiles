@@ -98,10 +98,12 @@ setup_fonts() {
 install_code_factory() {
   if [ -d "$CODE_FACTORY_DIR" ]; then
     info "Updating code-factory..."
-    git -C "$CODE_FACTORY_DIR" pull --ff-only origin main || true
+    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+      git -C "$CODE_FACTORY_DIR" pull --ff-only origin main || true
   else
     info "Cloning code-factory..."
-    git clone "$CODE_FACTORY_REPO" "$CODE_FACTORY_DIR"
+    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
+      git clone "$CODE_FACTORY_REPO" "$CODE_FACTORY_DIR"
   fi
 
   info "Running code-factory init..."

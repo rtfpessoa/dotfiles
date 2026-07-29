@@ -86,6 +86,21 @@ case "$command_name" in
       *" rev-parse HEAD "*)
         printf 'test-revision\n'
         ;;
+      *" clone "*)
+        printf 'git-clone-config global=%s nosystem=%s\n' \
+          "${GIT_CONFIG_GLOBAL:-}" "${GIT_CONFIG_NOSYSTEM:-}" >> "$TRACE_FILE"
+        clone_target="${@: -1}"
+        mkdir -p "$clone_target"
+        printf '%s\n' \
+          '#!/usr/bin/env bash' \
+          "printf 'code-factory-init\\n' >> \"\$TRACE_FILE\"" \
+          > "$clone_target/init.sh"
+        chmod +x "$clone_target/init.sh"
+        ;;
+      *" pull --ff-only "*)
+        printf 'git-pull-config global=%s nosystem=%s\n' \
+          "${GIT_CONFIG_GLOBAL:-}" "${GIT_CONFIG_NOSYSTEM:-}" >> "$TRACE_FILE"
+        ;;
     esac
     ;;
   sudo)
@@ -152,6 +167,8 @@ assert_contains "$TRACE_FILE" "sudo apt-get update -qq" \
   "deferred installation did not run apt setup"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "deferred installation did not run code-factory"
+assert_contains "$TRACE_FILE" "git-pull-config global=/dev/null nosystem=1" \
+  "code-factory update inherited Git URL rewrite configuration"
 assert_contains "$TRACE_FILE" "vim -es" \
   "deferred installation did not run Vim plugin setup"
 assert_contains "$DOTFILES_STATE_DIR/install.status" '"state":"succeeded"' \
@@ -184,5 +201,15 @@ assert_contains "$DOTFILES_STATE_DIR/install.status" '"state":"failed"' \
   "deferred failure was not persisted"
 assert_contains "$DOTFILES_STATE_DIR/install.status" '"exit_code":42' \
   "deferred failure exit code was not persisted"
+
+rm -rf "$HOME/.code-factory"
+: > "$TRACE_FILE"
+SCRIPT_DIR="$REPO_DIR"
+source "$REPO_DIR/lib.sh"
+install_code_factory
+assert_contains "$TRACE_FILE" "git-clone-config global=/dev/null nosystem=1" \
+  "code-factory clone inherited Git URL rewrite configuration"
+assert_contains "$TRACE_FILE" "code-factory-init" \
+  "fresh code-factory clone did not run initialization"
 
 printf 'PASS: foreground and deferred installations are isolated safely\n'
