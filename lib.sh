@@ -18,6 +18,26 @@ CODE_FACTORY_DIR="$HOME/.code-factory"
 CODE_FACTORY_REPO="https://github.com/rtfpessoa/code-factory.git"
 
 # --------------------------------------------------------------------------
+# Git config helpers
+# --------------------------------------------------------------------------
+remove_git_config_section_if_present() {
+  local config_file="$1"
+  local section="$2"
+  local escaped_section="${section//./\\.}"
+  local status
+
+  if git config --file "$config_file" --get-regexp "^${escaped_section}\\.[^.]+$" >/dev/null; then
+    git config --file "$config_file" --remove-section "$section"
+  else
+    status=$?
+    if [ "$status" -eq 1 ]; then
+      return 0
+    fi
+    return "$status"
+  fi
+}
+
+# --------------------------------------------------------------------------
 # Stow dotfiles
 # --------------------------------------------------------------------------
 # Usage: install_dotfiles dir1 dir2 dir3 ...
