@@ -39,13 +39,14 @@ git clone https://github.com/rtfpessoa/dotfiles.git && cd dotfiles && bash insta
 ```
 
 This will:
-- Install shell tools via `apt-get` (bat, ripgrep, jq, fzf, fd, shellcheck, direnv, zsh, fish, etc.)
-- Install additional tools from GitHub releases (oh-my-posh, neovim, lazygit, yq, ast-grep, tree-sitter)
 - Stow dotfiles into `$HOME` (bash, zsh, fish, git, vim, oh-my-posh configs)
-- Set up vim/neovim plugins
-- Install fonts
+- Complete Git setup in the foreground
+- Continue slower package, code-factory, plugin, and font installation in a detached tmux session
 
 The script is fully non-interactive and idempotent — safe to run multiple times.
+The foreground output prints the unique tmux session name and its attach command.
+Its persistent log and status are available at
+`~/.local/state/dotfiles/install.log` and `~/.local/state/dotfiles/install.status`.
 
 To configure git credentials, set environment variables before running:
 

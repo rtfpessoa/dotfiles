@@ -2,10 +2,13 @@
 #
 # install.sh — Non-interactive dotfiles installer for Linux (Datadog workspaces)
 #
-# Usage: bash install.sh
+# Usage:
+#   bash install.sh             # foreground setup + deferred worker launcher
+#   bash install.sh --deferred  # internal background worker
 #
-# Installs shell tools via apt-get and direct binary downloads,
-# then stows dotfiles into $HOME. Fully non-interactive and idempotent.
+# The foreground path stays below the Workspaces dotfiles RPC deadline and
+# completes platform-sensitive Git setup before returning. Slow, idempotent
+# tooling setup runs in a detached tmux session.
 #
 
 set -euo pipefail
@@ -34,6 +37,11 @@ else
 fi
 
 BIN_DIR="$HOME/.local/bin"
+DOTFILES_STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+DOTFILES_LOG_FILE="$DOTFILES_STATE_DIR/install.log"
+DOTFILES_STATUS_FILE="$DOTFILES_STATE_DIR/install.status"
+DOTFILES_LOCK_FILE="$DOTFILES_STATE_DIR/install.lock"
+DOTFILES_TMUX_SESSION_PREFIX="${DOTFILES_TMUX_SESSION_PREFIX:-dotfiles-install}"
 mkdir -p "$BIN_DIR"
 
 # --------------------------------------------------------------------------
@@ -303,38 +311,43 @@ setup_git() {
 }
 
 # --------------------------------------------------------------------------
-# Main
+# Foreground setup
 # --------------------------------------------------------------------------
 
-main() {
-  info "Starting dotfiles installation for Linux..."
-  info "Architecture: $ARCH ($ARCH_DEB)"
-
+validate_linux() {
   if [ "$(uname -s)" != "Linux" ]; then
     error "This script is intended for Linux systems only."
     error "On macOS, use: bash bootstrap.sh"
     exit 1
   fi
+}
 
-  install_apt_packages
-  install_binaries
-  install_zsh_history_substring_search
+ensure_core_dependencies() {
+  if command -v stow &>/dev/null; then
+    return 0
+  fi
+
+  info "Installing stow for foreground dotfile setup..."
+  $SUDO apt-get update -qq
+  DEBIAN_FRONTEND=noninteractive $SUDO apt-get install -y -qq stow
+}
+
+remove_if_not_symlink() {
+  local path="$1"
+
   # Remove files/directories/symlinks that conflict with stow symlinks.
   # On reinstall, rm -rf ~/dotfiles leaves broken symlinks behind, so we
   # must handle real files, real directories, AND stale symlinks.
-  remove_if_not_symlink() {
-    local path="$1"
-    if [ -L "$path" ]; then
-      # Existing symlink (possibly broken) — remove so stow can recreate
-      info "Removing stale symlink $path"
-      rm -f "$path"
-    elif [ -e "$path" ]; then
-      # Real file or directory
-      info "Removing existing $path"
-      rm -rf "$path"
-    fi
-  }
+  if [ -L "$path" ]; then
+    info "Removing stale symlink $path"
+    rm -f "$path"
+  elif [ -e "$path" ]; then
+    info "Removing existing $path"
+    rm -rf "$path"
+  fi
+}
 
+setup_core_dotfiles() {
   if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
     info "Moving existing ~/.gitconfig to ~/.gitconfig.datadog"
     mv "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
@@ -348,13 +361,16 @@ main() {
 
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
-  setup_vim
-  setup_fonts
-  install_code_factory
+}
 
-  # Set fish as the default shell
+# --------------------------------------------------------------------------
+# Deferred setup
+# --------------------------------------------------------------------------
+
+setup_default_shell() {
   local fish_bin
-  fish_bin="$(which fish 2>/dev/null)"
+  fish_bin="$(command -v fish 2>/dev/null || true)"
+
   if [ -n "$fish_bin" ]; then
     if [ "$SHELL" != "$fish_bin" ]; then
       if ! grep -qxF "$fish_bin" /etc/shells; then
@@ -369,9 +385,137 @@ main() {
   else
     warn "fish not found, skipping default shell change"
   fi
+}
 
-  info "Installation complete!"
+timestamp() {
+  date -u '+%Y-%m-%dT%H:%M:%SZ'
+}
+
+write_install_status() {
+  local state="$1"
+  local exit_code="$2"
+  local started_at="$3"
+  local finished_at="$4"
+  local revision status_tmp
+  local exit_code_json="null"
+  local finished_at_json="null"
+
+  revision="$(git -C "$SCRIPT_DIR" rev-parse HEAD 2>/dev/null || printf 'unknown')"
+  status_tmp="$DOTFILES_STATUS_FILE.tmp.$$"
+
+  if [ -n "$exit_code" ]; then
+    exit_code_json="$exit_code"
+  fi
+  if [ -n "$finished_at" ]; then
+    finished_at_json="\"$finished_at\""
+  fi
+
+  printf '{"state":"%s","started_at":"%s","finished_at":%s,"exit_code":%s,"revision":"%s"}\n' \
+    "$state" "$started_at" "$finished_at_json" "$exit_code_json" "$revision" \
+    > "$status_tmp"
+  mv "$status_tmp" "$DOTFILES_STATUS_FILE"
+}
+
+finish_deferred_install() {
+  local exit_code="$1"
+  local state="succeeded"
+
+  trap - EXIT
+  if [ "$exit_code" -ne 0 ]; then
+    state="failed"
+  fi
+  write_install_status "$state" "$exit_code" "$DEFERRED_STARTED_AT" "$(timestamp)"
+}
+
+run_deferred_install() {
+  local unavailable_started_at
+
+  mkdir -p "$DOTFILES_STATE_DIR"
+  exec > >(tee -a "$DOTFILES_LOG_FILE") 2>&1
+
+  if ! command -v flock &>/dev/null; then
+    unavailable_started_at="$(timestamp)"
+    write_install_status "failed" "127" "$unavailable_started_at" "$(timestamp)"
+    error "flock is required for deferred dotfiles installation"
+    return 127
+  fi
+
+  exec 9>"$DOTFILES_LOCK_FILE"
+
+  if ! flock -n 9; then
+    info "Another deferred dotfiles installation is already running; skipping"
+    return 0
+  fi
+
+  DEFERRED_STARTED_AT="$(timestamp)"
+  write_install_status "running" "" "$DEFERRED_STARTED_AT" ""
+  trap 'finish_deferred_install $?' EXIT
+
+  info "Starting deferred dotfiles installation..."
+  install_apt_packages
+  install_code_factory
+  install_binaries
+  install_zsh_history_substring_search
+  setup_vim
+  setup_fonts
+  setup_default_shell
+  info "Deferred installation complete"
   info "Start a new shell session to apply changes: exec \$SHELL -l"
 }
 
-main "$@"
+launch_deferred_install() {
+  local tmux_session
+
+  mkdir -p "$DOTFILES_STATE_DIR"
+
+  if [ "${DOTFILES_DISABLE_TMUX:-0}" != "1" ] && command -v tmux &>/dev/null; then
+    # Use a unique session for every launcher. The worker's flock is the source
+    # of truth for overlap, so stale or user-modified tmux sessions never block
+    # a later explicit update.
+    tmux_session="$DOTFILES_TMUX_SESSION_PREFIX-$(date -u '+%Y%m%d%H%M%S')-$$"
+    if tmux new-session -d -s "$tmux_session" \
+      "$SCRIPT_DIR/install.sh" --deferred; then
+      info "Deferred installation started in tmux session $tmux_session"
+      info "Attach with: tmux attach -t $tmux_session"
+      return 0
+    fi
+
+    error "Failed to launch deferred installation in tmux"
+    return 1
+  fi
+
+  warn "tmux not found; launching deferred installation with setsid and nohup"
+  nohup setsid "$SCRIPT_DIR/install.sh" --deferred \
+    > /dev/null 2>&1 < /dev/null &
+}
+
+main() {
+  info "Starting foreground dotfiles installation for Linux..."
+  info "Architecture: $ARCH ($ARCH_DEB)"
+
+  validate_linux
+  ensure_core_dependencies
+  setup_core_dotfiles
+  launch_deferred_install
+
+  info "Foreground installation complete; deferred tooling setup will continue in the background"
+}
+
+case "${1:-}" in
+  "")
+    main
+    ;;
+  --deferred)
+    shift
+    if [ "$#" -ne 0 ]; then
+      error "Usage: bash install.sh [--deferred]"
+      exit 2
+    fi
+    validate_linux
+    run_deferred_install
+    ;;
+  *)
+    error "Usage: bash install.sh [--deferred]"
+    exit 2
+    ;;
+esac
