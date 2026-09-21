@@ -16,6 +16,8 @@ error() { printf '\033[1;31m[error]\033[0m %s\n' "$*" >&2; }
 
 CODE_FACTORY_DIR="$HOME/.code-factory"
 CODE_FACTORY_REPO="https://github.com/rtfpessoa/code-factory.git"
+CODE_FACTORY_SSH_REPO="git@github.com:rtfpessoa/code-factory.git"
+CODE_FACTORY_HTTPS_PREFIX="https://github.com/rtfpessoa/"
 
 # --------------------------------------------------------------------------
 # Git config helpers
@@ -95,15 +97,99 @@ setup_fonts() {
 # --------------------------------------------------------------------------
 # AI coding configs (code-factory)
 # --------------------------------------------------------------------------
-install_code_factory() {
-  if [ -d "$CODE_FACTORY_DIR" ]; then
-    info "Updating code-factory..."
-    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
-      git -C "$CODE_FACTORY_DIR" pull --ff-only origin main || true
+code_factory_git_https() {
+  GIT_TERMINAL_PROMPT=0 \
+    git -c "url.${CODE_FACTORY_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_HTTPS_PREFIX}" "$@"
+}
+
+code_factory_git_ssh() {
+  GIT_TERMINAL_PROMPT=0 \
+  GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh} -o BatchMode=yes" \
+    git "$@"
+}
+
+code_factory_ssh_available() {
+  [ -n "${SSH_AUTH_SOCK:-}" ] || return 1
+  code_factory_git_ssh ls-remote "$CODE_FACTORY_SSH_REPO" HEAD >/dev/null 2>&1
+}
+
+code_factory_transport() {
+  if code_factory_ssh_available; then
+    printf 'ssh\n'
   else
-    info "Cloning code-factory..."
-    GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 \
-      git clone "$CODE_FACTORY_REPO" "$CODE_FACTORY_DIR"
+    printf 'https\n'
+  fi
+}
+
+code_factory_checkout_is_valid() {
+  [ -e "$CODE_FACTORY_DIR/.git" ] || return 1
+  git -C "$CODE_FACTORY_DIR" rev-parse HEAD >/dev/null 2>&1
+}
+
+code_factory_require_mcp_auth() {
+  if command -v mcp-auth >/dev/null 2>&1; then
+    return 0
+  fi
+
+  error "mcp-auth is required by code-factory to generate the Pi MCP configuration."
+  error "For workspaces, connect with ssaitch so it uploads mcp-auth and the browser bridge."
+  error "Raw ssh sessions do not provision this dependency."
+  return 1
+}
+
+code_factory_access_error() {
+  local operation="$1"
+  local transport="$2"
+
+  error "Unable to ${operation} code-factory over ${transport}."
+  error "GitHub authentication must be available non-interactively."
+  if [ "$transport" = "ssh" ]; then
+    error "Provide a working SSH agent/key for git@github.com or configure HTTPS Git credentials."
+  else
+    error "Configure HTTPS Git credentials, for example with: gh auth login && gh auth setup-git"
+  fi
+}
+
+install_code_factory() {
+  local transport
+
+  if ! code_factory_require_mcp_auth; then
+    return 1
+  fi
+
+  if [ -e "$CODE_FACTORY_DIR" ] && ! code_factory_checkout_is_valid; then
+    error "code-factory directory is not a complete Git checkout: $CODE_FACTORY_DIR"
+    error "Remove the incomplete directory and rerun the installer."
+    return 1
+  fi
+
+  transport="$(code_factory_transport)"
+  if [ -d "$CODE_FACTORY_DIR" ]; then
+    info "Updating code-factory over $transport..."
+    if [ "$transport" = "ssh" ]; then
+      if ! code_factory_git_ssh \
+        -c "remote.origin.url=$CODE_FACTORY_SSH_REPO" \
+        -C "$CODE_FACTORY_DIR" pull --ff-only origin main; then
+        code_factory_access_error update "$transport"
+        return 1
+      fi
+    elif ! code_factory_git_https \
+      -c "remote.origin.url=$CODE_FACTORY_REPO" \
+      -C "$CODE_FACTORY_DIR" pull --ff-only origin main; then
+      code_factory_access_error update "$transport"
+      return 1
+    fi
+  else
+    info "Cloning code-factory over $transport..."
+    if [ "$transport" = "ssh" ]; then
+      if ! code_factory_git_ssh clone "$CODE_FACTORY_SSH_REPO" "$CODE_FACTORY_DIR"; then
+        code_factory_access_error clone "$transport"
+        return 1
+      fi
+    elif ! code_factory_git_https clone "$CODE_FACTORY_REPO" "$CODE_FACTORY_DIR"; then
+      code_factory_access_error clone "$transport"
+      return 1
+    fi
   fi
 
   info "Running code-factory init..."

@@ -50,7 +50,8 @@ export HOME FAKE_BIN TRACE_FILE DOTFILES_STATE_DIR
 export GIT_AUTHOR_NAME="Test User"
 export GIT_AUTHOR_EMAIL="test@example.com"
 export SHELL="/bin/bash"
-mkdir -p "$HOME/.local/bin" "$HOME/.code-factory" "$FAKE_BIN"
+unset SSH_AUTH_SOCK
+mkdir -p "$HOME/.local/bin" "$HOME/.code-factory/.git" "$FAKE_BIN"
 
 for binary in oh-my-posh yq lazygit nvim ast-grep tree-sitter; do
   : > "$HOME/.local/bin/$binary"
@@ -86,11 +87,31 @@ case "$command_name" in
       *" rev-parse HEAD "*)
         printf 'test-revision\n'
         ;;
+      *" ls-remote "*)
+        printf 'git-ls-remote terminal_prompt=%s ssh_command=%s args=%s\n' \
+          "${GIT_TERMINAL_PROMPT:-}" "${GIT_SSH_COMMAND:-}" "$*" >> "$TRACE_FILE"
+        case " $* " in
+          *" git@github.com:rtfpessoa/code-factory.git "*)
+            if [ "${FAIL_SSH_PROBE:-0}" = "1" ]; then
+              exit 1
+            fi
+            ;;
+          *" https://github.com/rtfpessoa/code-factory.git "*)
+            if [ "${FAIL_HTTPS_PROBE:-0}" = "1" ]; then
+              exit 1
+            fi
+            ;;
+        esac
+        ;;
       *" clone "*)
-        printf 'git-clone-config global=%s nosystem=%s\n' \
-          "${GIT_CONFIG_GLOBAL:-}" "${GIT_CONFIG_NOSYSTEM:-}" >> "$TRACE_FILE"
+        printf 'git-clone-config global=%s nosystem=%s terminal_prompt=%s ssh_command=%s args=%s\n' \
+          "${GIT_CONFIG_GLOBAL:-}" "${GIT_CONFIG_NOSYSTEM:-}" \
+          "${GIT_TERMINAL_PROMPT:-}" "${GIT_SSH_COMMAND:-}" "$*" >> "$TRACE_FILE"
+        if [ "${FAIL_CODE_FACTORY_GIT:-0}" = "1" ]; then
+          exit 1
+        fi
         clone_target="${@: -1}"
-        mkdir -p "$clone_target"
+        mkdir -p "$clone_target/.git"
         printf '%s\n' \
           '#!/usr/bin/env bash' \
           "printf 'code-factory-init\\n' >> \"\$TRACE_FILE\"" \
@@ -98,8 +119,12 @@ case "$command_name" in
         chmod +x "$clone_target/init.sh"
         ;;
       *" pull --ff-only "*)
-        printf 'git-pull-config global=%s nosystem=%s\n' \
-          "${GIT_CONFIG_GLOBAL:-}" "${GIT_CONFIG_NOSYSTEM:-}" >> "$TRACE_FILE"
+        printf 'git-pull-config global=%s nosystem=%s terminal_prompt=%s ssh_command=%s args=%s\n' \
+          "${GIT_CONFIG_GLOBAL:-}" "${GIT_CONFIG_NOSYSTEM:-}" \
+          "${GIT_TERMINAL_PROMPT:-}" "${GIT_SSH_COMMAND:-}" "$*" >> "$TRACE_FILE"
+        if [ "${FAIL_CODE_FACTORY_GIT:-0}" = "1" ]; then
+          exit 1
+        fi
         ;;
     esac
     ;;
@@ -118,7 +143,7 @@ esac
 EOF
 chmod +x "$FAKE_BIN/fake-command"
 
-for command_name in uname id tmux git sudo stow curl vim nvim fc-cache fish cargo flock setsid nohup; do
+for command_name in uname id tmux git sudo stow curl vim nvim fc-cache fish cargo flock setsid nohup mcp-auth; do
   ln -s fake-command "$FAKE_BIN/$command_name"
 done
 
@@ -167,8 +192,14 @@ assert_contains "$TRACE_FILE" "sudo apt-get update -qq" \
   "deferred installation did not run apt setup"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "deferred installation did not run code-factory"
-assert_contains "$TRACE_FILE" "git-pull-config global=/dev/null nosystem=1" \
-  "code-factory update inherited Git URL rewrite configuration"
+assert_contains "$TRACE_FILE" "git-pull-config global= nosystem= terminal_prompt=0" \
+  "code-factory update did not preserve Git config or disable prompts"
+assert_contains "$TRACE_FILE" "url.https://github.com/rtfpessoa/" \
+  "HTTPS code-factory update did not override the broad GitHub URL rewrite"
+assert_not_contains "$TRACE_FILE" "global=/dev/null" \
+  "code-factory update disabled the global Git config"
+assert_not_contains "$TRACE_FILE" "nosystem=1" \
+  "code-factory update disabled the system Git config"
 assert_contains "$TRACE_FILE" "vim -es" \
   "deferred installation did not run Vim plugin setup"
 assert_contains "$DOTFILES_STATE_DIR/install.status" '"state":"succeeded"' \
@@ -207,9 +238,56 @@ rm -rf "$HOME/.code-factory"
 SCRIPT_DIR="$REPO_DIR"
 source "$REPO_DIR/lib.sh"
 install_code_factory
-assert_contains "$TRACE_FILE" "git-clone-config global=/dev/null nosystem=1" \
-  "code-factory clone inherited Git URL rewrite configuration"
+assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0" \
+  "code-factory clone did not preserve Git config or disable prompts"
+assert_contains "$TRACE_FILE" "url.https://github.com/rtfpessoa/" \
+  "HTTPS code-factory clone did not override the broad GitHub URL rewrite"
+assert_not_contains "$TRACE_FILE" "global=/dev/null" \
+  "code-factory clone disabled the global Git config"
+assert_not_contains "$TRACE_FILE" "nosystem=1" \
+  "code-factory clone disabled the system Git config"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "fresh code-factory clone did not run initialization"
+
+rm -rf "$HOME/.code-factory"
+: > "$TRACE_FILE"
+export SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock"
+FAIL_HTTPS_PROBE=1 install_code_factory
+assert_contains "$TRACE_FILE" "git-ls-remote terminal_prompt=0 ssh_command=ssh -o BatchMode=yes args=ls-remote git@github.com:rtfpessoa/code-factory.git HEAD" \
+  "code-factory did not probe the authenticated SSH transport"
+assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0 ssh_command=ssh -o BatchMode=yes args=clone git@github.com:rtfpessoa/code-factory.git" \
+  "code-factory did not clone over non-interactive authenticated SSH"
+assert_not_contains "$TRACE_FILE" "https://github.com/rtfpessoa/code-factory.git" \
+  "code-factory selected HTTPS after SSH authentication succeeded"
+
+rm -rf "$HOME/.code-factory"
+: > "$TRACE_FILE"
+export FAIL_SSH_PROBE=1
+export FAIL_CODE_FACTORY_GIT=1
+if install_code_factory; then
+  fail "code-factory authentication failure was hidden"
+fi
+assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0" \
+  "failed code-factory clone did not disable terminal prompts"
+unset FAIL_SSH_PROBE FAIL_CODE_FACTORY_GIT SSH_AUTH_SOCK
+
+mkdir -p "$HOME/.code-factory"
+: > "$TRACE_FILE"
+if install_code_factory; then
+  fail "incomplete code-factory directory was treated as a valid checkout"
+fi
+assert_not_contains "$TRACE_FILE" "git-ls-remote" \
+  "incomplete code-factory directory triggered a transport probe"
+
+rm -f "$FAKE_BIN/mcp-auth"
+rm -rf "$HOME/.code-factory"
+: > "$TRACE_FILE"
+if install_code_factory; then
+  fail "code-factory continued without mcp-auth"
+fi
+assert_not_contains "$TRACE_FILE" "git-ls-remote" \
+  "missing mcp-auth did not fail before transport probing"
+assert_not_contains "$TRACE_FILE" "code-factory-init" \
+  "missing mcp-auth still ran code-factory initialization"
 
 printf 'PASS: foreground and deferred installations are isolated safely\n'

@@ -56,6 +56,34 @@ export GIT_AUTHOR_EMAIL="your@email.com"
 bash install.sh
 ```
 
+The deferred `code-factory` setup is non-interactive:
+- It uses SSH when the workspace can access the repository through its SSH agent.
+- Otherwise it uses HTTPS and preserves the configured Git credential helpers.
+- If neither transport is authenticated, the installer fails with an actionable error instead of waiting for a prompt in tmux.
+
+For HTTPS authentication, configure GitHub CLI credentials before running the installer:
+
+```bash
+gh auth login
+gh auth setup-git
+```
+
+`code-factory` also requires the workspace-side `mcp-auth` binary to generate the Pi MCP configuration.
+That binary and the browser bridge are provisioned by `ssaitch`, not by this repository.
+Connect to a workspace through `ssaitch` before running the installer:
+
+```bash
+ssaitch <workspace>
+```
+
+If SSH uses 1Password, export its agent socket when launching `ssaitch`:
+
+```bash
+SSH_AUTH_SOCK="/path/to/1Password/agent.sock" ssaitch <workspace>
+```
+
+A raw `ssh <workspace>` session does not upload `mcp-auth` or configure the browser callback bridge.
+
 ### Cross-platform shell configs
 
 Shell configuration files (aliases, functions, exports, PATH) are split into three variants:
