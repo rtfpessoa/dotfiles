@@ -233,12 +233,16 @@ precomposeunicode = false
 # https://git-scm.com/docs/git-update-index#_untracked_cache
 untrackedCache = true
 
-# Enable the File System Monitor (FSMonitor) if you have it installed.
-# This helps Git quickly determine what files have changed.
-# On Windows and macOS, Git often includes a built-in FSMonitor.
-# For Linux, you might need to install a third-party tool like 'watchman'.
+# Disable the File System Monitor (FSMonitor).
+# On macOS it spawns a detached `git fsmonitor--daemon` per repository (8 IPC
+# threads each). With many repos and linked worktrees this piled up to 150+
+# daemons and kept fseventsd at ~98% CPU. The daemon also does not watch
+# linked worktrees, so status there rescans everything anyway (NTPS-326,
+# SOURCE-698).
+# untrackedCache + preloadindex + [feature] manyFiles + [index] version=4
+# remain the fast-status stack on macOS.
 # Src: https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/
-fsmonitor = true
+fsmonitor = false
 
 # Speeds up operations like 'git status' by preloading the index in parallel.
 preloadindex = true
