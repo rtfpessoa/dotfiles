@@ -38,10 +38,6 @@ if type -q brew
     end
 end
 
-if type -q kubectl
-    kubectl completion fish | source
-end
-
 if type -q direnv
     direnv hook fish | source
 end
