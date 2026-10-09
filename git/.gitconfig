@@ -104,7 +104,7 @@ ss = stash save
 sd = stash drop
 
 ## List modified files in last commit
-dl = "!git ll -1"
+dl = show --name-only --oneline
 
 ## List all aliases
 la = "!git config -l | grep alias | cut -c 7-"
@@ -166,7 +166,7 @@ commitGraph = true # Implicitly handled by maintenance tasks
 multiPackIndex = true # Implicitly handled by maintenance tasks
 
 [pack]
-threads=10
+threads = 10
 
 [gc]
 # Enable automatic garbage collection. Git will run 'git gc --auto'
@@ -189,10 +189,10 @@ pruneExpire = "2.weeks.ago"
 auto = true
 
 [rebase]
-autosquash=true
-autostash=true
-missingcommitscheck=error
-updaterefs=true
+autosquash = true
+autostash = true
+missingcommitscheck = error
+updaterefs = true
 
 [fetch]
 # Number of parallel jobs to use when fetching.
@@ -249,8 +249,7 @@ preloadindex = true
 
 editor = vim
 quotepath = false
-ignorecase = false
-	hooksPath = /Users/rodrigo.fernandes/.local/share/code-factory/maat/hooks/global
+hooksPath = ~/.local/share/code-factory/maat/hooks/global
 
 [color]
 # Use colors in Git commands that are capable of colored output when
@@ -321,13 +320,6 @@ format = ssh
 [gpg "ssh"]
 program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
 
-[maintenance]
-# Enable automatic background maintenance tasks (recommended).
-# This will schedule tasks like prefetching, gc, commit-graph updates, etc.
-# You need to register each large repository with 'git maintenance register'
-# for these tasks to run on it.
-auto = true
-
 [include]
 path = ~/.gitconfig.extras
 
@@ -336,5 +328,6 @@ path = ~/.gitconfig.home
 
 [include]
 path = ~/.config/datadog/git/config
+
 [datadog]
-	team = team-rapidworkloads
+team = team-rapidworkloads
