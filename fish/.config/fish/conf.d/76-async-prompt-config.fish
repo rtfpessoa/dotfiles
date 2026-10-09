@@ -10,12 +10,57 @@
 # fish instance (including nested and future panes) agrees.
 set -U async_prompt_functions fish_prompt
 
+# Build the stripped-down theme used for the loading seed: the session +
+# path segments and the ↪ line of the real prompt, without the slow parts
+# (git, kubectl) or the right-aligned clock. Cached under ~/.cache/oh-my-posh
+# and regenerated only when the theme file changes.
+function __async_prompt_seed_config
+    set -l theme ~/.config/omp/rtfpessoa.omp.json
+    test -r $theme; or return 1
+    set -l cachedir ~/.cache/oh-my-posh
+    mkdir -p $cachedir; or return 1
+    set -l cfg $cachedir/async-seed.omp.json
+    set -l fresh (stat -f '%m %z' $theme)
+    if test -r $cfg; and test (cat $cfg.stamp 2>/dev/null; or echo none) = "$fresh"
+        printf '%s' $cfg
+        return 0
+    end
+    python3 -c 'import json,sys,os
+src,dst=sys.argv[1],sys.argv[2]
+cfg=json.load(open(src))
+out=[]
+for b in cfg.get("blocks",[]):
+    if b.get("alignment")=="right":
+        continue
+    if b.get("segments") and any(s.get("type")=="path" for s in b["segments"]):
+        segs=[s for s in b["segments"] if s.get("type") in ("session","path")]
+        segs.append({"type":"text","style":"plain","foreground":"#6272a4","template":"⟳","options":{"prefix":" ","postfix":""}})
+        b=dict(b,segments=segs)
+    out.append(b)
+cfg["blocks"]=out
+json.dump(cfg,open(dst,"w"),indent=2)
+open(dst+".stamp","w").write("%d %d"%(os.stat(src).st_mtime,os.stat(src).st_size))' $theme $cfg 2>/dev/null; or return 1
+    printf '%s' $cfg
+end
+
+# The loading seed itself: render the prompt start with the real
+# oh-my-posh binary so the folder icon, mapped-path emoji and ↪ line are
+# pixel-identical to the finished prompt minus the slow segments, plus a dim ⟳ hint at the end of line 1 (line 2 keeps the original ↪). POSH_SESSION_ID must be scrubbed: oh-my-posh keys its loaded theme on it and it would override --config; an exported POSH_CONFIG value alone is harmless but is overridden too.
+function __async_prompt_seed_prompt
+    set -l cfg (__async_prompt_seed_config)
+    or return 1
+    set -l out (env -u POSH_SESSION_ID POSH_CONFIG=$cfg oh-my-posh print primary --config $cfg --shell=fish 2>/dev/null | string collect)
+    test -n "$out"; or return 1
+    printf '\e[0J%s' "$out"
+end
+
 # Seed this shell's prompt file so the very first prompt render is never
 # blank while the background render warms up. The tmpdir only exists in
 # interactive shells (75- exits early otherwise), and the seed is also
 # what makes the first prompt of a new pane instant.
 if status is-interactive; and set -q __async_prompt_tmpdir
-    printf '%s' (set_color brblack)"⟳ "(prompt_pwd)(set_color normal)' $ ' > $__async_prompt_tmpdir'/'$fish_pid'_fish_prompt'
+    __async_prompt_seed_prompt > $__async_prompt_tmpdir'/'$fish_pid'_fish_prompt'
+    or printf '%s' (set_color brblack)"⟳ "(prompt_pwd)(set_color normal)' $ ' > $__async_prompt_tmpdir'/'$fish_pid'_fish_prompt'
 end
 
 # Rendered synchronously between firing the background render and its
@@ -25,7 +70,8 @@ function fish_prompt_loading_indicator --argument-names last_prompt
     if test -n "$last_prompt"
         printf '%s' "$last_prompt"
     else
-        printf '%s' (set_color brblack)"⟳ "(prompt_pwd)(set_color normal)' $ '
+        __async_prompt_seed_prompt
+        or printf '%s' (set_color brblack)"⟳ "(prompt_pwd)(set_color normal)' $ '
     end
 end
 
