@@ -67,10 +67,6 @@
             "postfix": "",
             "prefix": " "
           },
-          "cache": {
-            "duration": "30m",
-            "strategy": "session"
-          },
           "template": "{{if .Cluster}} 🐳 {{.Cluster}} :: {{.Namespace}} {{end}}",
           "foreground": "#f1fa8c",
           "type": "kubectl",

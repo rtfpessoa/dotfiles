@@ -11,19 +11,14 @@ source ~/.config/fish/functions.fish
 
 source ~/.config/fish/init.fish
 
-# Toggle an Oh My Posh segment twice (forces a re-render) safely.
+# Re-initialize Oh My Posh from the config (also clears its caches).
 function __omp_reset
     oh-my-posh init fish --config ~/.config/omp/rtfpessoa.omp.json | source
+    # Re-apply the fish-async-prompt wrapper (no-op without it): OMP init
+    # redefines fish_prompt, which would otherwise drop the wrapper.
+    functions -q __async_prompt_rewrap; and __async_prompt_rewrap
 end
 
 if type oh-my-posh &>/dev/null
 	__omp_reset
-end
-
-# Invalidate OMP cache after switching K8s context/namespace
-# Triggered after every command that runs in the shell.
-function __omp_clear_cache_after_kctx --on-event fish_postexec --argument-names cmd _status
-    if string match -rq '^(ddtool|kubectl|k|kubectx|kctx)\s.+' -- $cmd
-        __omp_reset
-    end
 end
