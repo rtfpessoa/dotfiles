@@ -4,6 +4,15 @@ if [ -x "$HOME/.local/bin/mise" ]; then
   eval "$($HOME/.local/bin/mise activate zsh)"
 fi
 
+# Rust toolchain (rustup installs with --no-modify-path; wire ~/.cargo/bin).
+# Appended after mise so mise-managed toolchains keep priority.
+if [ -d "$HOME/.cargo/bin" ]; then
+  case ":$PATH:" in
+    *":$HOME/.cargo/bin:"*) ;;
+    *) export PATH="$PATH:$HOME/.cargo/bin" ;;
+  esac
+fi
+
 if [ "$(uname -s)" = 'Darwin' ]; then
   if [ "$(uname -m)" = 'arm64' ]; then
     export HOMEBREW_PREFIX="/opt/homebrew"
