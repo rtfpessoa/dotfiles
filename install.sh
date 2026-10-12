@@ -308,6 +308,31 @@ setup_git() {
     info "Git user not configured (set GIT_AUTHOR_NAME and GIT_AUTHOR_EMAIL to configure)"
     touch "$HOME/.gitconfig.extras"
   fi
+
+  # SSH commit signing: the repo gitconfig pins the macOS 1Password
+  # op-ssh-sign path, which does not exist on Linux. Wire plain ssh-keygen
+  # (signs via the SSH agent, e.g. a forwarded 1Password agent) when a
+  # signing key is provided; otherwise disable signing so fresh machines
+  # can commit — enable later by adding user.signingKey to
+  # ~/.gitconfig.extras and removing the gpgsign override.
+  if [ "$(uname -s)" = "Linux" ]; then
+    if [ -n "${GIT_SIGNING_KEY:-}" ]; then
+      info "Configuring SSH commit signing via ssh-keygen (SSH agent)"
+      cat >> "$HOME/.gitconfig.extras" <<-EOF
+	[gpg "ssh"]
+	    program = ssh-keygen
+
+	[user]
+	    signingKey = key::$GIT_SIGNING_KEY
+	EOF
+    else
+      info "No GIT_SIGNING_KEY set: commit signing disabled until a signing key is configured"
+      cat >> "$HOME/.gitconfig.extras" <<-EOF
+	[commit]
+	    gpgsign = false
+	EOF
+    fi
+  fi
 }
 
 # --------------------------------------------------------------------------
