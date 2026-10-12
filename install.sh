@@ -309,25 +309,37 @@ setup_git() {
     touch "$HOME/.gitconfig.extras"
   fi
 
-  # SSH commit signing: the repo gitconfig pins the macOS 1Password
-  # op-ssh-sign path, which does not exist on Linux. Wire plain ssh-keygen
-  # (signs via the SSH agent, e.g. a forwarded 1Password agent) when a
-  # signing key is provided; otherwise disable signing so fresh machines
-  # can commit — enable later by adding user.signingKey to
-  # ~/.gitconfig.extras and removing the gpgsign override.
-  if [ "$(uname -s)" = "Linux" ]; then
+  # SSH commit signing on Linux: the repo gitconfig pins the macOS
+  # 1Password op-ssh-sign path (absent on Linux), and machine-managed
+  # config layers (e.g. ~/.config/datadog/git/config, included after
+  # ~/.gitconfig.extras) can set signing keys the local agent cannot
+  # serve. Route overrides through ~/.gitconfig.machine — the include
+  # that comes last in the repo gitconfig — so they win:
+  #   - GIT_SIGNING_KEY (literal SSH public key, type + blob only) signs
+  #     personal repos (github.com/rtfpessoa/**) via
+  #     ~/.gitconfig.personal-signing; other repos keep their own layers.
+  #   - without a key, disable signing so fresh machines can commit;
+  #     re-run with GIT_SIGNING_KEY to enable.
+  if [ "$(uname -s)" = "Linux" ] && [ ! -f "$HOME/.gitconfig.machine" ]; then
     if [ -n "${GIT_SIGNING_KEY:-}" ]; then
       info "Configuring SSH commit signing via ssh-keygen (SSH agent)"
-      cat >> "$HOME/.gitconfig.extras" <<-EOF
+      cat > "$HOME/.gitconfig.machine" <<-EOF
 	[gpg "ssh"]
 	    program = ssh-keygen
 
+	[includeIf "hasconfig:remote.*.url:git@github.com:rtfpessoa/**"]
+	    path = ~/.gitconfig.personal-signing
+	EOF
+      cat > "$HOME/.gitconfig.personal-signing" <<-EOF
 	[user]
 	    signingKey = key::$GIT_SIGNING_KEY
 	EOF
     else
       info "No GIT_SIGNING_KEY set: commit signing disabled until a signing key is configured"
-      cat >> "$HOME/.gitconfig.extras" <<-EOF
+      cat > "$HOME/.gitconfig.machine" <<-EOF
+	[gpg "ssh"]
+	    program = ssh-keygen
+
 	[commit]
 	    gpgsign = false
 	EOF

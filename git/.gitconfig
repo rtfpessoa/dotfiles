@@ -329,5 +329,8 @@ path = ~/.gitconfig.home
 [include]
 path = ~/.config/datadog/git/config
 
+[include]
+path = ~/.gitconfig.machine
+
 [datadog]
 team = team-rapidworkloads
