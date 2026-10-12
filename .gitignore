@@ -10,6 +10,11 @@
 /vim/.vim/plugged/
 /vim/.vim/swaps/
 
+# fish (machine-local state; per-file stow layout keeps it in ~/.config/fish)
+/fish/.config/fish/fish_variables
+/fish/.config/fish/functions/
+/fish/.config/fish/completions/
+
 # Git
 /git/.gitconfig.datadog
 /git/.gitconfig.home

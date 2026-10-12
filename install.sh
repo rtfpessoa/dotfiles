@@ -357,7 +357,21 @@ setup_core_dotfiles() {
   fi
   remove_if_not_symlink "$HOME/.bashrc"
   remove_if_not_symlink "$HOME/.zshrc"
-  remove_if_not_symlink "$HOME/.config/fish"
+
+  # fish: stow folds ~/.config/fish into a single repo symlink when the dir
+  # is absent, which puts machine-local state (fish_variables, saved
+  # functions, completions) inside the repo working tree. Remove only
+  # symlinks (stale or folded) and pre-create real dirs so stow always
+  # links per-file. Never remove a real ~/.config/fish — it holds
+  # machine-local state; a conflicting real file makes stow fail loudly
+  # instead of silently destroying the directory.
+  if [ -L "$HOME/.config/fish" ]; then
+    info "Removing ~/.config/fish symlink (per-file stow layout)"
+    rm -f "$HOME/.config/fish"
+  fi
+  mkdir -p "$HOME/.config/fish/conf.d" \
+    "$HOME/.config/fish/functions" \
+    "$HOME/.config/fish/completions"
 
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
