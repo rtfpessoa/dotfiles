@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# Re-entrancy guard: load this file exactly once per shell. Machine-local
+# patches (e.g. workspaces' pmux block sourcing ~/.profile -> ~/.bashrc ->
+# back here) would otherwise re-source it forever in interactive shells.
+# Shell-local (not exported), so nested/child shells start clean.
+if [ -n "${_DOTFILES_BASH_PROFILE:-}" ]; then
+  return 0 2>/dev/null || true
+fi
+_DOTFILES_BASH_PROFILE=1
+
 if [ -x "$HOME/.local/bin/mise" ]; then
   eval "$($HOME/.local/bin/mise activate bash)"
 fi
