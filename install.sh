@@ -329,6 +329,12 @@ setup_git() {
 
 	[includeIf "hasconfig:remote.*.url:git@github.com:rtfpessoa/**"]
 	    path = ~/.gitconfig.personal-signing
+	[includeIf "hasconfig:remote.*.url:https://github.com/rtfpessoa/**"]
+	    path = ~/.gitconfig.personal-signing
+	[includeIf "hasconfig:remote.*.url:ssh://git@github.com/rtfpessoa/**"]
+	    path = ~/.gitconfig.personal-signing
+	[includeIf "hasconfig:remote.*.url:ssh://git@github.com:rtfpessoa/**"]
+	    path = ~/.gitconfig.personal-signing
 	EOF
       cat > "$HOME/.gitconfig.personal-signing" <<-EOF
 	[user]
