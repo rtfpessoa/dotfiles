@@ -20,7 +20,14 @@ function __async_prompt_seed_config
     set -l cachedir ~/.cache/oh-my-posh
     mkdir -p $cachedir; or return 1
     set -l cfg $cachedir/async-seed.omp.json
-    set -l fresh (stat -f '%m %z' $theme)
+    # stat flags differ between BSD and GNU coreutils; both forms yield
+    # '<epoch-seconds> <size>', matching the stamp python3 writes below.
+    set -l fresh
+    if test (uname -s) = Darwin
+        set fresh (stat -f '%m %z' $theme)
+    else
+        set fresh (stat -c '%Y %s' $theme)
+    end
     if test -r $cfg; and test (cat $cfg.stamp 2>/dev/null; or echo none) = "$fresh"
         printf '%s' $cfg
         return 0
