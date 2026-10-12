@@ -453,7 +453,10 @@ run_deferred_install() {
 
   info "Starting deferred dotfiles installation..."
   install_apt_packages
-  install_code_factory
+  if ! install_code_factory; then
+    warn "code-factory setup failed; continuing with the remaining deferred steps"
+    warn "Retry after GitHub auth is available (ssaitch session or gh auth login); see the log above"
+  fi
   install_binaries
   install_zsh_history_substring_search
   setup_vim
