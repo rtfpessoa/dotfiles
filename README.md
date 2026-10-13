@@ -68,9 +68,15 @@ gh auth login
 gh auth setup-git
 ```
 
-`code-factory` also requires the workspace-side `mcp-auth` binary to generate the Pi MCP configuration.
-That binary and the browser bridge are provisioned by `ssaitch`, not by this repository.
-Connect to a workspace through `ssaitch` before running the installer:
+`mcp-auth` is no longer a workspace prerequisite: `code-factory`'s `init.sh`
+auto-installs the binary by fetching `ddoghq/ssaitch` over the same
+authenticated transport and building it (bootstrapping a Go toolchain first
+when the machine has none) into `~/.local/bin/mcp-auth`.
+
+`ssaitch` is still recommended for workspaces: it uploads the browser callback
+bridge and runs pre-flight `mcp-auth login`. Without it, the install itself
+still completes, but MCP servers stay unauthenticated until a later `ssaitch`
+session (or a manual `mcp-auth login`) finishes the OAuth flows:
 
 ```bash
 ssaitch <workspace>
@@ -82,7 +88,8 @@ If SSH uses 1Password, export its agent socket when launching `ssaitch`:
 SSH_AUTH_SOCK="/path/to/1Password/agent.sock" ssaitch <workspace>
 ```
 
-A raw `ssh <workspace>` session does not upload `mcp-auth` or configure the browser callback bridge.
+A raw `ssh <workspace>` session can now complete the full install as long as
+GitHub is reachable with credentials; only the OAuth login needs `ssaitch`.
 
 ### Cross-platform shell configs
 

@@ -126,17 +126,6 @@ code_factory_checkout_is_valid() {
   git -C "$CODE_FACTORY_DIR" rev-parse HEAD >/dev/null 2>&1
 }
 
-code_factory_require_mcp_auth() {
-  if command -v mcp-auth >/dev/null 2>&1; then
-    return 0
-  fi
-
-  error "mcp-auth is required by code-factory to generate the Pi MCP configuration."
-  error "For workspaces, connect with ssaitch so it uploads mcp-auth and the browser bridge."
-  error "Raw ssh sessions do not provision this dependency."
-  return 1
-}
-
 code_factory_access_error() {
   local operation="$1"
   local transport="$2"
@@ -153,9 +142,8 @@ code_factory_access_error() {
 install_code_factory() {
   local transport
 
-  if ! code_factory_require_mcp_auth; then
-    return 1
-  fi
+  # mcp-auth is not a prerequisite: code-factory's init.sh auto-installs it
+  # (fetching ddoghq/ssaitch and building the binary) whenever it is missing.
 
   if [ -e "$CODE_FACTORY_DIR" ] && ! code_factory_checkout_is_valid; then
     error "code-factory directory is not a complete Git checkout: $CODE_FACTORY_DIR"

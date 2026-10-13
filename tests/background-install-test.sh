@@ -143,7 +143,7 @@ esac
 EOF
 chmod +x "$FAKE_BIN/fake-command"
 
-for command_name in uname id tmux git sudo stow curl vim nvim fc-cache fish cargo flock setsid nohup mcp-auth; do
+for command_name in uname id tmux git sudo stow curl vim nvim fc-cache fish cargo flock setsid nohup; do
   ln -s fake-command "$FAKE_BIN/$command_name"
 done
 
@@ -279,15 +279,14 @@ fi
 assert_not_contains "$TRACE_FILE" "git-ls-remote" \
   "incomplete code-factory directory triggered a transport probe"
 
-rm -f "$FAKE_BIN/mcp-auth"
 rm -rf "$HOME/.code-factory"
 : > "$TRACE_FILE"
-if install_code_factory; then
-  fail "code-factory continued without mcp-auth"
+if ! install_code_factory; then
+  fail "missing mcp-auth blocked code-factory installation"
 fi
-assert_not_contains "$TRACE_FILE" "git-ls-remote" \
-  "missing mcp-auth did not fail before transport probing"
-assert_not_contains "$TRACE_FILE" "code-factory-init" \
-  "missing mcp-auth still ran code-factory initialization"
+assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0" \
+  "missing mcp-auth did not clone code-factory"
+assert_contains "$TRACE_FILE" "code-factory-init" \
+  "missing mcp-auth did not run code-factory initialization"
 
 printf 'PASS: foreground and deferred installations are isolated safely\n'
