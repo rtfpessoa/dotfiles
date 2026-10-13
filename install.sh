@@ -510,7 +510,12 @@ run_deferred_install() {
 
   info "Starting deferred dotfiles installation..."
   install_apt_packages
-  if ! install_code_factory; then
+  # </dev/null: the deferred worker runs inside tmux (a TTY), which would
+  # otherwise make code-factory's init.sh take its INTERACTIVE ddtool login
+  # path and hang the unattended install on a browser OIDC flow. With stdin
+  # closed, init.sh's own [[ ! -t 0 ]] guard skips the login immediately and
+  # still configures everything whenever auth is already present.
+  if ! install_code_factory </dev/null; then
     warn "code-factory setup failed; continuing with the remaining deferred steps"
     warn "Retry after GitHub auth is available (ssaitch session or gh auth login); see the log above"
   fi
