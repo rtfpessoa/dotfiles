@@ -398,6 +398,14 @@ setup_core_dotfiles() {
     remove_git_config_section_if_present "$HOME/.gitconfig.datadog" gpg.ssh
     remove_git_config_section_if_present "$HOME/.gitconfig.datadog" dd-gitsign
   fi
+  # Workspace images ship a real ~/.bash_profile (pmux PATH shims,
+  # ~/.profile sourcing with the dogbrew setup, dogbrew init). Stow cannot
+  # replace it, and that machinery must survive: move it aside — the repo's
+  # bash/.bash_profile sources ~/.bash_profile.image back.
+  if [ -f "$HOME/.bash_profile" ] && [ ! -L "$HOME/.bash_profile" ]; then
+    info "Moving existing ~/.bash_profile to ~/.bash_profile.image"
+    mv "$HOME/.bash_profile" "$HOME/.bash_profile.image"
+  fi
   remove_if_not_symlink "$HOME/.bashrc"
   remove_if_not_symlink "$HOME/.zshrc"
 

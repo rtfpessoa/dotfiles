@@ -66,6 +66,13 @@ fi
 EOF
 chmod +x "$HOME/.code-factory/init.sh"
 
+# Image-provided login machinery: a real ~/.bash_profile that must survive
+# installation (moved to ~/.bash_profile.image and sourced by the repo's
+# .bash_profile).
+cat > "$HOME/.bash_profile" <<'EOF'
+export FIXTURE_IMAGE_BASH=1
+EOF
+
 cat > "$FAKE_BIN/fake-command" <<'EOF'
 #!/usr/bin/env bash
 command_name="$(basename "$0")"
@@ -154,6 +161,13 @@ bash "$REPO_DIR/install.sh"
 
 assert_contains "$TRACE_FILE" "stow -R" \
   "foreground installation did not stow dotfiles"
+
+[ -f "$HOME/.bash_profile.image" ] \
+  || fail "image ~/.bash_profile was not preserved as ~/.bash_profile.image"
+grep -q 'FIXTURE_IMAGE_BASH' "$HOME/.bash_profile.image" \
+  || fail "~/.bash_profile.image lost the image marker content"
+[ ! -e "$HOME/.bash_profile" ] \
+  || fail "~/.bash_profile was left behind, blocking stow"
 assert_contains "$TRACE_FILE" "tmux new-session" \
   "foreground installation did not launch a tmux worker"
 assert_contains "$TRACE_FILE" "--deferred" \

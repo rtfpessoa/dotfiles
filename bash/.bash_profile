@@ -9,6 +9,14 @@ if [ -n "${_DOTFILES_BASH_PROFILE:-}" ]; then
 fi
 _DOTFILES_BASH_PROFILE=1
 
+# Base-image login machinery, moved aside by the installer: workspace
+# images ship a real ~/.bash_profile (pmux PATH shims, ~/.profile
+# sourcing with the dogbrew setup, dogbrew init). Run it early so its
+# shims and completions land underneath the dotfiles layered on top;
+# the guard above breaks the .profile -> .bashrc -> back-here loop that
+# sourcing it here introduces.
+[ -r "$HOME/.bash_profile.image" ] && . "$HOME/.bash_profile.image"
+
 if [ -x "$HOME/.local/bin/mise" ]; then
   eval "$($HOME/.local/bin/mise activate bash)"
 fi
