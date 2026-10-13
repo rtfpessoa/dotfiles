@@ -486,6 +486,7 @@ finish_deferred_install() {
 
 run_deferred_install() {
   local unavailable_started_at
+  local code_factory_status=0
 
   mkdir -p "$DOTFILES_STATE_DIR"
   exec > >(tee -a "$DOTFILES_LOG_FILE") 2>&1
@@ -515,8 +516,9 @@ run_deferred_install() {
   # path and hang the unattended install on a browser OIDC flow. With stdin
   # closed, init.sh's own [[ ! -t 0 ]] guard skips the login immediately and
   # still configures everything whenever auth is already present.
-  if ! install_code_factory </dev/null; then
-    warn "code-factory setup failed; continuing with the remaining deferred steps"
+  install_code_factory </dev/null || code_factory_status=$?
+  if [ "$code_factory_status" -ne 0 ]; then
+    warn "code-factory setup failed (exit $code_factory_status); continuing with the remaining deferred steps"
     warn "Retry after GitHub auth is available (ssaitch session or gh auth login); see the log above"
   fi
   install_binaries
@@ -526,6 +528,10 @@ run_deferred_install() {
   setup_default_shell
   info "Deferred installation complete"
   info "Start a new shell session to apply changes: exec \$SHELL -l"
+
+  # Surface the code-factory failure in the deferred exit status so
+  # install.status records it; every other step still ran to completion.
+  return "$code_factory_status"
 }
 
 launch_deferred_install() {
