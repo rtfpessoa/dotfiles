@@ -318,12 +318,15 @@ setup_git() {
   #   - GIT_SIGNING_KEY (literal SSH public key, type + blob only) signs
   #     personal repos (github.com/rtfpessoa/**) via
   #     ~/.gitconfig.personal-signing; other repos keep their own layers.
-  #   - without a key, disable signing so fresh machines can commit;
-  #     re-run with GIT_SIGNING_KEY to enable.
+  #   - without a key, the includeIfs point at a missing file (git
+  #     silently ignores it), so personal repos sign with the managed
+  #     default; re-run with GIT_SIGNING_KEY to pin the personal key.
+  #     Never write `commit.gpgsign = false` here: this file is included
+  #     last, so it would clobber the managed `commit.gpgSign = true` and
+  #     land unsigned commits.
   if [ "$(uname -s)" = "Linux" ] && [ ! -f "$HOME/.gitconfig.machine" ]; then
-    if [ -n "${GIT_SIGNING_KEY:-}" ]; then
-      info "Configuring SSH commit signing via ssh-keygen (SSH agent)"
-      cat > "$HOME/.gitconfig.machine" <<-EOF
+    info "Writing machine-local git signing layer (ssh-keygen + personal-repo key routing)"
+    cat > "$HOME/.gitconfig.machine" <<-EOF
 	[gpg "ssh"]
 	    program = ssh-keygen
 
@@ -336,19 +339,14 @@ setup_git() {
 	[includeIf "hasconfig:remote.*.url:ssh://git@github.com:rtfpessoa/**"]
 	    path = ~/.gitconfig.personal-signing
 	EOF
+    if [ -n "${GIT_SIGNING_KEY:-}" ]; then
+      info "Configuring personal-repo signing key from GIT_SIGNING_KEY"
       cat > "$HOME/.gitconfig.personal-signing" <<-EOF
 	[user]
 	    signingKey = key::$GIT_SIGNING_KEY
 	EOF
     else
-      info "No GIT_SIGNING_KEY set: commit signing disabled until a signing key is configured"
-      cat > "$HOME/.gitconfig.machine" <<-EOF
-	[gpg "ssh"]
-	    program = ssh-keygen
-
-	[commit]
-	    gpgsign = false
-	EOF
+      warn "GIT_SIGNING_KEY not set: ~/.gitconfig.personal-signing not written; personal repos sign with the managed default. Re-run with GIT_SIGNING_KEY to pin the personal key."
     fi
   fi
 }
