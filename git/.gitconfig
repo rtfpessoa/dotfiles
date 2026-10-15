@@ -327,12 +327,10 @@ path = ~/.gitconfig.extras
 path = ~/.gitconfig.home
 
 [include]
-# Datadog workspaces: the absolute form matches git-config-tool's
-# include sentinel (`doctor` checks for exactly this path). Where the
-# file does not exist (personal machines) git silently ignores the
-# include. Keep this above ~/.gitconfig.machine so the machine layer
-# remains the last word in the chain.
-path = /home/bits/.config/datadog/git/config
+# `~`-based so the same gitconfig works on Darwin and Linux ($HOME differs
+# between them); git silently skips the include where the file is absent.
+# Keep above ~/.gitconfig.machine so the machine layer stays last.
+path = ~/.config/datadog/git/config
 
 [include]
 path = ~/.gitconfig.machine
