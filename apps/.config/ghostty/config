@@ -19,5 +19,6 @@ keybind = cmd+digit_6=text:\x016
 keybind = cmd+digit_7=text:\x017
 keybind = cmd+digit_8=text:\x018
 keybind = cmd+digit_9=text:\x019
-
 keybind = cmd+a=text:\x01
+keybind = cmd+up=text:\x01\x1b[A
+keybind = cmd+down=text:\x01\x1b[B

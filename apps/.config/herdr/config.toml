@@ -1,0 +1,53 @@
+onboarding = false
+
+[ui.toast]
+delivery = "system"
+
+[theme]
+name = "dracula"
+auto_switch = false
+
+[terminal]
+# New panes/tabs/workspaces inherit the focused pane's directory
+# (parity with tmux's -c "#{pane_current_path}"). "follow" is also the default.
+new_cwd = "follow"
+
+[keys]
+# Prefix: Ctrl+A (same as tmux)
+prefix = "ctrl+a"
+
+# -- Splits & panes (same keys, same actions as your tmux config) ------------
+split_vertical = "prefix+|"             # tmux: |  split-window -h (pane right)
+split_horizontal = "prefix+minus"         # tmux: -  split-window -v (pane below)
+close_pane = "prefix+x"                   # tmux: x  kill-pane (no prompt)
+clear_pane = "prefix+ctrl+l"              # tmux: C-l clear screen + scrollback
+resize_mode = "prefix+shift+r"            # moved here; r is reload, like tmux
+
+# -- Tabs (= tmux windows, numbered from 1) ----------------------------------
+new_tab = "prefix+c"                      # tmux: c  new-window -a
+move_tab_previous = "prefix+shift+comma"   # tmux: <  swap-window -1
+move_tab_next = "prefix+shift+period"      # tmux: >  swap-window +1
+next_tab = "prefix+n"
+previous_tab = "prefix+p"
+switch_tab = "prefix+1..9"
+
+# -- Workspaces (= tmux sessions) --------------------------------------------
+new_workspace = "prefix+shift+s"           # tmux: S  new-session -A -s <name>
+close_workspace = "prefix+q"               # tmux: q  kill-session
+previous_workspace = "prefix+up"
+next_workspace = "prefix+down"
+detach = "prefix+d"                        # tmux default: d  detach-client
+workspace_picker = "prefix+w"
+
+# -- Config & misc ------------------------------------------------------------
+reload_config = "prefix+r"                 # tmux: r  source-file ~/.tmux.conf
+help = "prefix+?"
+goto = "prefix+g"
+copy_mode = "prefix+["
+zoom = "prefix+z"                         # tmux default: z  resize-pane -Z
+
+# -- Pane focus (herdr defaults, kept) ---------------------------------------
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
