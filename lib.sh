@@ -98,6 +98,13 @@ setup_fonts() {
 # AI coding configs (code-factory)
 # --------------------------------------------------------------------------
 code_factory_git_https() {
+  # Isolate from the machine's global and system config: the Datadog
+  # git-config-tool layer rewrites https://github.com/ to git@github.com:
+  # with unusable signing pubkeys, which turns this HTTPS fallback into a
+  # broken SSH attempt on workspaces (same rationale as the workspaces
+  # dotfiles layer's dotfiles_git helper).
+  GIT_CONFIG_GLOBAL=/dev/null \
+  GIT_CONFIG_NOSYSTEM=1 \
   GIT_TERMINAL_PROMPT=0 \
     git -c "url.${CODE_FACTORY_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_HTTPS_PREFIX}" "$@"
 }
