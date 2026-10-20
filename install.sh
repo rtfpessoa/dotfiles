@@ -526,6 +526,12 @@ run_deferred_install() {
 
   info "Starting deferred dotfiles installation..."
   install_apt_packages
+  # Binaries first: code-factory's init.sh builds the Maat bundle from
+  # source, which needs cargo from the rust toolchain. Installing the
+  # binaries before code-factory guarantees cargo is on disk (init.sh
+  # sources ~/.cargo/env itself, since this worker's shell does not load
+  # the stowed configs that put ~/.cargo/bin on PATH).
+  install_binaries
   # </dev/null: the deferred worker runs inside tmux (a TTY), which would
   # otherwise make code-factory's init.sh take its INTERACTIVE ddtool login
   # path and hang the unattended install on a browser OIDC flow. With stdin
@@ -536,7 +542,6 @@ run_deferred_install() {
     warn "code-factory setup failed (exit $code_factory_status); continuing with the remaining deferred steps"
     warn "Retry after GitHub auth is available (ssaitch session or gh auth login); see the log above"
   fi
-  install_binaries
   install_zsh_history_substring_search
   setup_vim
   setup_fonts
