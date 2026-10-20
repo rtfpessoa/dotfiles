@@ -422,6 +422,15 @@ setup_core_dotfiles() {
     "$HOME/.config/fish/functions" \
     "$HOME/.config/fish/completions"
 
+  # Newer workspace images ship a real ~/.config/fish/config.fish (fish's
+  # default stub). Stow cannot replace a regular file at that path; move it
+  # aside — the repo's config.fish sources config.fish.image back, mirroring
+  # the .bash_profile.image handling above.
+  if [ -f "$HOME/.config/fish/config.fish" ] && [ ! -L "$HOME/.config/fish/config.fish" ]; then
+    info "Moving existing ~/.config/fish/config.fish to ~/.config/fish/config.fish.image"
+    mv "$HOME/.config/fish/config.fish" "$HOME/.config/fish/config.fish.image"
+  fi
+
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
 }

@@ -1,5 +1,12 @@
 # Setup
 
+# Base-image fish init, moved aside by the installer: newer workspace images
+# ship a real ~/.config/fish/config.fish; source it back so image machinery
+# keeps running underneath the dotfiles layer.
+if test -r ~/.config/fish/config.fish.image
+    source ~/.config/fish/config.fish.image
+end
+
 function fish_greeting
 end
 
