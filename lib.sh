@@ -40,6 +40,97 @@ remove_git_config_section_if_present() {
 }
 
 # --------------------------------------------------------------------------
+# wmux delegate-worktree signing/transport overrides
+# --------------------------------------------------------------------------
+# wmux (wmuxd) runs GitHub delegates as linked worktrees named
+# "<branch>--<target12>" (first 12 hex chars of the wmux target id) under
+# <repo>/.git/worktrees/. includeIf gitdir: conditions resolve to that real
+# gitdir — the worktree's .git FILE path under /instance_storage never
+# matches — so the two includeIf sections (re-)created by this function are
+# the discriminator, validated against real delegate worktrees, plain
+# worktrees, and main checkouts.
+#
+# Inside those worktrees there is no attached operator, so:
+#   - commits are unsigned by design (gh.signing's materialized key goes
+#     away when that wmuxd auth target is disabled; owners sign on merge),
+#     and
+#   - pushes ride HTTPS + the gh CLI credential helper (the forwarded
+#     1Password agent socket is only alive while an operator is attached).
+# ~/.gitconfig.wmux-unsigned carries both.
+#
+# ORDERING (critical): the includeIf sections are appended at the END of
+# ~/.gitconfig, AFTER wmuxd's own includeIf hasconfig:remote.*.url lines —
+# git resolves repeated keys last-writer-wins in file order, and the wmux
+# git-auth layers set commit.gpgsign = true after the ~/.gitconfig.machine
+# include. Remove-and-re-add at the end also self-heals the order if a
+# later wmuxd bootstrap appends its lines below ours (git-doctor detects a
+# stale order and re-runs this upsert).
+upsert_wmux_unsigned_gitconfig() {
+  local gitconfig="$HOME/.gitconfig"
+  local unsigned="$HOME/.gitconfig.wmux-unsigned"
+  local cond_home='gitdir:~/**/.git/worktrees/*--[0-9a-f]*'
+  local cond_workspaces='gitdir:/workspaces/**/.git/worktrees/*--[0-9a-f]*'
+  local tmp
+
+  # stow makes ~/.gitconfig a symlink into the dotfiles clone; write to
+  # the link target so the appends land in the clone file (the same file
+  # wmuxd writes its own lines into) instead of through the symlink.
+  if [ -L "$gitconfig" ]; then
+    gitconfig="$(readlink -f "$gitconfig")"
+  fi
+
+  # Canonical content, rewritten on every run. Reverse rules ONLY
+  # (SSH-form remotes -> HTTPS): identity rules cannot beat the Datadog
+  # layers' https->ssh rewrites (equal-prefix ties resolve first-defined,
+  # and those layers come earlier), while SSH-form remote strings are
+  # matched only by these reverse rules. Git applies exactly one rewrite
+  # (longest insteadOf prefix, no chaining), so the HTTPS result is not
+  # re-rewritten back to SSH.
+  cat > "$unsigned" <<'EOF'
+# wmux delegate worktrees: no operator attached, no forwarded 1Password
+# agent. Unsigned commits by design; HTTPS pushes via the gh CLI helper.
+[commit]
+	gpgsign = false
+
+[url "https://github.com/"]
+	insteadOf = git@github.com:
+[url "https://github.com/DataDog/"]
+	insteadOf = git@github.com:DataDog:
+[url "https://github.com/ddoghq/"]
+	insteadOf = git@ddoghq.github.com:ddoghq:
+	insteadOf = git@github.com:ddoghq:
+	insteadOf = ssh://git@github.com/ddoghq/
+[url "https://github.com/ddoghq-sandbox/"]
+	insteadOf = git@ddoghq.github.com:ddoghq-sandbox:
+	insteadOf = git@github.com:ddoghq-sandbox:
+EOF
+
+  # Remove any existing copy of our two sections (idempotency +
+  # re-positioning to the end), then append them fresh. Plain file
+  # surgery, NOT `git config --file`: its lock-and-rename would replace a
+  # symlinked ~/.gitconfig with a plain file, and --remove-section cannot
+  # address these includeIf subsections at all (the key parser's last-dot
+  # rule lands inside the ".git/worktrees" substring of the section name).
+  if [ -f "$gitconfig" ]; then
+    tmp="$(mktemp)"
+    awk -v h1="[includeIf \"${cond_home}\"]" \
+        -v h2="[includeIf \"${cond_workspaces}\"]" '
+      $0 == h1 || $0 == h2 { skip = 1; next }
+      /^\[/ { skip = 0 }
+      skip == 0 { print }
+    ' "$gitconfig" > "$tmp"
+    cat "$tmp" > "$gitconfig"
+    rm -f "$tmp"
+    # Guarantee a trailing newline before appending.
+    if [ -n "$(tail -c 1 "$gitconfig")" ]; then
+      printf '\n' >> "$gitconfig"
+    fi
+  fi
+  printf '\n[includeIf "%s"]\n\tpath = ~/.gitconfig.wmux-unsigned\n' "$cond_home" >> "$gitconfig"
+  printf '[includeIf "%s"]\n\tpath = ~/.gitconfig.wmux-unsigned\n' "$cond_workspaces" >> "$gitconfig"
+}
+
+# --------------------------------------------------------------------------
 # Stow dotfiles
 # --------------------------------------------------------------------------
 # Usage: install_dotfiles dir1 dir2 dir3 ...
