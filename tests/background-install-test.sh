@@ -206,10 +206,14 @@ assert_contains "$TRACE_FILE" "sudo apt-get update -qq" \
   "deferred installation did not run apt setup"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "deferred installation did not run code-factory"
-assert_contains "$TRACE_FILE" "git-pull-config global=/dev/null nosystem=1 terminal_prompt=0" \
-  "code-factory update did not isolate the machine Git config or disable prompts"
+assert_contains "$TRACE_FILE" "git-pull-config global= nosystem= terminal_prompt=0" \
+  "code-factory update did not preserve Git config or disable prompts"
 assert_contains "$TRACE_FILE" "url.https://github.com/rtfpessoa/" \
   "HTTPS code-factory update did not override the broad GitHub URL rewrite"
+assert_not_contains "$TRACE_FILE" "global=/dev/null" \
+  "code-factory update disabled the global Git config"
+assert_not_contains "$TRACE_FILE" "nosystem=1" \
+  "code-factory update disabled the system Git config"
 assert_contains "$TRACE_FILE" "vim -es" \
   "deferred installation did not run Vim plugin setup"
 assert_contains "$DOTFILES_STATE_DIR/install.status" '"state":"succeeded"' \
@@ -248,10 +252,14 @@ rm -rf "$HOME/.code-factory"
 SCRIPT_DIR="$REPO_DIR"
 source "$REPO_DIR/lib.sh"
 install_code_factory
-assert_contains "$TRACE_FILE" "git-clone-config global=/dev/null nosystem=1 terminal_prompt=0" \
-  "code-factory clone did not isolate the machine Git config or disable prompts"
+assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0" \
+  "code-factory clone did not preserve Git config or disable prompts"
 assert_contains "$TRACE_FILE" "url.https://github.com/rtfpessoa/" \
   "HTTPS code-factory clone did not override the broad GitHub URL rewrite"
+assert_not_contains "$TRACE_FILE" "global=/dev/null" \
+  "code-factory clone disabled the global Git config"
+assert_not_contains "$TRACE_FILE" "nosystem=1" \
+  "code-factory clone disabled the system Git config"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "fresh code-factory clone did not run initialization"
 
@@ -273,7 +281,7 @@ export FAIL_CODE_FACTORY_GIT=1
 if install_code_factory; then
   fail "code-factory authentication failure was hidden"
 fi
-assert_contains "$TRACE_FILE" "git-clone-config global=/dev/null nosystem=1 terminal_prompt=0" \
+assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0" \
   "failed code-factory clone did not disable terminal prompts"
 unset FAIL_SSH_PROBE FAIL_CODE_FACTORY_GIT SSH_AUTH_SOCK
 
@@ -290,7 +298,7 @@ rm -rf "$HOME/.code-factory"
 if ! install_code_factory; then
   fail "missing mcp-auth blocked code-factory installation"
 fi
-assert_contains "$TRACE_FILE" "git-clone-config global=/dev/null nosystem=1 terminal_prompt=0" \
+assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0" \
   "missing mcp-auth did not clone code-factory"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "missing mcp-auth did not run code-factory initialization"

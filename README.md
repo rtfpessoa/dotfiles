@@ -68,18 +68,6 @@ gh auth login
 gh auth setup-git
 ```
 
-### wmux delegate worktrees
-
-On Linux the installer also maintains `~/.gitconfig.wmux-unsigned` and idempotently
-appends two `includeIf "gitdir:…"` sections to the END of `~/.gitconfig`. Inside wmux
-delegate worktrees (`<branch>--<target12>` linked worktrees) commits are unsigned by
-design and pushes ride HTTPS through the GitHub CLI credential helper; main checkouts
-and plain worktrees keep their normal signing layers. The sections must sit at the end
-because git resolves repeated config keys last-writer-wins and the wmux git-auth
-layers set `commit.gpgsign = true` after the `~/.gitconfig.machine` include —
-re-running the installer repositions them if a wmuxd bootstrap appends its own lines
-below ours.
-
 `mcp-auth` is no longer a workspace prerequisite: `code-factory`'s `init.sh`
 auto-installs the binary by fetching `ddoghq/ssaitch` over the same
 authenticated transport and building it (bootstrapping a Go toolchain first

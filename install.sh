@@ -313,23 +313,17 @@ setup_git() {
   # 1Password op-ssh-sign path (absent on Linux), and machine-managed
   # config layers (e.g. ~/.config/datadog/git/config, included after
   # ~/.gitconfig.extras) can set signing keys the local agent cannot
-  # serve. Route overrides through ~/.gitconfig.machine — intended as
-  # the last repo-managed include, so they win (wmuxd may append its own
-  # git-auth includeIf lines after it; see
-  # upsert_wmux_unsigned_gitconfig for the delegate-worktree exception):
+  # serve. Route overrides through ~/.gitconfig.machine — the include
+  # that comes last in the repo gitconfig — so they win:
   #   - GIT_SIGNING_KEY (literal SSH public key, type + blob only) signs
   #     personal repos (github.com/rtfpessoa/**) via
   #     ~/.gitconfig.personal-signing; other repos keep their own layers.
   #   - without a key, the includeIfs point at a missing file (git
   #     silently ignores it), so personal repos sign with the managed
   #     default; re-run with GIT_SIGNING_KEY to pin the personal key.
-  #     Never write `commit.gpgsign = false` here: it would clobber the
-  #     managed `commit.gpgSign = true` for every repo and land unsigned
-  #     commits. The only sanctioned unsigned context is wmux delegate
-  #     worktrees, handled by upsert_wmux_unsigned_gitconfig() via
-  #     ~/.gitconfig.wmux-unsigned — appended at the very END of
-  #     ~/.gitconfig (after wmuxd's hasconfig lines) so it wins the
-  #     last-writer-wins race there and nowhere else.
+  #     Never write `commit.gpgsign = false` here: this file is included
+  #     last, so it would clobber the managed `commit.gpgSign = true` and
+  #     land unsigned commits.
   if [ "$(uname -s)" = "Linux" ] && [ ! -f "$HOME/.gitconfig.machine" ]; then
     info "Writing machine-local git signing layer (ssh-keygen + personal-repo key routing)"
     cat > "$HOME/.gitconfig.machine" <<-EOF
@@ -439,12 +433,6 @@ setup_core_dotfiles() {
 
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
-  # wmux delegate-worktree overrides — after setup_git (whose creation
-  # guards stay authoritative for ~/.gitconfig.machine). Linux only:
-  # wmux delegates exist on workspaces; keep Darwin out of this path.
-  if [ "$(uname -s)" = "Linux" ]; then
-    upsert_wmux_unsigned_gitconfig
-  fi
 }
 
 # --------------------------------------------------------------------------
