@@ -79,12 +79,12 @@ upsert_wmux_unsigned_gitconfig
 # --- 2. both includeIf sections present, exactly once, at the END
 [ "$(count_include_sections)" = "2" ] \
   || fail "expected 2 includeIf gitdir entries, got $(count_include_sections)"
-tail -n 2 "$clone_git/.gitconfig" | head -n 1 \
-  | grep -q 'includeIf "gitdir:/workspaces/' \
-  || fail "the last section in ~/.gitconfig is not the /workspaces includeIf"
-tail -n 1 "$clone_git/.gitconfig" \
-  | grep -q 'path = ~/.gitconfig.wmux-unsigned' \
-  || fail "the last line of ~/.gitconfig is not the includeIf path"
+expected_tail='[includeIf "gitdir:~/**/.git/worktrees/*--[0-9a-f]*"]
+	path = ~/.gitconfig.wmux-unsigned
+[includeIf "gitdir:/workspaces/**/.git/worktrees/*--[0-9a-f]*"]
+	path = ~/.gitconfig.wmux-unsigned'
+[ "$(tail -n 4 "$clone_git/.gitconfig")" = "$expected_tail" ] \
+  || fail "the includeIf sections are not the canonical last 4 lines of ~/.gitconfig"
 
 # --- 3. idempotency: re-run changes nothing structural
 upsert_wmux_unsigned_gitconfig
@@ -117,19 +117,19 @@ probe() {
 
 origin_line="$(GIT_CONFIG_GLOBAL="$home/.gitconfig" GIT_CONFIG_NOSYSTEM=1 \
   git -C "$home/spike--000000abcdef" config --show-origin commit.gpgsign)"
-echo "$origin_line" | grep -q '\.gitconfig\.wmux-unsigned' \
+[[ "$origin_line" == *'.gitconfig.wmux-unsigned'* ]] \
   || fail "delegate gpgsign=false did not come from ~/.gitconfig.wmux-unsigned (got: $origin_line)"
 
 # --- 5. reverse URL rules reach the effective delegate config
 reverse="$(GIT_CONFIG_GLOBAL="$home/.gitconfig" GIT_CONFIG_NOSYSTEM=1 \
   git -C "$home/spike--000000abcdef" \
   config --get-all 'url.https://github.com/ddoghq/.insteadof')"
-echo "$reverse" | grep -q 'git@ddoghq.github.com:ddoghq:' \
+[[ "$reverse" == *'git@ddoghq.github.com:ddoghq:'* ]] \
   || fail "reverse ddoghq URL rule missing from effective delegate config"
 reverse_sandbox="$(GIT_CONFIG_GLOBAL="$home/.gitconfig" GIT_CONFIG_NOSYSTEM=1 \
   git -C "$home/spike--000000abcdef" \
   config --get-all 'url.https://github.com/ddoghq-sandbox/.insteadof')"
-echo "$reverse_sandbox" | grep -q 'git@ddoghq.github.com:ddoghq-sandbox:' \
+[[ "$reverse_sandbox" == *'git@ddoghq.github.com:ddoghq-sandbox:'* ]] \
   || fail "reverse ddoghq-sandbox URL rule missing from effective delegate config"
 
 # --- 6. pristine HOME (no ~/.gitconfig at all) still works
