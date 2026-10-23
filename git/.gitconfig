@@ -307,6 +307,24 @@ insteadOf = "gst:"
 insteadOf = "gist:"
 insteadOf = "git://gist.github.com/"
 
+# Route ddoghq GitHub Enterprise-managed orgs through the ddoghq.github.com
+# SSH alias (apps/.ssh/config selects the ddoghq account key there;
+# github.com itself serves the personal/commercial key).
+[url "git@ddoghq.github.com:ddoghq/"]
+insteadOf = "git@github.com:ddoghq/"
+insteadOf = "https://github.com/ddoghq/"
+insteadOf = "ssh://git@github.com/ddoghq/"
+
+[url "git@ddoghq.github.com:ddoghq-sandbox/"]
+insteadOf = "git@github.com:ddoghq-sandbox/"
+insteadOf = "https://github.com/ddoghq-sandbox/"
+insteadOf = "ssh://git@github.com/ddoghq-sandbox/"
+
+[url "git@ddoghq.github.com:rodrigo-fernandes_ddog/"]
+insteadOf = "git@github.com:rodrigo-fernandes_ddog/"
+insteadOf = "https://github.com/rodrigo-fernandes_ddog/"
+insteadOf = "ssh://git@github.com/rodrigo-fernandes_ddog/"
+
 [init]
 defaultBranch = main
 
@@ -319,6 +337,22 @@ format = ssh
 
 [gpg "ssh"]
 program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+# Stowed from git/.config/git/allowed_signers (public key material) so
+# verify-commit works on current and rotated signatures alike.
+allowedSignersFile = ~/.config/git/allowed_signers
+
+# Default signing key: the 1Password "DataDog SSH Authentication & Signing
+# keys" item (public material only) — the same key serves personal
+# (rtfpessoa) and commercial repos on the Mac. Workspaces override it
+# per-org via the wmux git-auth layers; ddoghq repos override it via the
+# includeIf chain below (GitHub verifies ddoghq signatures only against
+# keys registered on the ddoghq account).
+[user]
+signingKey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN
+
+# Sign tags like commits (SSH format via the agent).
+[tag]
+gpgsign = true
 
 [include]
 path = ~/.gitconfig.extras
@@ -326,11 +360,41 @@ path = ~/.gitconfig.extras
 [include]
 path = ~/.gitconfig.home
 
-[include]
-# `~`-based so the same gitconfig works on Darwin and Linux ($HOME differs
-# between them); git silently skips the include where the file is absent.
+# ddoghq repos sign with the ddoghq signing key. The target is stowed
+# from apps/ (macOS only): `~`-based paths keep this same gitconfig valid
+# on Darwin and Linux, and on workspaces the absent include is silently
+# skipped so the wmux git-auth layers own ddoghq signing there.
 # Keep above ~/.gitconfig.machine so the machine layer stays last.
-path = ~/.config/datadog/git/config
+[includeIf "hasconfig:remote.*.url:git@github.com:ddoghq/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:git@ddoghq.github.com:ddoghq/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:https://github.com/ddoghq/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:ssh://git@github.com/ddoghq/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:ssh://git@ddoghq.github.com:ddoghq/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:git@github.com:ddoghq-sandbox/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:git@ddoghq.github.com:ddoghq-sandbox/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:https://github.com/ddoghq-sandbox/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:ssh://git@github.com/ddoghq-sandbox/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:ssh://git@ddoghq.github.com:ddoghq-sandbox/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:git@github.com:rodrigo-fernandes_ddog/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:git@ddoghq.github.com:rodrigo-fernandes_ddog/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:https://github.com/rodrigo-fernandes_ddog/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:ssh://git@github.com/rodrigo-fernandes_ddog/**"]
+path = ~/.gitconfig.ddoghq-signing
+[includeIf "hasconfig:remote.*.url:ssh://git@ddoghq.github.com:rodrigo-fernandes_ddog/**"]
+path = ~/.gitconfig.ddoghq-signing
 
 [include]
 path = ~/.gitconfig.machine

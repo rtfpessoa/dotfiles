@@ -1,0 +1,5 @@
+# ddoghq signing key — the 1Password "ddoghq SSH Signing Key" item
+# (public material only). Stowed from apps/ (macOS only); workspaces
+# sign ddoghq commits via the wmux git-auth layers instead.
+[user]
+signingKey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYCGcLi5MlSNTdNYLI/ZYJbYn9p75DwtHlDZy20IbD1

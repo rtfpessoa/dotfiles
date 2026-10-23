@@ -1,0 +1,7 @@
+# Allowed signers for SSH commit verification (gpg.ssh.allowedSignersFile).
+# Public key material only, one key per signing era so historical commits
+# still verify after rotation: current commercial key, rotated commercial
+# key, ddoghq signing key.
+rodrigo.fernandes@datadoghq.com namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN
+rodrigo.fernandes@datadoghq.com namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA7FSEjkmab1HoKCSxvKtsooTqTe5JDJ8bfFuw6I8lNe
+rodrigo.fernandes@datadoghq.com namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYCGcLi5MlSNTdNYLI/ZYJbYn9p75DwtHlDZy20IbD1

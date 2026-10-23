@@ -310,11 +310,10 @@ setup_git() {
   fi
 
   # SSH commit signing on Linux: the repo gitconfig pins the macOS
-  # 1Password op-ssh-sign path (absent on Linux), and machine-managed
-  # config layers (e.g. ~/.config/datadog/git/config, included after
-  # ~/.gitconfig.extras) can set signing keys the local agent cannot
-  # serve. Route overrides through ~/.gitconfig.machine — the include
-  # that comes last in the repo gitconfig — so they win:
+  # 1Password op-ssh-sign path (absent on Linux) and a default signing
+  # key the local agent may not serve. Route overrides through
+  # ~/.gitconfig.machine — the include that comes last in the repo
+  # gitconfig — so they win:
   #   - GIT_SIGNING_KEY (literal SSH public key, type + blob only) signs
   #     personal repos (github.com/rtfpessoa/**) via
   #     ~/.gitconfig.personal-signing; other repos keep their own layers.
