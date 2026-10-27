@@ -190,7 +190,9 @@ case "$command_name" in
     esac
     ;;
   timeout)
-    # passthrough: probes run under `timeout` when the binary exists
+    # passthrough: probes run under `timeout` when the binary exists.
+    # Record the wrapped invocation so bounded probes are assertable.
+    printf 'timeout %s\n' "$*" >> "$TRACE_FILE"
     shift
     exec "$@"
     ;;
@@ -335,6 +337,10 @@ export SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock"
 FAIL_HTTPS_PROBE=1 install_code_factory
 assert_contains "$TRACE_FILE" "git-ls-remote terminal_prompt=0 ssh_command=ssh -o BatchMode=yes -o ConnectTimeout=15 ssh_auth_sock=$FIXTURE_DIR/ssh-agent.sock args=ls-remote git@github.com:rtfpessoa/code-factory.git HEAD" \
   "code-factory did not probe the authenticated SSH transport"
+assert_contains "$TRACE_FILE" "timeout 10 ssh-add -l" \
+  "the ssh-add socket gate was not bounded"
+assert_contains "$TRACE_FILE" "timeout 30 git ls-remote git@github.com:rtfpessoa/code-factory.git HEAD" \
+  "the SSH ls-remote probe was not bounded"
 assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0 ssh_command=ssh -o BatchMode=yes -o ConnectTimeout=15 ssh_auth_sock=$FIXTURE_DIR/ssh-agent.sock args=clone git@github.com:rtfpessoa/code-factory.git" \
   "code-factory did not clone over non-interactive authenticated SSH"
 assert_not_contains "$TRACE_FILE" "https://github.com/rtfpessoa/code-factory.git" \
@@ -370,6 +376,37 @@ assert_contains "$TRACE_FILE" "git-clone-config global=/dev/null nosystem=1 term
   "missing mcp-auth did not clone code-factory"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "missing mcp-auth did not run code-factory initialization"
+
+# --- auth knob parsing ---------------------------------------------------
+# Invalid knobs fall back to their default and warn on stderr: the wait
+# loop captures these functions' stdout, so a warning riding along on it
+# poisons the integer comparison (the fail-fast/deadline checks silently
+# stop matching). Leading zeros are decimal, not octal.
+knob_warn="$FIXTURE_DIR/knob-warn"
+default_wait="$(unset CODE_FACTORY_AUTH_WAIT_SECONDS; code_factory_auth_wait_seconds)"
+[ "$default_wait" = "0" ] \
+  || fail "the default wait knob is not 0 (got: $default_wait)"
+default_poll="$(unset CODE_FACTORY_AUTH_POLL_SECONDS; code_factory_auth_poll_seconds)"
+[ "$default_poll" = "10" ] \
+  || fail "the default poll knob is not 10 (got: $default_poll)"
+bad_wait="$(CODE_FACTORY_AUTH_WAIT_SECONDS=abc code_factory_auth_wait_seconds 2>"$knob_warn")"
+[ "$bad_wait" = "0" ] \
+  || fail "an invalid wait knob did not fall back to 0 (got: $bad_wait)"
+grep -q "invalid CODE_FACTORY_AUTH_WAIT_SECONDS='abc'" "$knob_warn" \
+  || fail "an invalid wait knob did not warn on stderr"
+for bad_poll in abc 0 -1; do
+  got="$(CODE_FACTORY_AUTH_POLL_SECONDS="$bad_poll" code_factory_auth_poll_seconds 2>"$knob_warn")"
+  [ "$got" = "10" ] \
+    || fail "invalid poll knob '$bad_poll' did not fall back to 10 (got: $got)"
+  grep -q "invalid CODE_FACTORY_AUTH_POLL_SECONDS='$bad_poll'" "$knob_warn" \
+    || fail "invalid poll knob '$bad_poll' did not warn on stderr"
+done
+octal_wait="$(CODE_FACTORY_AUTH_WAIT_SECONDS=08 code_factory_auth_wait_seconds 2>/dev/null)"
+[ "$octal_wait" = "8" ] \
+  || fail "a leading-zero wait knob was not normalized to decimal 8 (got: $octal_wait)"
+octal_poll="$(CODE_FACTORY_AUTH_POLL_SECONDS=010 code_factory_auth_poll_seconds 2>/dev/null)"
+[ "$octal_poll" = "10" ] \
+  || fail "a leading-zero poll knob was not normalized to decimal 10 (got: $octal_poll)"
 
 # --- authentication wait loop -------------------------------------------
 # Fresh-workspace path: no transport at first (no agent, no gh token), then
@@ -409,6 +446,31 @@ assert_contains "$FIXTURE_DIR/wait-output" "dotfiles-retry" \
   "the timeout error did not name the recovery command"
 assert_not_contains "$TRACE_FILE" "code-factory-init" \
   "a failed wait still ran init.sh"
+
+# An invalid wait knob fails fast like the 0 default instead of waiting
+# forever: the captured value stays a clean integer.
+rm -f "$FIXTURE_DIR/ssh-add-calls"
+: > "$TRACE_FILE"
+if CODE_FACTORY_AUTH_WAIT_SECONDS=abc \
+  install_code_factory </dev/null >"$FIXTURE_DIR/wait-output" 2>&1; then
+  fail "an invalid wait knob did not fail fast without a transport"
+fi
+assert_contains "$FIXTURE_DIR/wait-output" "no authenticated transport is available" \
+  "an invalid wait knob did not take the fail-fast path"
+assert_not_contains "$FIXTURE_DIR/wait-output" "Waiting up to" \
+  "an invalid wait knob was treated as a wait budget"
+
+# The unset (not just 0) wait knob keeps the library's fail-fast default:
+# only the deferred worker opts into waiting by setting its own default.
+: > "$TRACE_FILE"
+if (unset CODE_FACTORY_AUTH_WAIT_SECONDS; install_code_factory </dev/null) \
+  >"$FIXTURE_DIR/wait-output" 2>&1; then
+  fail "the unset wait knob did not fail fast without a transport"
+fi
+assert_contains "$FIXTURE_DIR/wait-output" "no authenticated transport is available" \
+  "the unset wait knob did not take the fail-fast path"
+assert_not_contains "$FIXTURE_DIR/wait-output" "Waiting up to" \
+  "the unset wait knob was treated as a wait budget"
 
 # Immediate authentication: no wait is announced at all.
 rm -rf "$HOME/.code-factory"
@@ -487,6 +549,8 @@ assert_contains "$TRACE_FILE" "credential.https://github.com.helper=!gh auth git
   "the gh credential helper did not reach the HTTPS clone"
 assert_contains "$TRACE_FILE" "clone https://github.com/rtfpessoa/code-factory.git" \
   "the clone did not use the HTTPS transport"
+assert_contains "$TRACE_FILE" "timeout 30 git .* ls-remote https://github.com/rtfpessoa/code-factory.git HEAD" \
+  "the HTTPS ls-remote probe was not bounded"
 
 # Post-install hook: runs between the checkout and init.sh, only when the
 # checkout exists, and never blocks the install on failure.
@@ -552,5 +616,26 @@ assert_contains "$DOTFILES_STATE_DIR/install.status" '"state":"failed"' \
 assert_contains "$DOTFILES_STATE_DIR/install.status" '"exit_code":1' \
   "the deferred step failure was not surfaced as the exit code"
 unset FAIL_CURL
+
+# The deferred worker's own wait default (1800s) engages when the knob is
+# unset: the fresh-workspace scenario — no transport at provision time,
+# the forwarded agent appearing a few polls in, clone over the fixer
+# symlink — recovers without any explicit knob.
+rm -rf "$HOME/.code-factory" "$HOME/.ssh/ssh_auth_sock"
+rm -f "$GH_TOKEN_FIXTURE" "$FIXTURE_DIR/ssh-add-calls" "$FIXTURE_DIR/clone-attempts"
+mkdir -p "$HOME/.ssh"
+ln -s "$FIXTURE_DIR/ssh-agent.sock" "$HOME/.ssh/ssh_auth_sock"
+: > "$TRACE_FILE"
+env -u CODE_FACTORY_AUTH_WAIT_SECONDS \
+  CODE_FACTORY_AUTH_POLL_SECONDS=1 TEST_SSH_ADD_SUCCEED_AFTER=2 \
+  bash "$REPO_DIR/install.sh" --deferred \
+  || fail "the deferred worker did not recover with its 1800s default"
+assert_contains "$DOTFILES_STATE_DIR/install.log" "Waiting up to 1800s for authentication" \
+  "the deferred worker did not wait with its own default"
+assert_contains "$DOTFILES_STATE_DIR/install.status" '"state":"succeeded"' \
+  "the recovered deferred run was not persisted as success"
+assert_contains "$TRACE_FILE" "ssh_auth_sock=$HOME/.ssh/ssh_auth_sock args=clone git@github.com:rtfpessoa/code-factory.git" \
+  "the deferred recovery clone did not ride the fixer-symlink agent socket"
+unset TEST_SSH_ADD_SUCCEED_AFTER
 
 printf 'PASS: foreground and deferred installations are isolated safely\n'

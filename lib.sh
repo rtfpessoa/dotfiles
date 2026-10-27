@@ -209,7 +209,18 @@ code_factory_ssh_available() {
 code_factory_https_available() {
   command -v gh >/dev/null 2>&1 || return 1
   [ -n "$(gh auth token 2>/dev/null)" ] || return 1
-  code_factory_git_https ls-remote "$CODE_FACTORY_REPO" HEAD >/dev/null 2>&1
+  # Bounded like the SSH probe: a stalled HTTPS connection must not hang
+  # the deferred worker while it holds the install lock. bounded wraps the
+  # raw git invocation directly (timeout cannot exec the shell function
+  # above); the flags mirror code_factory_git_https.
+  GIT_CONFIG_GLOBAL=/dev/null \
+  GIT_CONFIG_NOSYSTEM=1 \
+  GIT_TERMINAL_PROMPT=0 \
+    bounded 30 git \
+      -c "url.${CODE_FACTORY_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_HTTPS_PREFIX}" \
+      -c credential.helper= \
+      -c "credential.https://github.com.helper=!gh auth git-credential" \
+      ls-remote "$CODE_FACTORY_REPO" HEAD >/dev/null 2>&1
 }
 
 # Sets CODE_FACTORY_TRANSPORT (ssh|https|none) and, for ssh, the
@@ -271,19 +282,24 @@ code_factory_wait_timeout_error() {
 code_factory_auth_wait_seconds() {
   local value="${CODE_FACTORY_AUTH_WAIT_SECONDS:-0}"
   if ! [[ "$value" =~ ^[0-9]+$ ]]; then
-    warn "invalid CODE_FACTORY_AUTH_WAIT_SECONDS='${CODE_FACTORY_AUTH_WAIT_SECONDS}'; using 0"
+    # stderr: this function's stdout is captured by the wait loop, and a
+    # warning riding along on stdout poisons the integer comparison.
+    warn "invalid CODE_FACTORY_AUTH_WAIT_SECONDS='${CODE_FACTORY_AUTH_WAIT_SECONDS}'; using 0" >&2
     value=0
   fi
-  printf '%s\n' "$value"
+  # 10#: a leading zero (08) is decimal, not octal — the wait loop's
+  # arithmetic would otherwise abort on "value too great for base".
+  printf '%s\n' "$((10#$value))"
 }
+
 
 code_factory_auth_poll_seconds() {
   local value="${CODE_FACTORY_AUTH_POLL_SECONDS:-10}"
   if ! [[ "$value" =~ ^[0-9]+$ ]] || [ "$value" -lt 1 ]; then
-    warn "invalid CODE_FACTORY_AUTH_POLL_SECONDS='${CODE_FACTORY_AUTH_POLL_SECONDS}'; using 10"
+    warn "invalid CODE_FACTORY_AUTH_POLL_SECONDS='${CODE_FACTORY_AUTH_POLL_SECONDS}'; using 10" >&2
     value=10
   fi
-  printf '%s\n' "$value"
+  printf '%s\n' "$((10#$value))"
 }
 
 # Clone or update the checkout over the selected transport. On a failed
