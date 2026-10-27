@@ -432,6 +432,21 @@ setup_core_dotfiles() {
 
   install_dotfiles bash common-sh fish git oh-my-posh vim zsh
   setup_git
+  install_retry_helper
+}
+
+install_retry_helper() {
+  # ~/.local/bin/dotfiles-retry: manual and login-triggered relauncher for
+  # the deferred worker (source: dotfiles-retry.sh at the repo root).
+  # Installed rather than stowed so the path is uniform across machines
+  # (~/.dotfiles on workspaces, ~/dotfiles elsewhere); the login hook in
+  # fish/conf.d/90-dotfiles-retry.fish calls it by absolute path. Linux
+  # only: the deferred worker and its status file do not exist on macOS.
+  if [ "$(uname -s)" != "Linux" ]; then
+    return 0
+  fi
+  mkdir -p "$HOME/.local/bin"
+  install -m 0755 "$SCRIPT_DIR/dotfiles-retry.sh" "$HOME/.local/bin/dotfiles-retry"
 }
 
 # --------------------------------------------------------------------------
@@ -501,9 +516,16 @@ finish_deferred_install() {
 run_deferred_install() {
   local unavailable_started_at
   local code_factory_status=0
+  local deferred_status=0
 
   mkdir -p "$DOTFILES_STATE_DIR"
   exec > >(tee -a "$DOTFILES_LOG_FILE") 2>&1
+
+  # Only the detached worker waits for GitHub authentication: fresh
+  # workspaces provision before any connection forwards an agent. Every
+  # other caller of install_code_factory — including the interactive macOS
+  # bootstrap — keeps lib.sh's fail-fast default of 0.
+  export CODE_FACTORY_AUTH_WAIT_SECONDS="${CODE_FACTORY_AUTH_WAIT_SECONDS:-1800}"
 
   if ! command -v flock &>/dev/null; then
     unavailable_started_at="$(timestamp)"
@@ -531,6 +553,24 @@ run_deferred_install() {
   # sources ~/.cargo/env itself, since this worker's shell does not load
   # the stowed configs that put ~/.cargo/bin on PATH).
   install_binaries
+  # The remaining environment steps run before code-factory so a possible
+  # authentication wait never delays them. This runs under set -e, and a
+  # step failure would otherwise abort the run before code-factory gets
+  # its chance, so failures are recorded and the run continues; the
+  # deferred status surfaces them at the end.
+  if ! install_zsh_history_substring_search; then
+    warn "zsh-history-substring-search setup failed; continuing with deferred setup"
+    deferred_status=1
+  fi
+  setup_vim
+  if ! setup_fonts; then
+    warn "font setup failed; continuing with deferred setup"
+    deferred_status=1
+  fi
+  if ! setup_default_shell; then
+    warn "default shell setup failed; continuing with deferred setup"
+    deferred_status=1
+  fi
   # </dev/null: the deferred worker runs inside tmux (a TTY), which would
   # otherwise make code-factory's init.sh take its INTERACTIVE ddtool login
   # path and hang the unattended install on a browser OIDC flow. With stdin
@@ -538,19 +578,19 @@ run_deferred_install() {
   # still configures everything whenever auth is already present.
   install_code_factory </dev/null || code_factory_status=$?
   if [ "$code_factory_status" -ne 0 ]; then
-    warn "code-factory setup failed (exit $code_factory_status); continuing with the remaining deferred steps"
-    warn "Retry after GitHub auth is available (ssaitch session or gh auth login); see the log above"
+    warn "code-factory setup failed (exit $code_factory_status); the deferred environment is otherwise complete"
+    warn "Retry after GitHub auth is available: dotfiles-retry (or workspaces dotfiles sync on Datadog workspaces); see the log above"
   fi
-  install_zsh_history_substring_search
-  setup_vim
-  setup_fonts
-  setup_default_shell
   info "Deferred installation complete"
   info "Start a new shell session to apply changes: exec \$SHELL -l"
 
   # Surface the code-factory failure in the deferred exit status so
   # install.status records it; every other step still ran to completion.
-  return "$code_factory_status"
+  # When code-factory succeeded, surface the recorded step failure instead.
+  if [ "$code_factory_status" -ne 0 ]; then
+    return "$code_factory_status"
+  fi
+  return "$deferred_status"
 }
 
 launch_deferred_install() {

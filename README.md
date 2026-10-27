@@ -57,9 +57,32 @@ bash install.sh
 ```
 
 The deferred `code-factory` setup is non-interactive:
-- It uses SSH when the workspace can access the repository through its SSH agent.
-- Otherwise it uses HTTPS and preserves the configured Git credential helpers.
-- If neither transport is authenticated, the installer fails with an actionable error instead of waiting for a prompt in tmux.
+- It uses SSH when an agent socket can authenticate to the repository — the
+  worker's own `SSH_AUTH_SOCK` or, on Datadog workspaces, the
+  ssh-agent-fixer symlink `~/.ssh/ssh_auth_sock`, which is re-pointed at the
+  newest forwarded agent on every SSH connection. The chosen socket is
+  exported to the clone and to `init.sh` (which fetches over SSH itself).
+- Otherwise it uses HTTPS, but only when `gh auth token` yields a token and
+  the config-isolated `ls-remote` proves it (gh's credential helper is
+  passed to git explicitly, since the isolation drops `gh auth setup-git`'s).
+- If neither transport is authenticated, the detached worker waits for one
+  to appear instead of failing: fresh workspaces run the deferred install
+  before any connection has forwarded an agent. It polls every 10s for up
+  to 30 minutes (`CODE_FACTORY_AUTH_WAIT_SECONDS`, default 1800 in the
+  deferred worker; `CODE_FACTORY_AUTH_POLL_SECONDS` for the interval). All
+  other deferred steps (shell, plugins, fonts) complete first — the wait
+  only ever delays code-factory. Foreground and interactive callers,
+  including the macOS bootstrap, keep the fail-fast behavior (wait 0).
+- When the wait expires the status file records the failure; heal it after
+  connecting with `dotfiles-retry` (manual: any time; automatic: the fish
+  login hook relaunches the deferred worker when the last attempt did not
+  succeed, nothing is running, and the attempt is older than 15 minutes) or
+  with `workspaces dotfiles sync` on Datadog workspaces.
+
+After a successful code-factory checkout the worker runs
+`~/.config/dotfiles/code-factory-post-install.sh` when that file is
+executable — the extension point the Datadog workspaces dotfiles layer uses
+to pin repo-local git config (wmux signing) onto the fresh checkout.
 
 For HTTPS authentication, configure GitHub CLI credentials before running the installer:
 
