@@ -42,6 +42,19 @@ done
 grep -qx 'path = ~/.gitconfig.portable' "$root" \
   || fail "the macOS root does not include the portable layer"
 
+# The portable layer must carry these itself. The workspace fixture below defines
+# the same mappings on the managed side, so a composed-only assertion could pass
+# after a loss from the portable layer.
+portable_listing="$(fixture_git config --file "$portable" --list)"
+[ "$(printf '%s\n' "$portable_listing" | grep -c '^url\.')" -ge 13 ] \
+  || fail "the portable layer lost URL rewrites"
+for base in 'ddoghq/' 'ddoghq-sandbox/' 'rodrigo-fernandes_ddog/'; do
+  [ "$(printf '%s\n' "$portable_listing" | grep -cF "git@ddoghq.github.com:${base}")" -ge 1 ] \
+    || fail "the portable layer lost the ${base} routing block"
+done
+[ "$(fixture_git config --file "$portable" --get datadog.team)" = "team-rapidworkloads" ] \
+  || fail "the portable layer no longer carries the datadog team attribution"
+
 # Signing material, the hooks path and Darwin filesystem semantics stay in the
 # root: a pull in ~/dotfiles goes live before the new stow target is linked, so
 # losing the portable layer must cost aliases and tuning only — never signing
@@ -98,7 +111,9 @@ cat > "$home/.gitconfig" <<EOF
 	insteadOf = https://github.com/ddoghq/
 EOF
 
-chain_git() { HOME="$home" git config --global --includes "$@"; }
+chain_git() {
+  env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$home" git config --global --includes "$@"
+}
 
 [ "$(chain_git --get alias.st)" = "status -sb" ] \
   || fail "the workspace chain does not resolve the portable aliases"
@@ -110,10 +125,9 @@ chain_git() { HOME="$home" git config --global --includes "$@"; }
   || fail "the workspace gitignore must supersede the portable core.excludesfile"
 [ "$(chain_git --get core.hooksPath)" = "/managed/hooks" ] \
   || fail "the managed hooksPath must win"
-[ "$(chain_git --get datadog.team)" = "team-rapidworkloads" ] \
-  || fail "the portable layer no longer carries the datadog team attribution"
 
-routing="$(cd "$FIXTURE_DIR" && HOME="$home" git ls-remote --get-url https://github.com/ddoghq/dd-source)"
+routing="$(cd "$FIXTURE_DIR" && env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$home" \
+  git ls-remote --get-url https://github.com/ddoghq/dd-source)"
 [ "$routing" = "git@ddoghq.github.com:ddoghq/dd-source" ] \
   || fail "ddoghq URL routing regressed (got: $routing)"
 
@@ -124,7 +138,8 @@ cat > "$missing/.gitconfig" <<EOF
 [include]
 	path = $missing/.gitconfig.portable
 EOF
-if HOME="$missing" git config --global --includes --get alias.st 2>"$FIXTURE_DIR/stderr"; then
+if env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$missing" \
+     git config --global --includes --get alias.st 2>"$FIXTURE_DIR/stderr"; then
   fail "an absent portable layer must not resolve aliases"
 fi
 [ ! -s "$FIXTURE_DIR/stderr" ] \
@@ -141,22 +156,22 @@ cp "$root" "$mac/.gitconfig"
 : > "$mac/.gitconfig.home"
 : > "$mac/.gitconfig.machine"
 
-if HOME="$mac" git config --global --includes --get alias.st >/dev/null 2>&1; then
+if env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac" git config --global --includes --get alias.st >/dev/null 2>&1; then
   fail "the macOS root must not resolve aliases before the portable layer is stowed"
 fi
-[ "$(HOME="$mac" git config --global --includes --get commit.gpgsign)" = "true" ] \
+[ "$(env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac" git config --global --includes --get commit.gpgsign)" = "true" ] \
   || fail "the macOS root must keep signing enabled without the portable layer"
-[ "$(HOME="$mac" git config --global --includes --get gpg.format)" = "ssh" ] \
+[ "$(env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac" git config --global --includes --get gpg.format)" = "ssh" ] \
   || fail "the macOS root must keep the SSH signing format without the portable layer"
-[ -n "$(HOME="$mac" git config --global --includes --get gpg.ssh.program)" ] \
+[ -n "$(env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac" git config --global --includes --get gpg.ssh.program)" ] \
   || fail "the macOS root must keep the 1Password signer without the portable layer"
-[ -n "$(HOME="$mac" git config --global --includes --get core.hooksPath)" ] \
+[ -n "$(env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac" git config --global --includes --get core.hooksPath)" ] \
   || fail "the macOS root must keep the Maat hooks path without the portable layer"
 
 ln -s "$portable" "$mac/.gitconfig.portable"
-[ "$(HOME="$mac" git config --global --includes --get alias.st)" = "status -sb" ] \
+[ "$(env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac" git config --global --includes --get alias.st)" = "status -sb" ] \
   || fail "the macOS root does not resolve aliases once the portable layer is stowed"
-[ "$(HOME="$mac" git config --global --includes --get user.signingkey)" = "key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN" ] \
+[ "$(env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac" git config --global --includes --get user.signingkey)" = "key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN" ] \
   || fail "the macOS default signing key changed"
 
 # --- platform_owns_gitconfig -------------------------------------------------
