@@ -63,10 +63,10 @@ path = ~/.gitconfig.extras
 [include]
 path = ~/.gitconfig.home
 
-# ddoghq repos sign with the ddoghq signing key. The target is stowed
-# from apps/ (macOS only): `~`-based paths keep this same gitconfig valid
-# on Darwin and Linux, and on workspaces the absent include is silently
-# skipped so the wmux git-auth layers own ddoghq signing there.
+# ddoghq repos sign with the ddoghq signing key. The target is stowed from
+# apps/ (macOS only); workspaces never load this file at all (the platform owns
+# ~/.gitconfig there and the wmux git-auth layers own ddoghq signing), and the
+# `~`-based path keeps this file valid on Darwin and Linux either way.
 # Keep above ~/.gitconfig.machine so the machine layer stays last.
 [includeIf "hasconfig:remote.*.url:git@github.com:ddoghq/**"]
 path = ~/.gitconfig.ddoghq-signing

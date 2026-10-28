@@ -134,6 +134,12 @@ The Linux installer leaves a platform-owned `~/.gitconfig` ("Managed by
 workspaces") untouched and stows the `git` package with just that file ignored; any
 other existing `~/.gitconfig` is still archived to `~/.gitconfig.datadog`.
 
+On macOS, the split added a new stow target: after pulling this change into an
+existing checkout, run `stow -R -d ~/dotfiles -t ~ git` (or `bash bootstrap.sh`).
+Until then the root includes `~/.gitconfig.portable`, a symlink that does not
+exist yet, so the aliases are missing while signing and hooks keep working. Check
+with `git config --global --includes --get alias.st`.
+
 ### Cross-platform shell configs
 
 Shell configuration files (aliases, functions, exports, PATH) are split into three variants:
