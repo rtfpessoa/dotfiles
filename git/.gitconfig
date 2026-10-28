@@ -1,332 +1,17 @@
-[alias]
-co = checkout
-
-br = branch
-brd = branch -D
-brdr = !"f() { git branch -D $1; git push origin --delete $1; }; f"
-
-# Add changes interactively
-ad = add -p
-
-# Stage all files
-ada = add -A .
-
-st = status -sb
-
-ps = push -u origin HEAD
-
-pl = pull --rebase --autostash
-
-# Delete previous commit and leave changes from it unstaged
-uc = reset --soft HEAD^
-
-rhh = reset --hard HEAD
-
-fe = fetch --force --prune --jobs=8 --progress
-
-fea = fetch --force --prune --prune-tags --tags --recurse-submodules=yes --jobs=8 --progress
-
-# View abbreviated SHA, description, and history graph of the latest 20 commits.
-l = log --pretty=oneline -n 20 --graph --abbrev-commit
-
-# View the current working tree status using the short format.
-s = status -s
-
-# Show the diff between the latest commit and the current state.
-d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
-
-# `git di $number` shows the diff between the state `$number` revisions ago and the current state.
-di = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
-
-c = commit
-
-cm = commit -m
-
-ca = commit --amend --no-edit
-
-amend = commit --amend
-
-main = "!f() { git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
-m = main
-um = "!f() { git fetch origin $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"):$(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
-mr = "!f() { git um && git rebase $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
-pm = "!f() { echo $(git symbolic-ref refs/remotes/origin/HEAD | sed \"s@^refs/remotes/origin/@@\"); }; f"
-
-dh = "!f() { git diff -M -C -U10 --patience "HEAD~${1-0}"; }; f"
-
-# Switch to a branch, creating it if necessary.
-go = "!f() { git checkout -b \"$1\" 2> /dev/null || git checkout \"$1\"; }; f"
-
-# Show verbose output about tags, branches or remotes
-tags = tag -l
-branches = branch --all
-remotes = remote --verbose
-
-grep = grep -Ii
-
-# List aliases.
-aliases = config --get-regexp alias
-
-# Credit an author on the latest commit.
-credit = "!f() { git commit --amend --author \"$1 <$2>\" -C HEAD; }; f"
-
-# Interactive rebase with the given number of latest commits.
-reb = "!r() { git rebase -i HEAD~$1; }; r"
-
-# Remove the old tag with this name and tag the latest commit with it.
-retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
-
-# Find branches containing commit
-fb = "!f() { git branch -a --contains $1; }; f"
-
-# Find tags containing commit
-ft = "!f() { git describe --always --contains $1; }; f"
-
-# Find commits by source code
-fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f"
-
-# Find commits by commit message
-fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
-
-# Remove branches that have already been merged with main.
-# a.k.a. ‘delete merged’
-dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
-
-# List contributors with number of commits.
-contributors = shortlog --summary --numbered
-
-# Show the user email for the current repository.
-whoami = config user.email
-
-sl = stash list
-sa = stash apply
-ss = stash save
-sd = stash drop
-
-## List modified files in last commit
-dl = show --name-only --oneline
-
-## List all aliases
-la = "!git config -l | grep alias | cut -c 7-"
-
-## Grep from root folder
-gra = "!f() { A=$(pwd) && TOPLEVEL=$(git rev-parse --show-toplevel) && cd $TOPLEVEL && git grep --full-name -In $1 | xargs -I{} echo $TOPLEVEL/{} && cd $A; }; f"
-
-## Grep on filename
-f = "!git ls-files | grep -i"
-
-## Assume aliases
-assume = update-index --assume-unchanged
-unassume = update-index --no-assume-unchanged
-
-## Show assumed files
-assumed = "!git ls-files -v | grep ^h | cut -c 3-"
-
-## Unassume all the assumed files
-unassumeall = "!git assumed | xargs git update-index --no-assume-unchanged"
-assumeall = "!git st -s | awk {'print $2'} | xargs git assume"
-
-lasttag = describe --tags --abbrev=0
-lt = describe --tags --abbrev=0
-
-## Merges
-ours = "!f() { git co --ours $@ && git add $@; }; f"
-theirs = "!f() { git co --theirs $@ && git add $@; }; f"
-
-## List remotes
-rem = "!git config -l | grep remote.*url | tail -n +2"
-
-[apply]
-# Detect whitespace errors when applying a patch.
-whitespace = fix
-
-[branch]
-# Show most recently changed branches first.
-sort = -committerdate
-
-[index]
-# Use index version 4, which is required for untrackedCache and other features.
-# Modern Git versions might default to this.
-version = 4
-
-# Enable parallel index operations if supported by your Git version.
-# Set to true or to the number of cores.
-threads = true # or <number_of_cores>
-
-[feature]
-# Enable optimizations for repositories with many files.
-manyFiles = true
-
-# Enable writing commit-graph data, which speeds up history traversal.
-# This is typically on by default in modern Git.
-commitGraph = true # Implicitly handled by maintenance tasks
-
-# Enable using multi-pack indexes, beneficial for repos with many packfiles.
-# This is typically on by default in modern Git.
-multiPackIndex = true # Implicitly handled by maintenance tasks
-
-[pack]
-threads = 10
-
-[gc]
-# Enable automatic garbage collection. Git will run 'git gc --auto'
-# when it deems necessary (e.g., too many loose objects).
-# This is crucial for keeping the repository optimized.
-auto = 6700
-
-# (Optional) How long to keep unreachable objects before pruning.
-# Default is "2.weeks.ago". Be cautious if changing this.
-pruneExpire = "2.weeks.ago"
-
-# Write a commit-graph when running 'git gc'. Enabled by default.
-# writeCommitGraph = true
-
-[maintenance]
-# Enable automatic background maintenance tasks (recommended).
-# This will schedule tasks like prefetching, gc, commit-graph updates, etc.
-# You need to register each large repository with 'git maintenance register'
-# for these tasks to run on it.
-auto = true
-
-[rebase]
-autosquash = true
-autostash = true
-missingcommitscheck = error
-updaterefs = true
-
-[fetch]
-# Number of parallel jobs to use when fetching.
-# Set this to the number of CPU cores or a preferred value.
-parallel = 0 # 0 means use all available cores
-prune = true
-
-# (Optional, use with caution) Disable checking objects for consistency during fetch.
-# This can speed up fetches but relies on the remote repository being healthy.
-# fsckobjects = false
-
-# (Optional) Write commit-graph after fetch if new refs were fetched.
-# Often enabled by default or handled by maintenance tasks.
-# writeCommitGraph = true
-
-[core]
-# Use custom `.gitignore` and `.gitattributes`.
-excludesfile = ~/.gitignore
-attributesfile = ~/.gitattributes
-ignorecase = true
-
-# Treat spaces before tabs and all kinds of trailing whitespace as an error.
-# [default] trailing-space: looks for spaces at the end of a line
-# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
-whitespace = space-before-tab,-indent-with-non-tab,trailing-space
-
-# Make `git rebase` safer on macOS.
-# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
-trustctime = false
-
-# Prevent showing files whose names contain non-ASCII symbols as unversioned.
-# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
-precomposeunicode = false
-
-# Enable untracked cache to speed up 'git status' by caching untracked file information.
-# Requires index version 4.
-# Speed up commands involving untracked files such as `git status`.
-# https://git-scm.com/docs/git-update-index#_untracked_cache
-untrackedCache = true
-
-# Disable the File System Monitor (FSMonitor).
-# On macOS it spawns a detached `git fsmonitor--daemon` per repository (8 IPC
-# threads each). With many repos and linked worktrees this piled up to 150+
-# daemons and kept fseventsd at ~98% CPU. The daemon also does not watch
-# linked worktrees, so status there rescans everything anyway (NTPS-326,
-# SOURCE-698).
-# untrackedCache + preloadindex + [feature] manyFiles + [index] version=4
-# remain the fast-status stack on macOS.
-# Src: https://github.blog/2022-06-29-improve-git-monorepo-performance-with-a-file-system-monitor/
-fsmonitor = false
-
-# Speeds up operations like 'git status' by preloading the index in parallel.
-preloadindex = true
-
-editor = vim
-quotepath = false
-hooksPath = ~/.local/share/code-factory/maat/hooks/global
-
-[color]
-# Use colors in Git commands that are capable of colored output when
-# outputting to the terminal. (This is the default setting in Git ≥ 1.8.4.)
-ui = auto
-
-[color "branch"]
-current = yellow reverse
-local = yellow
-remote = green
-
-[color "diff"]
-meta = yellow bold
-frag = magenta bold # line info
-old = red           # deletions
-new = green         # additions
-
-[color "status"]
-added = yellow
-changed = green
-untracked = cyan
-
-[diff]
-# Detect copies as well as renames.
-renames = copies
-
-[diff "bin"]
-# Use `hexdump` to diff binary files.
-textconv = hexdump -v -C
-
-[help]
-# Automatically correct and execute mistyped commands.
-autocorrect = 0
-
-[merge]
-# Include summaries of merged commits in newly created merge commit messages
-log = true
-
-[push]
-# https://git-scm.com/docs/git-config#git-config-pushdefault
-default = simple
-# Make `git push` push relevant annotated tags when pushing branches out.
-followTags = true
-
-# URL shorthands
-
-[url "git@github.com:"]
-insteadOf = "git://github.com/"
-insteadOf = "https://github.com/"
-insteadOf = "gh:"
-insteadOf = "github:"
-
-[url "git@gist.github.com:"]
-insteadOf = "gst:"
-insteadOf = "gist:"
-insteadOf = "git://gist.github.com/"
-
-# Route ddoghq GitHub Enterprise-managed orgs through the ddoghq.github.com
-# SSH alias (apps/.ssh/config selects the ddoghq account key there;
-# github.com itself serves the personal/commercial key).
-[url "git@ddoghq.github.com:ddoghq/"]
-insteadOf = "git@github.com:ddoghq/"
-insteadOf = "https://github.com/ddoghq/"
-insteadOf = "ssh://git@github.com/ddoghq/"
-
-[url "git@ddoghq.github.com:ddoghq-sandbox/"]
-insteadOf = "git@github.com:ddoghq-sandbox/"
-insteadOf = "https://github.com/ddoghq-sandbox/"
-insteadOf = "ssh://git@github.com/ddoghq-sandbox/"
-
-[url "git@ddoghq.github.com:rodrigo-fernandes_ddog/"]
-insteadOf = "git@github.com:rodrigo-fernandes_ddog/"
-insteadOf = "https://github.com/rodrigo-fernandes_ddog/"
-insteadOf = "ssh://git@github.com/rodrigo-fernandes_ddog/"
-
-[init]
-defaultBranch = main
+# macOS root gitconfig, stowed to ~/.gitconfig.
+#
+# On Datadog workspaces this file is not used: the platform owns ~/.gitconfig
+# there and includes the user layer (users/rodrigo.fernandes/.gitconfig), which
+# includes the same portable layer from ~/.dotfiles.
+#
+# What stays here is macOS-specific, or must remain reachable when the portable
+# layer is not linked yet (a pull in ~/dotfiles goes live immediately, but a new
+# stow target needs `stow -R`): signing defaults and hooks. Losing the portable
+# layer therefore costs aliases and tuning, never signing or the Maat gate.
+
+# Aliases and shared settings.
+[include]
+path = ~/.gitconfig.portable
 
 [commit]
 # https://docs.github.com/en/authentication/managing-commit-signature-verification/generating-a-new-gpg-key
@@ -353,6 +38,24 @@ signingKey = key::ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyV
 # Sign tags like commits (SSH format via the agent).
 [tag]
 gpgsign = true
+
+
+# Darwin filesystem semantics and the Maat global hooks. Workspaces keep the
+# managed config's hooksPath, so this must not move to the portable layer.
+[core]
+ignorecase = true
+# Make `git rebase` safer on macOS.
+# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+trustctime = false
+# Prevent showing files whose names contain non-ASCII symbols as unversioned.
+# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+precomposeunicode = false
+hooksPath = ~/.local/share/code-factory/maat/hooks/global
+
+[diff "bin"]
+# Use `hexdump` to diff binary files (hexdump ships with macOS; workspace
+# images do not guarantee bsdextrautils).
+textconv = hexdump -v -C
 
 [include]
 path = ~/.gitconfig.extras
@@ -399,5 +102,3 @@ path = ~/.gitconfig.ddoghq-signing
 [include]
 path = ~/.gitconfig.machine
 
-[datadog]
-team = team-rapidworkloads
