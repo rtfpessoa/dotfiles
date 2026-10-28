@@ -44,14 +44,31 @@ grep -qx 'path = ~/.gitconfig.portable' "$root" \
 
 # The portable layer must carry these itself. The workspace fixture below defines
 # the same mappings on the managed side, so a composed-only assertion could pass
-# after a loss from the portable layer.
-portable_listing="$(fixture_git config --file "$portable" --list)"
-[ "$(printf '%s\n' "$portable_listing" | grep -c '^url\.')" -ge 13 ] \
-  || fail "the portable layer lost URL rewrites"
-for base in 'ddoghq/' 'ddoghq-sandbox/' 'rodrigo-fernandes_ddog/'; do
-  [ "$(printf '%s\n' "$portable_listing" | grep -cF "git@ddoghq.github.com:${base}")" -ge 1 ] \
-    || fail "the portable layer lost the ${base} routing block"
-done
+# after a loss from the portable layer: assert every insteadOf value directly.
+assert_portable_url() {
+  local base="$1" value="$2" count
+  count="$(fixture_git config --file "$portable" --get-all "url.$base.insteadOf" \
+    | grep -cFx -- "$value" || true)"
+  [ "${count:-0}" -ge 1 ] \
+    || fail "the portable layer lost url.$base.insteadOf = $value"
+}
+
+assert_portable_url 'git@github.com:' 'git://github.com/'
+assert_portable_url 'git@github.com:' 'https://github.com/'
+assert_portable_url 'git@github.com:' 'gh:'
+assert_portable_url 'git@github.com:' 'github:'
+assert_portable_url 'git@gist.github.com:' 'gst:'
+assert_portable_url 'git@gist.github.com:' 'gist:'
+assert_portable_url 'git@gist.github.com:' 'git://gist.github.com/'
+assert_portable_url 'git@ddoghq.github.com:ddoghq/' 'git@github.com:ddoghq/'
+assert_portable_url 'git@ddoghq.github.com:ddoghq/' 'https://github.com/ddoghq/'
+assert_portable_url 'git@ddoghq.github.com:ddoghq/' 'ssh://git@github.com/ddoghq/'
+assert_portable_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'https://github.com/ddoghq-sandbox/'
+assert_portable_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'git@github.com:ddoghq-sandbox/'
+assert_portable_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'ssh://git@github.com/ddoghq-sandbox/'
+assert_portable_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'https://github.com/rodrigo-fernandes_ddog/'
+assert_portable_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'git@github.com:rodrigo-fernandes_ddog/'
+assert_portable_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'ssh://git@github.com/rodrigo-fernandes_ddog/'
 [ "$(fixture_git config --file "$portable" --get datadog.team)" = "team-rapidworkloads" ] \
   || fail "the portable layer no longer carries the datadog team attribution"
 
