@@ -638,4 +638,32 @@ assert_contains "$TRACE_FILE" "ssh_auth_sock=$HOME/.ssh/ssh_auth_sock args=clone
   "the deferred recovery clone did not ride the fixer-symlink agent socket"
 unset TEST_SSH_ADD_SUCCEED_AFTER
 
+# --- platform-owned ~/.gitconfig -----------------------------------------
+# The workspaces platform writes ~/.gitconfig itself and re-includes the user
+# layer, so archiving it would drop the managed config and the wmux
+# includeIfs. The git package must be stowed with ~/.gitconfig ignored.
+rm -f "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
+printf '# Managed by workspaces\n[user]\n\temail = managed@datadoghq.com\n' > "$HOME/.gitconfig"
+: > "$TRACE_FILE"
+bash "$REPO_DIR/install.sh"
+grep -qF -- '--ignore=^\.gitconfig$' "$TRACE_FILE" \
+  || fail "the platform-owned ~/.gitconfig was not excluded from the git stow"
+grep -q 'Managed by workspaces' "$HOME/.gitconfig" \
+  || fail "the platform-owned ~/.gitconfig was modified"
+[ ! -e "$HOME/.gitconfig.datadog" ] \
+  || fail "the installer archived a platform-owned ~/.gitconfig"
+
+# A hand-written ~/.gitconfig keeps the historical archive-and-stow path.
+rm -f "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
+printf '[user]\n\temail = personal@example.com\n' > "$HOME/.gitconfig"
+: > "$TRACE_FILE"
+bash "$REPO_DIR/install.sh"
+if grep -qF -- '--ignore=^\.gitconfig$' "$TRACE_FILE"; then
+  fail "a hand-written ~/.gitconfig was excluded from the git stow"
+fi
+[ -f "$HOME/.gitconfig.datadog" ] \
+  || fail "a hand-written ~/.gitconfig is no longer archived to ~/.gitconfig.datadog"
+grep -q 'personal@example.com' "$HOME/.gitconfig.datadog" \
+  || fail "the archived ~/.gitconfig lost its content"
+
 printf 'PASS: foreground and deferred installations are isolated safely\n'
