@@ -643,12 +643,13 @@ unset TEST_SSH_ADD_SUCCEED_AFTER
 # layer, so archiving it would drop the managed config and the wmux
 # includeIfs. The git package must be stowed with ~/.gitconfig ignored.
 rm -f "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
-printf '# Managed by workspaces\n[user]\n\temail = managed@datadoghq.com\n' > "$HOME/.gitconfig"
+printf '# Managed by workspaces\n[user]\n\temail = managed@datadoghq.com\n[core]\n\thooksPath = /managed/hooks\n' > "$HOME/.gitconfig"
+cp "$HOME/.gitconfig" "$FIXTURE_DIR/platform.before"
 : > "$TRACE_FILE"
 bash "$REPO_DIR/install.sh"
 grep -qF -- '--ignore=^\.gitconfig$' "$TRACE_FILE" \
   || fail "the platform-owned ~/.gitconfig was not excluded from the git stow"
-grep -q 'Managed by workspaces' "$HOME/.gitconfig" \
+cmp -s "$HOME/.gitconfig" "$FIXTURE_DIR/platform.before" \
   || fail "the platform-owned ~/.gitconfig was modified"
 [ ! -e "$HOME/.gitconfig.datadog" ] \
   || fail "the installer archived a platform-owned ~/.gitconfig"
@@ -665,5 +666,25 @@ fi
   || fail "a hand-written ~/.gitconfig is no longer archived to ~/.gitconfig.datadog"
 grep -q 'personal@example.com' "$HOME/.gitconfig.datadog" \
   || fail "the archived ~/.gitconfig lost its content"
+
+# An existing stow symlink (a machine already running these dotfiles) is not a
+# platform render and must not be archived: archiving it would follow the link
+# and rewrite the tracked git/.gitconfig's signing sections through it.
+rm -f "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
+mkdir -p "$FIXTURE_DIR/tracked"
+tracked="$FIXTURE_DIR/tracked/.gitconfig"
+printf '[user]\n\tsigningkey = key::ssh-ed25519 TRACKED\n[gpg "ssh"]\n\tprogram = tracked-signer\n' > "$tracked"
+cp "$tracked" "$FIXTURE_DIR/tracked.before"
+ln -s "$tracked" "$HOME/.gitconfig"
+: > "$TRACE_FILE"
+bash "$REPO_DIR/install.sh"
+[ -L "$HOME/.gitconfig" ] \
+  || fail "an existing ~/.gitconfig stow symlink was replaced"
+[ "$(readlink "$HOME/.gitconfig")" = "$tracked" ] \
+  || fail "the ~/.gitconfig stow symlink was retargeted"
+cmp -s "$tracked" "$FIXTURE_DIR/tracked.before" \
+  || fail "the installer rewrote the tracked gitconfig through the stow symlink"
+[ ! -e "$HOME/.gitconfig.datadog" ] \
+  || fail "an existing stow symlink was archived to ~/.gitconfig.datadog"
 
 printf 'PASS: foreground and deferred installations are isolated safely\n'

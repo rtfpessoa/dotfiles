@@ -404,7 +404,7 @@ setup_core_dotfiles() {
   if platform_owns_gitconfig; then
     info "Keeping platform-managed ~/.gitconfig (git layer rides the user include chain)"
     export STOW_IGNORE_GITCONFIG=1
-  elif [ -f "$HOME/.gitconfig" ]; then
+  elif [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
     info "Moving existing ~/.gitconfig to ~/.gitconfig.datadog"
     mv "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
     git config --file "$HOME/.gitconfig.datadog" user.signingkey 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN'
