@@ -132,7 +132,8 @@ Datadog config after that user layer, so managed keys (identity, signing,
 
 The Linux installer leaves a platform-owned `~/.gitconfig` ("Managed by
 workspaces") untouched and stows the `git` package with just that file ignored; any
-other existing `~/.gitconfig` is still archived to `~/.gitconfig.datadog`.
+other existing regular file is still archived to `~/.gitconfig.datadog`, and an
+existing `~/.gitconfig` stow symlink is left in place untouched.
 
 On macOS, the split added a new stow target: after pulling this change into an
 existing checkout, run `stow -R -d ~/dotfiles -t ~ git` (or `bash bootstrap.sh`).
