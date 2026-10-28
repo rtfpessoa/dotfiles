@@ -51,7 +51,15 @@ install_dotfiles() {
   fi
 
   for stow_dir in "${stow_dirs[@]}"; do
-    stow -R -d "$SCRIPT_DIR" -t "$HOME" "$stow_dir"
+    # Workspaces: the platform owns ~/.gitconfig ("Managed by workspaces"), so
+    # setup_core_dotfiles sets STOW_IGNORE_GITCONFIG and the git package must
+    # never link over it. The aliases and settings reach those machines through
+    # the user-layer include chain instead (~/.gitconfig.portable).
+    if [ "$stow_dir" = "git" ] && [ -n "${STOW_IGNORE_GITCONFIG:-}" ]; then
+      stow -R --ignore='^\.gitconfig$' -d "$SCRIPT_DIR" -t "$HOME" "$stow_dir"
+    else
+      stow -R -d "$SCRIPT_DIR" -t "$HOME" "$stow_dir"
+    fi
   done
 }
 

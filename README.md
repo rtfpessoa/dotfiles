@@ -114,6 +114,26 @@ SSH_AUTH_SOCK="/path/to/1Password/agent.sock" ssaitch <workspace>
 A raw `ssh <workspace>` session can now complete the full install as long as
 GitHub is reachable with credentials; only the OAuth login needs `ssaitch`.
 
+### Git configuration layers
+
+`git/.gitconfig` is the macOS root: it includes `~/.gitconfig.portable`, keeps the
+macOS-only material (1Password `op-ssh-sign` signing, the default signing key, the
+Darwin filesystem semantics, the Maat `core.hooksPath`), and then includes
+`~/.gitconfig.extras`, `~/.gitconfig.home` and `~/.gitconfig.machine`, machine last.
+
+`~/.gitconfig.portable` (stowed from `git/.gitconfig.portable`) carries the aliases
+and the machine-independent settings, and it is the layer Datadog workspaces load:
+the platform owns `~/.gitconfig` there and includes
+`users/rodrigo.fernandes/.gitconfig` from
+[ddoghq/workspaces-dotfiles](https://github.com/ddoghq/workspaces-dotfiles), which
+includes `~/.dotfiles/git/.gitconfig.portable`. The platform re-includes the managed
+Datadog config after that user layer, so managed keys (identity, signing,
+`hooksPath`, URL routing) still win on a workspace.
+
+The Linux installer leaves a platform-owned `~/.gitconfig` ("Managed by
+workspaces") untouched and stows the `git` package with just that file ignored; any
+other existing `~/.gitconfig` is still archived to `~/.gitconfig.datadog`.
+
 ### Cross-platform shell configs
 
 Shell configuration files (aliases, functions, exports, PATH) are split into three variants:

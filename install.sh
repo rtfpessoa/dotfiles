@@ -387,8 +387,24 @@ remove_if_not_symlink() {
   fi
 }
 
+# The Datadog workspaces platform owns ~/.gitconfig there ("Managed by
+# workspaces"): it includes the user layer from ddoghq/workspaces-dotfiles,
+# which includes ~/.gitconfig.portable — the same portable layer this repo
+# stows. The aliases and settings therefore apply without touching the file,
+# and the managed config plus the wmux git-auth includeIfs stay intact.
+# Archiving it instead drops the managed config and the wmux includes until the
+# platform renders it again, so keep it and skip linking over it.
+platform_owns_gitconfig() {
+  [ -f "$HOME/.gitconfig" ] || return 1
+  [ -L "$HOME/.gitconfig" ] && return 1
+  grep -q 'Managed by workspaces' "$HOME/.gitconfig" 2>/dev/null
+}
+
 setup_core_dotfiles() {
-  if [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
+  if platform_owns_gitconfig; then
+    info "Keeping platform-managed ~/.gitconfig (git layer rides the user include chain)"
+    export STOW_IGNORE_GITCONFIG=1
+  elif [ -f "$HOME/.gitconfig" ]; then
     info "Moving existing ~/.gitconfig to ~/.gitconfig.datadog"
     mv "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
     git config --file "$HOME/.gitconfig.datadog" user.signingkey 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN'
