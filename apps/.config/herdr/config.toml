@@ -11,9 +11,11 @@ auto_switch = false
 # New panes/tabs/workspaces inherit the focused pane's directory
 # (parity with tmux's -c "#{pane_current_path}"). "follow" is also the default.
 new_cwd = "follow"
+default_shell = "tmux"
+shell_mode = "non_login"
 
 [keys]
-# Prefix: Ctrl+A (same as tmux)
+# Prefix: Ctrl+a (same as tmux)
 prefix = "ctrl+a"
 
 # -- Splits & panes (same keys, same actions as your tmux config) ------------
