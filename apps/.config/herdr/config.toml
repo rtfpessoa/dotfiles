@@ -30,6 +30,8 @@ move_tab_next = "prefix+shift+period"      # tmux: >  swap-window +1
 next_tab = "prefix+n"
 previous_tab = "prefix+p"
 switch_tab = "prefix+1..9"
+rename_tab = "prefix+comma"
+rename_pane = "prefix+period"
 
 # -- Workspaces (= tmux sessions) --------------------------------------------
 new_workspace = "prefix+shift+s"           # tmux: S  new-session -A -s <name>
