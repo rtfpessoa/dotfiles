@@ -20,6 +20,7 @@
 /git/.gitconfig.home
 
 # Apps
+/apps/.config/ghostty/config.local
 /apps/.local/bin/
 !/apps/.local/bin/code
 /apps/.ssh/known_hosts

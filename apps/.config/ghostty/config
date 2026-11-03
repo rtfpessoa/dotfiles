@@ -22,3 +22,6 @@ keybind = cmd+digit_9=text:\x019
 keybind = cmd+a=text:\x01
 keybind = cmd+up=text:\x01\x1b[A
 keybind = cmd+down=text:\x01\x1b[B
+
+# Optional settings for this workstation.
+config-file = ?config.local

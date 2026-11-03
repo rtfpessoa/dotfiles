@@ -3,83 +3,28 @@
 # Only the left prompt renders asynchronously; the right prompt (clock and
 # execution time) stays synchronous so command durations stay accurate.
 #
-# Kill switch (keeps the files installed): set -U async_prompt_enable 0
+# Kill switch (keeps the files installed): set -U async_prompt_enable 0, then start a new shell.
 # Full rollback: set -e async_prompt_functions; and __omp_reset
 
 # Which prompt functions to render in the background. Universal so every
 # fish instance (including nested and future panes) agrees.
 set -U async_prompt_functions fish_prompt
 
-# Build the stripped-down theme used for the loading seed: the session +
-# path segments and the ↪ line of the real prompt, without the slow parts
-# (git, kubectl) or the right-aligned clock. Cached under ~/.cache/oh-my-posh
-# and regenerated only when the theme file changes.
-function __async_prompt_seed_config
-    set -l theme ~/.config/omp/rtfpessoa.omp.json
-    test -r $theme; or return 1
-    set -l cachedir ~/.cache/oh-my-posh
-    mkdir -p $cachedir; or return 1
-    set -l cfg $cachedir/async-seed.omp.json
-    # stat flags differ between BSD and GNU coreutils; both forms yield
-    # '<epoch-seconds> <size>', matching the stamp python3 writes below.
-    set -l fresh
-    if test (uname -s) = Darwin
-        set fresh (stat -f '%m %z' $theme)
-    else
-        set fresh (stat -c '%Y %s' $theme)
-    end
-    if test -r $cfg; and test (cat $cfg.stamp 2>/dev/null; or echo none) = "$fresh"
-        printf '%s' $cfg
-        return 0
-    end
-    python3 -c 'import json,sys,os
-src,dst=sys.argv[1],sys.argv[2]
-cfg=json.load(open(src))
-out=[]
-for b in cfg.get("blocks",[]):
-    if b.get("alignment")=="right":
-        continue
-    if b.get("segments") and any(s.get("type")=="path" for s in b["segments"]):
-        segs=[s for s in b["segments"] if s.get("type") in ("session","path")]
-        segs.append({"type":"text","style":"plain","foreground":"#6272a4","template":"⟳","options":{"prefix":" ","postfix":""}})
-        b=dict(b,segments=segs)
-    out.append(b)
-cfg["blocks"]=out
-json.dump(cfg,open(dst,"w"),indent=2)
-open(dst+".stamp","w").write("%d %d"%(os.stat(src).st_mtime,os.stat(src).st_size))' $theme $cfg 2>/dev/null; or return 1
-    printf '%s' $cfg
-end
-
-# The loading seed itself: render the prompt start with the real
-# oh-my-posh binary so the folder icon, mapped-path emoji and ↪ line are
-# pixel-identical to the finished prompt minus the slow segments, plus a dim ⟳ hint at the end of line 1 (line 2 keeps the original ↪). POSH_SESSION_ID must be scrubbed: oh-my-posh keys its loaded theme on it and it would override --config; an exported POSH_CONFIG value alone is harmless but is overridden too.
-function __async_prompt_seed_prompt
-    set -l cfg (__async_prompt_seed_config)
-    or return 1
-    set -l out (env -u POSH_SESSION_ID POSH_CONFIG=$cfg oh-my-posh print primary --config $cfg --shell=fish 2>/dev/null | string collect)
-    test -n "$out"; or return 1
-    printf '\e[0J%s' "$out"
-end
-
-# Seed this shell's prompt file so the very first prompt render is never
-# blank while the background render warms up. The tmpdir only exists in
-# interactive shells (75- exits early otherwise), and the seed is also
-# what makes the first prompt of a new pane instant.
-if status is-interactive; and set -q __async_prompt_tmpdir
-    __async_prompt_seed_prompt > $__async_prompt_tmpdir'/'$fish_pid'_fish_prompt'
-    or printf '%s' (set_color brblack)"⟳ "(prompt_pwd)(set_color normal)' $ ' > $__async_prompt_tmpdir'/'$fish_pid'_fish_prompt'
-end
-
-# Rendered synchronously between firing the background render and its
-# arrival: keep the previous prompt (no flicker); fall back to a minimal
-# dim prompt if there is nothing to keep yet.
+# Keep the previous prompt during a redraw. The first paint uses only fish
+# builtins so it can accept input while the themed prompt renders.
 function fish_prompt_loading_indicator --argument-names last_prompt
     if test -n "$last_prompt"
         printf '%s' "$last_prompt"
     else
-        __async_prompt_seed_prompt
-        or printf '%s' (set_color brblack)"⟳ "(prompt_pwd)(set_color normal)' $ '
+        set_color brblack
+        printf '⟳ %s' (prompt_pwd)
+        set_color normal
+        printf ' $ '
     end
+end
+
+if status is-interactive; and set -q __async_prompt_tmpdir
+    fish_prompt_loading_indicator > $__async_prompt_tmpdir'/'$fish_pid'_fish_prompt'
 end
 
 # Re-apply the async wrapper after __omp_reset (or anything else) replaces
@@ -142,9 +87,8 @@ function __async_prompt_spawn -a cmd
         test -z "$line"
         and continue
 
-        set -f __parts $line
-        if test "$__parts[1]" = pipestatus
-            set -f _pipestatus $__parts[2..]
+        if string match -q -- "pipestatus *" "$line"
+            set -f _pipestatus (string split " " -- "$line")[2..-1]
         else
             eval set "$line"
         end
