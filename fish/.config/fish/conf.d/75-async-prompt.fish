@@ -1,15 +1,13 @@
 # Vendored from https://github.com/acomagu/fish-async-prompt (MIT License,
 # Copyright (c) 2020 Yuki Ito and contributors).
-# Pinned at commit b90e8a8c6d1634d8f04f1532b164b99530445159 (2026-01-05) --
-# verbatim copy of conf.d/__async_prompt.fish except one local modification:
-# __async_prompt_setup_on_startup skips functions that are already wrapped
-# (marked "LOCAL PATCH" in the body), so the config-load-time wrap from
-# 76-async-prompt-config.fish (__async_prompt_rewrap) survives and the first
-# prompt of a new shell is instant.
+# Pinned at commit b90e8a8c6d1634d8f04f1532b164b99530445159 (2026-01-05).
+# Local changes keep the config-time wrapper and pass the last command's
+# pipeline status through to the background renderer.
 # Local configuration lives in conf.d/76-async-prompt-config.fish.
 # Don't run if the shell is not interactive
 status is-interactive
 or exit 0
+test "$async_prompt_enable" = 0; and return
 
 
 # Logs a message to the debug log file if `rpoc_debug_log_enable` is set to
@@ -84,9 +82,8 @@ end
 
 set -g __async_prompt_last_pipestatus 0
 function __async_prompt_keep_last_pipestatus --on-event fish_postexec
-    __async_prompt_log "__async_prompt_setup_on_startup" "Setup complete"
-
     set -g __async_prompt_last_pipestatus $pipestatus
+    __async_prompt_log "__async_prompt_keep_last_pipestatus" "Saved command status"
 end
 
 
@@ -116,8 +113,6 @@ and set async_prompt_on_variable fish_bind_mode PWD
 function __async_prompt_fire --on-event fish_prompt (for var in $async_prompt_on_variable; printf '%s\n' --on-variable $var; end)
     __async_prompt_log "__async_prompt_fire" "Starting..."
 
-    set -l __async_prompt_last_pipestatus $pipestatus
-
     # Generate the sync and async prompts for each function (fish_prompt,
     # fish_right_prompt, etc.)
     for func in (__async_prompt_config_functions)
@@ -145,7 +140,7 @@ function __async_prompt_fire --on-event fish_prompt (for var in $async_prompt_on
         # The result is stored in the $prompt variable and then written to the
         # temporary file (replacing the loading indicator)..
         __async_prompt_config_inherit_variables | __async_prompt_last_pipestatus=$__async_prompt_last_pipestatus __async_prompt_spawn \
-            'if functions -q '$func'; '$func'; else; echo -n ""; end | read -z prompt; echo -n $prompt >'$tmpfile
+            (string escape -- $func)' | read -z prompt; printf %s "$prompt" >'(string escape -- $tmpfile)
     end
     __async_prompt_log "__async_prompt_fire" "Prompt fire complete"
 end

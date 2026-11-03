@@ -2,16 +2,21 @@ if test -x $HOME/.local/bin/mise
     $HOME/.local/bin/mise activate fish | source
 end
 
-if test (uname -s) = Darwin
-    if test (uname -m) = arm64
-        set -gx HOMEBREW_PREFIX /opt/homebrew
-    else
-        set -gx HOMEBREW_PREFIX /usr/local
+# The macOS path file needs the prefix before it is sourced.
+if test "$__dotfiles_os" = darwin; and test -z "$HOMEBREW_PREFIX"
+    if command -sq brew
+        set -gx HOMEBREW_PREFIX (command brew --prefix)
+    end
+    if test -z "$HOMEBREW_PREFIX"
+        if test (command uname -m) = arm64
+            set -gx HOMEBREW_PREFIX /opt/homebrew
+        else
+            set -gx HOMEBREW_PREFIX /usr/local
+        end
     end
 end
 
 # Skip .functions — bash functions don't work in fish
-set -l _os (uname -s | tr '[:upper:]' '[:lower:]')
 for file in ~/.{exports,path,aliases,extra}
     if test -r $file
         source $file
@@ -19,8 +24,8 @@ for file in ~/.{exports,path,aliases,extra}
     if test -r $file.fish
         source $file.fish
     end
-    if test -r $file.$_os
-        source $file.$_os
+    if test -r $file.$__dotfiles_os
+        source $file.$__dotfiles_os
     end
 end
 
@@ -28,16 +33,19 @@ end
 # https://stackoverflow.com/a/42265848/96656
 set -gx GPG_TTY (tty)
 
-if type -q brew
-    if test -d (brew --prefix)"/share/fish/completions"
-        set -gx fish_complete_path $fish_complete_path (brew --prefix)/share/fish/completions
-    end
-
-    if test -d (brew --prefix)"/share/fish/vendor_completions.d"
-        set -gx fish_complete_path $fish_complete_path (brew --prefix)/share/fish/vendor_completions.d
+set -l prefix "$HOMEBREW_PREFIX"
+if test -z "$prefix"; and command -sq brew
+    set prefix (command brew --prefix)
+end
+if test -n "$prefix"
+    for dir in $prefix/share/fish/{completions,vendor_completions.d}
+        if test -d "$dir"; and not contains -- "$dir" $fish_complete_path
+            set -gax fish_complete_path "$dir"
+        end
     end
 end
 
-if type -q direnv
+# Homebrew can install the fish hook through vendor_conf.d.
+if not functions -q __direnv_export_eval; and type -q direnv
     direnv hook fish | source
 end

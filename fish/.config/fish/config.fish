@@ -7,6 +7,8 @@ if test -r ~/.config/fish/config.fish.image
     source ~/.config/fish/config.fish.image
 end
 
+set -g __dotfiles_os (string lower -- (command uname -s))
+
 function fish_greeting
 end
 

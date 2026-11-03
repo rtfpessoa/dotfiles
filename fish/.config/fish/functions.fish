@@ -19,7 +19,7 @@ function export --description 'Set env variable. Alias for `set -gx` for bash co
                     set -gx $v[1] (string split ":" -- $colonized_path)
                 else
                     # status is 1 from the contains check, and `set` does not change the status on success: reset it.
-                    true
+                    builtin true
                     set -gx $v[1] $v[2]
                 end
         end
@@ -42,7 +42,7 @@ function f -d "find shorthand" -a iname type
     find . $typeArgs -iname "$iname" 2>/dev/null
 end
 
-if test (uname -s) = Darwin
+if test "$__dotfiles_os" = darwin
     function server -d "Start an HTTP server from a directory, optionally specifying the port" -a port
         set -q port[1]
         or set port 8000
@@ -90,7 +90,7 @@ function strip_diff_leading_symbols
         sed -r "s/^($color_code_regex)[\+\-]/\1 /g"
 end
 
-if test (uname -s) = Darwin
+if test "$__dotfiles_os" = darwin
     function camerausedby -d "Who is using the laptop's iSight camera?"
         echo "Checking to see who is using the iSight camera… 📷"
         set usedby (lsof | grep -w "AppleCamera\|USBVDC\|iSight" | awk '{printf $2"\n"}' | xargs ps)
@@ -128,7 +128,7 @@ function timed -d "Time a command"
     end 2>&1
 end
 
-if test (uname -s) = Darwin
+if test "$__dotfiles_os" = darwin
     # Short for `cdfinder`
     function cdf -d "Change working directory to the top-most Finder window location"
         cd (osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')
@@ -195,7 +195,7 @@ end
 
 # Normalize `open` across Linux, macOS, and Windows.
 # This is needed to make the `o` function (see below) cross-platform.
-if not test (uname -s) = Darwin
+if not test "$__dotfiles_os" = darwin
     if grep -q Microsoft /proc/version 2>/dev/null
         # Ubuntu on Windows using the Linux subsystem
         alias open='explorer.exe'
@@ -304,7 +304,7 @@ function targz -d "Create a .tar.gz archive"
     echo "$tmpFile.gz ("(math $zippedSize / 1000)" kB) created successfully."
 end
 
-if test (uname -s) = Darwin
+if test "$__dotfiles_os" = darwin
     function random_mac
         sudo ifconfig en0 ether (openssl rand -hex 6 | sed 's%\(..\)%\1:%g; s%.$%%')
     end
@@ -362,7 +362,7 @@ end
 #     end
 # end
 
-if test (uname -s) = Darwin
+if test "$__dotfiles_os" = darwin
     function localip -d "Retrieve the IP address for the currently active network interface"
         set -lx activeIf (netstat -rn | grep default | awk '{print $NF}' | head -1)
         ipconfig getifaddr "$activeIf"
