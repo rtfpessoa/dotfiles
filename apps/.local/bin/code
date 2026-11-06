@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 #
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT License. See License.txt in the project root for license information.
+# Stowed to ~/.local/bin/code. Delegates to the real VS Code CLI instead of
+# re-implementing the Electron launch: MS's own launcher derives the app
+# bundle from its own location, so a copy outside the .app bundle can never
+# resolve it ("Unable to determine app path from symlink"). Delegation keeps
+# this wrapper working across VS Code updates and platforms.
 
 # when run in remote terminal, use the remote cli
 if [ -n "$VSCODE_IPC_HOOK_CLI" ]; then
@@ -12,28 +15,23 @@ if [ -n "$VSCODE_IPC_HOOK_CLI" ]; then
 	fi
 fi
 
-function app_realpath() {
-	SOURCE=$1
-	while [ -h "$SOURCE" ]; do
-		DIR=$(dirname "$SOURCE")
-		SOURCE=$(readlink "$SOURCE")
-		[[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE
-	done
-	SOURCE_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
-	echo "${SOURCE_DIR%%${SOURCE_DIR#*.app}}"
-}
+# macOS: locate the .app bundle
+for app in "/Applications/Visual Studio Code.app" \
+	"$HOME/Applications/Visual Studio Code.app"; do
+	bin="$app/Contents/Resources/app/bin/code"
+	if [ -x "$bin" ]; then
+		exec "$bin" "$@"
+	fi
+done
 
-APP_PATH="$(app_realpath "${BASH_SOURCE[0]}")"
-if [ -z "$APP_PATH" ]; then
-	echo "Unable to determine app path from symlink : ${BASH_SOURCE[0]}"
-	exit 1
-fi
-CONTENTS="$APP_PATH/Contents"
-ELECTRON="$CONTENTS/MacOS/Code"
-CLI="$CONTENTS/Resources/app/out/cli.js"
-export VSCODE_NODE_OPTIONS=$NODE_OPTIONS
-export VSCODE_NODE_REPL_EXTERNAL_MODULE=$NODE_REPL_EXTERNAL_MODULE
-unset NODE_OPTIONS
-unset NODE_REPL_EXTERNAL_MODULE
-ELECTRON_RUN_AS_NODE=1 "$ELECTRON" "$CLI" "$@"
-exit $?
+# fallback: another `code` on PATH (Linux, /usr/local/bin, homebrew)
+self_path="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+IFS=$'\n'
+for candidate in $(which -a code 2>/dev/null); do
+	if [ "$candidate" != "$self_path" ] && [ -x "$candidate" ]; then
+		exec "$candidate" "$@"
+	fi
+done
+
+echo "code: Visual Studio Code CLI not found" >&2
+exit 1
