@@ -100,6 +100,39 @@ path = ~/.gitconfig.ddoghq-signing
 [includeIf "hasconfig:remote.*.url:ssh://git@ddoghq.github.com:rodrigo-fernandes_ddog/**"]
 path = ~/.gitconfig.ddoghq-signing
 
+# URL shorthands and SSH routing (macOS only — apps/.ssh/config defines the
+# ddoghq.github.com alias; Datadog workspaces use wmux Git over HTTPS and
+# must not inherit SSH insteadOf rules from the portable layer).
+
+[url "git@github.com:"]
+insteadOf = "git://github.com/"
+insteadOf = "https://github.com/"
+insteadOf = "gh:"
+insteadOf = "github:"
+
+[url "git@gist.github.com:"]
+insteadOf = "gst:"
+insteadOf = "gist:"
+insteadOf = "git://gist.github.com/"
+
+# Route ddoghq GitHub Enterprise-managed orgs through the ddoghq.github.com
+# SSH alias (apps/.ssh/config selects the ddoghq account key there;
+# github.com itself serves the personal/commercial key).
+[url "git@ddoghq.github.com:ddoghq/"]
+insteadOf = "git@github.com:ddoghq/"
+insteadOf = "https://github.com/ddoghq/"
+insteadOf = "ssh://git@github.com/ddoghq/"
+
+[url "git@ddoghq.github.com:ddoghq-sandbox/"]
+insteadOf = "git@github.com:ddoghq-sandbox/"
+insteadOf = "https://github.com/ddoghq-sandbox/"
+insteadOf = "ssh://git@github.com/ddoghq-sandbox/"
+
+[url "git@ddoghq.github.com:rodrigo-fernandes_ddog/"]
+insteadOf = "git@github.com:rodrigo-fernandes_ddog/"
+insteadOf = "https://github.com/rodrigo-fernandes_ddog/"
+insteadOf = "ssh://git@github.com/rodrigo-fernandes_ddog/"
+
 [include]
 path = ~/.gitconfig.machine
 

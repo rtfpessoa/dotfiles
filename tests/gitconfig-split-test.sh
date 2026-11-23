@@ -42,35 +42,52 @@ done
 grep -qx 'path = ~/.gitconfig.portable' "$root" \
   || fail "the macOS root does not include the portable layer"
 
-# The portable layer must carry these itself. The workspace fixture below defines
-# the same mappings on the managed side, so a composed-only assertion could pass
-# after a loss from the portable layer: assert every insteadOf value directly.
-assert_portable_url() {
+# SSH URL rewrites stay in the macOS root (apps/.ssh/config defines
+# ddoghq.github.com on macOS; Datadog workspaces use wmux Git over HTTPS and
+# reject user SSH insteadOf rules in the portable layer).
+assert_root_url() {
   local base="$1" value="$2" count
-  count="$(fixture_git config --file "$portable" --get-all "url.$base.insteadOf" \
+  count="$(fixture_git config --file "$root" --get-all "url.$base.insteadOf" \
     | grep -cFx -- "$value" || true)"
   [ "${count:-0}" -ge 1 ] \
-    || fail "the portable layer lost url.$base.insteadOf = $value"
+    || fail "the macOS root lost url.$base.insteadOf = $value"
 }
 
-assert_portable_url 'git@github.com:' 'git://github.com/'
-assert_portable_url 'git@github.com:' 'https://github.com/'
-assert_portable_url 'git@github.com:' 'gh:'
-assert_portable_url 'git@github.com:' 'github:'
-assert_portable_url 'git@gist.github.com:' 'gst:'
-assert_portable_url 'git@gist.github.com:' 'gist:'
-assert_portable_url 'git@gist.github.com:' 'git://gist.github.com/'
-assert_portable_url 'git@ddoghq.github.com:ddoghq/' 'git@github.com:ddoghq/'
-assert_portable_url 'git@ddoghq.github.com:ddoghq/' 'https://github.com/ddoghq/'
-assert_portable_url 'git@ddoghq.github.com:ddoghq/' 'ssh://git@github.com/ddoghq/'
-assert_portable_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'https://github.com/ddoghq-sandbox/'
-assert_portable_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'git@github.com:ddoghq-sandbox/'
-assert_portable_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'ssh://git@github.com/ddoghq-sandbox/'
-assert_portable_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'https://github.com/rodrigo-fernandes_ddog/'
-assert_portable_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'git@github.com:rodrigo-fernandes_ddog/'
-assert_portable_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'ssh://git@github.com/rodrigo-fernandes_ddog/'
+assert_root_url 'git@github.com:' 'git://github.com/'
+assert_root_url 'git@github.com:' 'https://github.com/'
+assert_root_url 'git@github.com:' 'gh:'
+assert_root_url 'git@github.com:' 'github:'
+assert_root_url 'git@gist.github.com:' 'gst:'
+assert_root_url 'git@gist.github.com:' 'gist:'
+assert_root_url 'git@gist.github.com:' 'git://gist.github.com/'
+assert_root_url 'git@ddoghq.github.com:ddoghq/' 'git@github.com:ddoghq/'
+assert_root_url 'git@ddoghq.github.com:ddoghq/' 'https://github.com/ddoghq/'
+assert_root_url 'git@ddoghq.github.com:ddoghq/' 'ssh://git@github.com/ddoghq/'
+assert_root_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'https://github.com/ddoghq-sandbox/'
+assert_root_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'git@github.com:ddoghq-sandbox/'
+assert_root_url 'git@ddoghq.github.com:ddoghq-sandbox/' 'ssh://git@github.com/ddoghq-sandbox/'
+assert_root_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'https://github.com/rodrigo-fernandes_ddog/'
+assert_root_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'git@github.com:rodrigo-fernandes_ddog/'
+assert_root_url 'git@ddoghq.github.com:rodrigo-fernandes_ddog/' 'ssh://git@github.com/rodrigo-fernandes_ddog/'
+
+if fixture_git config --file "$portable" --get-regexp '^url\..*\.insteadOf$' >/dev/null 2>&1; then
+  fail "the portable layer must not define url.*.insteadOf rewrites (breaks workspace Git over HTTPS)"
+fi
 [ "$(fixture_git config --file "$portable" --get datadog.team)" = "team-rapidworkloads" ] \
   || fail "the portable layer no longer carries the datadog team attribution"
+
+# macOS root routes GitHub and ddoghq URLs to SSH on its own (without portable).
+mac_home="$FIXTURE_DIR/mac-home"
+mkdir -p "$mac_home"
+ln -s "$root" "$mac_home/.gitconfig"
+mac_dd="$(cd "$FIXTURE_DIR" && env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac_home" \
+  git ls-remote --get-url https://github.com/DataDog/dd-source)"
+[ "$mac_dd" = "git@github.com:DataDog/dd-source" ] \
+  || fail "macOS DataDog SSH routing regressed (got: $mac_dd)"
+mac_ddoghq="$(cd "$FIXTURE_DIR" && env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$mac_home" \
+  git ls-remote --get-url https://github.com/ddoghq/dd-source)"
+[ "$mac_ddoghq" = "git@ddoghq.github.com:ddoghq/dd-source" ] \
+  || fail "macOS ddoghq SSH routing regressed (got: $mac_ddoghq)"
 
 # Signing material, the hooks path and Darwin filesystem semantics stay in the
 # root: a pull in ~/dotfiles goes live before the new stow target is linked, so
@@ -122,10 +139,10 @@ cat > "$home/.gitconfig" <<EOF
 	gpgsign = true
 [core]
 	hooksPath = /managed/hooks
-[url "git@github.com:"]
-	insteadOf = https://github.com/
-[url "git@ddoghq.github.com:ddoghq/"]
-	insteadOf = https://github.com/ddoghq/
+[url "https://github.com/DataDog/"]
+	insteadOf = git@github.com:DataDog/
+[url "https://github.com/ddoghq/"]
+	insteadOf = git@github.com:ddoghq/
 EOF
 
 chain_git() {
@@ -143,10 +160,14 @@ chain_git() {
 [ "$(chain_git --get core.hooksPath)" = "/managed/hooks" ] \
   || fail "the managed hooksPath must win"
 
-routing="$(cd "$FIXTURE_DIR" && env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$home" \
-  git ls-remote --get-url https://github.com/ddoghq/dd-source)"
-[ "$routing" = "git@ddoghq.github.com:ddoghq/dd-source" ] \
-  || fail "ddoghq URL routing regressed (got: $routing)"
+routing_dd="$(cd "$FIXTURE_DIR" && env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$home" \
+  git ls-remote --get-url https://github.com/DataDog/dd-source)"
+[ "$routing_dd" = "https://github.com/DataDog/dd-source" ] \
+  || fail "workspace DataDog HTTPS routing regressed (got: $routing_dd)"
+routing_ddoghq="$(cd "$FIXTURE_DIR" && env -u GIT_CONFIG_GLOBAL GIT_CONFIG_NOSYSTEM=1 HOME="$home" \
+  git ls-remote --get-url git@github.com:ddoghq/dd-source)"
+[ "$routing_ddoghq" = "https://github.com/ddoghq/dd-source" ] \
+  || fail "workspace ddoghq HTTPS routing regressed (got: $routing_ddoghq)"
 
 # The pre-clone state: the include target is missing, git stays silent.
 missing="$FIXTURE_DIR/pre-clone"
