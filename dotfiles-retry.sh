@@ -26,6 +26,7 @@ STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
 STATUS_FILE="$STATE_DIR/install.status"
 LOCK_FILE="$STATE_DIR/install.lock"
 INSTALL_SCRIPT="$HOME/.dotfiles/install.sh"
+TMUX_SOCKET="${DOTFILES_TMUX_SOCKET:-dotfiles-install}"
 COOLDOWN_SECONDS=900
 
 [ -x "$INSTALL_SCRIPT" ] || exit 0
@@ -78,11 +79,25 @@ if [ "$auto" = 0 ]; then
   echo "dotfiles-retry: relaunching the deferred dotfiles worker"
 fi
 
-if command -v tmux >/dev/null 2>&1; then
+if [ "${DOTFILES_DISABLE_TMUX:-0}" != "1" ] && command -v tmux >/dev/null 2>&1; then
   session="dotfiles-retry-$(date -u '+%Y%m%d%H%M%S')-$$"
-  tmux new-session -d -s "$session" "$INSTALL_SCRIPT" --deferred
-  if [ "$auto" = 0 ]; then
-    echo "dotfiles-retry: deferred worker running in tmux session $session (attach: tmux attach -t $session)"
+  tmux_env_args=()
+  for env_name in PATH JAVA_HOME SDKMAN_DIR SSH_AUTH_SOCK; do
+    if [ -n "${!env_name:-}" ]; then
+      tmux_env_args+=(-e "${env_name}=${!env_name}")
+    fi
+  done
+  if tmux -L "$TMUX_SOCKET" -f /dev/null \
+    start-server \; \
+    set-option -gw remain-on-exit failed \; \
+    new-session -d "${tmux_env_args[@]}" -s "$session" \
+      "$INSTALL_SCRIPT" --deferred; then
+    if [ "$auto" = 0 ]; then
+      echo "dotfiles-retry: deferred worker running in tmux session $session (attach: tmux -L $TMUX_SOCKET attach -t $session)"
+    fi
+  else
+    echo "dotfiles-retry: failed to launch deferred worker in tmux" >&2
+    exit 1
   fi
 else
   nohup setsid "$INSTALL_SCRIPT" --deferred >/dev/null 2>&1 </dev/null &

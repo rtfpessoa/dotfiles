@@ -42,6 +42,7 @@ DOTFILES_LOG_FILE="$DOTFILES_STATE_DIR/install.log"
 DOTFILES_STATUS_FILE="$DOTFILES_STATE_DIR/install.status"
 DOTFILES_LOCK_FILE="$DOTFILES_STATE_DIR/install.lock"
 DOTFILES_TMUX_SESSION_PREFIX="${DOTFILES_TMUX_SESSION_PREFIX:-dotfiles-install}"
+DOTFILES_TMUX_SOCKET="${DOTFILES_TMUX_SOCKET:-dotfiles-install}"
 mkdir -p "$BIN_DIR"
 
 # --------------------------------------------------------------------------
@@ -610,19 +611,36 @@ run_deferred_install() {
 }
 
 launch_deferred_install() {
-  local tmux_session
+  local tmux_session env_name
+  local tmux_env_args=()
 
   mkdir -p "$DOTFILES_STATE_DIR"
 
   if [ "${DOTFILES_DISABLE_TMUX:-0}" != "1" ] && command -v tmux &>/dev/null; then
+    # Isolate deferred workers on a dedicated, config-free tmux server:
+    # - `-L` stays off the user's default server socket so workers never
+    #   trigger or get snapshotted by tmux-continuum / tmux-resurrect.
+    # - `-f /dev/null` skips /etc/tmux.conf and ~/.tmux.conf.
+    # - `remain-on-exit failed` destroys panes cleanly on exit 0 (letting the
+    #   server exit when idle) while keeping failed panes alive for debugging.
+    # - `-e` forwards fresh runtime env in case an earlier failed pane kept
+    #   the dedicated server running.
     # Use a unique session for every launcher. The worker's flock is the source
     # of truth for overlap, so stale or user-modified tmux sessions never block
     # a later explicit update.
     tmux_session="$DOTFILES_TMUX_SESSION_PREFIX-$(date -u '+%Y%m%d%H%M%S')-$$"
-    if tmux new-session -d -s "$tmux_session" \
-      "$SCRIPT_DIR/install.sh" --deferred; then
+    for env_name in PATH JAVA_HOME SDKMAN_DIR SSH_AUTH_SOCK; do
+      if [ -n "${!env_name:-}" ]; then
+        tmux_env_args+=(-e "${env_name}=${!env_name}")
+      fi
+    done
+    if tmux -L "$DOTFILES_TMUX_SOCKET" -f /dev/null \
+      start-server \; \
+      set-option -gw remain-on-exit failed \; \
+      new-session -d "${tmux_env_args[@]}" -s "$tmux_session" \
+        "$SCRIPT_DIR/install.sh" --deferred; then
       info "Deferred installation started in tmux session $tmux_session"
-      info "Attach with: tmux attach -t $tmux_session"
+      info "Attach with: tmux -L $DOTFILES_TMUX_SOCKET attach -t $tmux_session"
       return 0
     fi
 

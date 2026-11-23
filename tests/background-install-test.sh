@@ -234,8 +234,10 @@ grep -q 'FIXTURE_IMAGE_BASH' "$HOME/.bash_profile.image" \
   || fail "~/.bash_profile.image lost the image marker content"
 [ ! -e "$HOME/.bash_profile" ] \
   || fail "~/.bash_profile was left behind, blocking stow"
-assert_contains "$TRACE_FILE" "tmux new-session" \
-  "foreground installation did not launch a tmux worker"
+assert_contains "$TRACE_FILE" "tmux -L dotfiles-install -f /dev/null start-server ; set-option -gw remain-on-exit failed ; new-session -d" \
+  "foreground installation did not launch an isolated, fail-sticky tmux worker"
+assert_contains "$TRACE_FILE" " -e PATH=" \
+  "tmux worker did not forward PATH into the new session"
 assert_contains "$TRACE_FILE" "--deferred" \
   "tmux worker did not use the internal deferred mode"
 assert_not_contains "$TRACE_FILE" "sudo apt-get" \
@@ -247,13 +249,21 @@ assert_not_contains "$TRACE_FILE" "code-factory-init" \
 [ -f "$REPO_DIR/fish/.config/fish/conf.d/90-dotfiles-retry.fish" ] \
   || fail "the fish conf.d retry hook is missing from the fish stow package"
 
-first_session="$(awk '$1 == "tmux" && $2 == "new-session" {print $5}' "$TRACE_FILE")"
-: > "$TRACE_FILE"
-bash "$REPO_DIR/install.sh"
+tmux_session_from_trace() {
+  awk '$1 == "tmux" { for (i = 1; i <= NF; i++) if ($i == "-s") { print $(i + 1); exit } }' "$1"
+}
 
-assert_contains "$TRACE_FILE" "tmux new-session" \
-  "an explicit rerun did not launch a deferred update"
-second_session="$(awk '$1 == "tmux" && $2 == "new-session" {print $5}' "$TRACE_FILE")"
+first_session="$(tmux_session_from_trace "$TRACE_FILE")"
+[ -n "$first_session" ] \
+  || fail "could not parse tmux session name from trace"
+: > "$TRACE_FILE"
+JAVA_HOME=/tmp/fake-jdk25 bash "$REPO_DIR/install.sh"
+
+assert_contains "$TRACE_FILE" "tmux -L dotfiles-install -f /dev/null start-server ; set-option -gw remain-on-exit failed ; new-session -d" \
+  "an explicit rerun did not launch an isolated deferred update"
+assert_contains "$TRACE_FILE" " -e JAVA_HOME=/tmp/fake-jdk25 " \
+  "explicit rerun did not forward JAVA_HOME into the tmux session"
+second_session="$(tmux_session_from_trace "$TRACE_FILE")"
 [ "$first_session" != "$second_session" ] \
   || fail "explicit reruns reused a stale-prone tmux session name"
 

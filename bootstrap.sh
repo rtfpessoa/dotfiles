@@ -75,6 +75,11 @@ function bootstrap() {
 	[[ ! "$REPLY" =~ ^[Nn]$ ]] && setup_vscode
 	read -r -p "Copy dotfiles into $HOME? (Y/n) " REPLY
 	if [[ ! "$REPLY" =~ ^[Nn]$ ]]; then
+		# Rex: pre-create a real ~/.config/rex so stow links init.lua
+		# per-file (herdr-style) instead of folding the whole config dir
+		# into the repo - a folded dir would put any machine-local Rex files
+		# inside the repo working tree, like the fish case in install.sh.
+		mkdir -p "$HOME/.config/rex"
 		install_dotfiles
 		setup_git "$name" "$email"
 	fi

@@ -44,7 +44,12 @@ This will:
 - Continue slower package, code-factory, plugin, and font installation in a detached tmux session
 
 The script is fully non-interactive and idempotent — safe to run multiple times.
-The foreground output prints the unique tmux session name and its attach command.
+The deferred worker runs on a dedicated, config-free tmux server
+(`tmux -L dotfiles-install -f /dev/null`) with `remain-on-exit failed`:
+successful runs close cleanly (and exit the dedicated server), while failed
+runs stay open for post-mortem debugging without touching your default tmux
+server or `tmux-resurrect` snapshots. The foreground output prints the unique
+session name and its `tmux -L dotfiles-install attach -t <session>` command.
 Its persistent log and status are available at
 `~/.local/state/dotfiles/install.log` and `~/.local/state/dotfiles/install.status`.
 

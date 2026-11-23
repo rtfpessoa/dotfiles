@@ -145,9 +145,11 @@ out="$(bash "$REPO_DIR/dotfiles-retry.sh")"
 printf '%s\n' "$out" >> "$TRACE_FILE"
 assert_contains "$TRACE_FILE" "deferred-relaunch" \
   "manual mode did not relaunch inside the cooldown"
+assert_contains "$TRACE_FILE" "tmux -L dotfiles-install -f /dev/null start-server ; set-option -gw remain-on-exit failed ; new-session -d" \
+  "manual mode did not launch an isolated, fail-sticky tmux session"
 case "$out" in
-  *relaunching*) : ;;
-  *) fail "manual mode did not announce the relaunch" ;;
+  *"relaunching"*"tmux -L dotfiles-install attach -t dotfiles-retry-"*) : ;;
+  *) fail "manual mode did not announce the isolated tmux attach command: $out" ;;
 esac
 
 : > "$TRACE_FILE"
