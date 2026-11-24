@@ -18,6 +18,10 @@ CODE_FACTORY_DIR="$HOME/.code-factory"
 CODE_FACTORY_REPO="https://github.com/rtfpessoa/code-factory.git"
 CODE_FACTORY_SSH_REPO="git@github.com:rtfpessoa/code-factory.git"
 CODE_FACTORY_HTTPS_PREFIX="https://github.com/rtfpessoa/"
+# Internal mirror of the same repository, pushed right after it. Datadog
+# workspace gh tokens can read the mirror but not the personal repository.
+CODE_FACTORY_MIRROR_REPO="https://github.com/ddoghq-sandbox/code-factory.git"
+CODE_FACTORY_MIRROR_HTTPS_PREFIX="https://github.com/ddoghq-sandbox/"
 
 # --------------------------------------------------------------------------
 # Git config helpers
@@ -115,13 +119,17 @@ code_factory_git_https() {
   # The isolation also drops the credential helper `gh auth setup-git`
   # writes, so hand gh's helper to git explicitly: this branch is only
   # reachable after `gh auth token` produced a token, and without the
-  # helper that token would never reach the HTTPS request.
+  # helper that token would never reach the HTTPS request. Datadog
+  # workspace gh tokens are scoped per repository, so the helper also needs
+  # the repository path (useHttpPath, as the platform's ~/.gitconfig sets).
   GIT_CONFIG_GLOBAL=/dev/null \
   GIT_CONFIG_NOSYSTEM=1 \
   GIT_TERMINAL_PROMPT=0 \
     git -c "url.${CODE_FACTORY_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_HTTPS_PREFIX}" \
+        -c "url.${CODE_FACTORY_MIRROR_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_MIRROR_HTTPS_PREFIX}" \
         -c credential.helper= \
-        -c "credential.https://github.com.helper=!gh auth git-credential" "$@"
+        -c "credential.https://github.com.helper=!gh auth git-credential" \
+        -c credential.https://github.com.useHttpPath=true "$@"
 }
 
 bounded() {
@@ -214,26 +222,40 @@ code_factory_ssh_available() {
 # HTTPS is only attempted when gh holds a token locally (cheap, no network)
 # AND the config-isolated ls-remote proves the credential works. The token
 # gate keeps unauthenticated requests off github.com's rate limits.
+# Tries the personal repository first, then the internal mirror, and sets
+# CODE_FACTORY_HTTPS_URL to the first one the token can read. Like the SSH
+# check, it must be called without a subshell so the global survives.
 code_factory_https_available() {
+  local url
+
+  CODE_FACTORY_HTTPS_URL=""
   command -v gh >/dev/null 2>&1 || return 1
   [ -n "$(gh auth token 2>/dev/null)" ] || return 1
-  # Bounded like the SSH probe: a stalled HTTPS connection must not hang
-  # the deferred worker while it holds the install lock. bounded wraps the
-  # raw git invocation directly (timeout cannot exec the shell function
-  # above); the flags mirror code_factory_git_https.
-  GIT_CONFIG_GLOBAL=/dev/null \
-  GIT_CONFIG_NOSYSTEM=1 \
-  GIT_TERMINAL_PROMPT=0 \
-    bounded 30 git \
-      -c "url.${CODE_FACTORY_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_HTTPS_PREFIX}" \
-      -c credential.helper= \
-      -c "credential.https://github.com.helper=!gh auth git-credential" \
-      ls-remote "$CODE_FACTORY_REPO" HEAD >/dev/null 2>&1
+  for url in "$CODE_FACTORY_REPO" "$CODE_FACTORY_MIRROR_REPO"; do
+    # Bounded like the SSH probe: a stalled HTTPS connection must not hang
+    # the deferred worker while it holds the install lock. bounded wraps the
+    # raw git invocation directly (timeout cannot exec the shell function
+    # above); the flags mirror code_factory_git_https.
+    if GIT_CONFIG_GLOBAL=/dev/null \
+      GIT_CONFIG_NOSYSTEM=1 \
+      GIT_TERMINAL_PROMPT=0 \
+      bounded 30 git \
+        -c "url.${CODE_FACTORY_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_HTTPS_PREFIX}" \
+        -c "url.${CODE_FACTORY_MIRROR_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_MIRROR_HTTPS_PREFIX}" \
+        -c credential.helper= \
+        -c "credential.https://github.com.helper=!gh auth git-credential" \
+        -c credential.https://github.com.useHttpPath=true \
+        ls-remote "$url" HEAD >/dev/null 2>&1; then
+      CODE_FACTORY_HTTPS_URL="$url"
+      return 0
+    fi
+  done
+  return 1
 }
 
-# Sets CODE_FACTORY_TRANSPORT (ssh|https|none) and, for ssh, the
-# CODE_FACTORY_SSH_SOCK global. No subshell capture: callers read the
-# globals directly.
+# Sets CODE_FACTORY_TRANSPORT (ssh|https|none) plus, for ssh, the
+# CODE_FACTORY_SSH_SOCK global and, for https, CODE_FACTORY_HTTPS_URL. No
+# subshell capture: callers read the globals directly.
 select_code_factory_transport() {
   CODE_FACTORY_TRANSPORT="none"
   if code_factory_ssh_available; then
@@ -320,13 +342,15 @@ run_code_factory_checkout() {
 
   if [ -d "$CODE_FACTORY_DIR" ]; then
     info "Updating code-factory over $transport..."
+    # Pull by URL: `-c remote.origin.url=...` only adds a second origin URL,
+    # and git keeps fetching from the one in the checkout's own config.
     if [ "$transport" = "ssh" ]; then
       SSH_AUTH_SOCK="$CODE_FACTORY_SSH_SOCK" \
-        code_factory_git_ssh -c "remote.origin.url=$CODE_FACTORY_SSH_REPO" \
-          -C "$CODE_FACTORY_DIR" pull --ff-only origin main
+        code_factory_git_ssh -C "$CODE_FACTORY_DIR" \
+          pull --ff-only "$CODE_FACTORY_SSH_REPO" main
     else
-      code_factory_git_https -c "remote.origin.url=$CODE_FACTORY_REPO" \
-        -C "$CODE_FACTORY_DIR" pull --ff-only origin main
+      code_factory_git_https -C "$CODE_FACTORY_DIR" \
+        pull --ff-only "${CODE_FACTORY_HTTPS_URL:-$CODE_FACTORY_REPO}" main
     fi
   else
     info "Cloning code-factory over $transport..."
@@ -335,7 +359,7 @@ run_code_factory_checkout() {
         code_factory_git_ssh clone "$CODE_FACTORY_SSH_REPO" "$CODE_FACTORY_DIR" \
         || { rm -rf "$CODE_FACTORY_DIR"; return 1; }
     else
-      code_factory_git_https clone "$CODE_FACTORY_REPO" "$CODE_FACTORY_DIR" \
+      code_factory_git_https clone "${CODE_FACTORY_HTTPS_URL:-$CODE_FACTORY_REPO}" "$CODE_FACTORY_DIR" \
         || { rm -rf "$CODE_FACTORY_DIR"; return 1; }
     fi
   fi

@@ -127,6 +127,13 @@ case "$command_name" in
               exit 1
             fi
             ;;
+          *" https://github.com/ddoghq-sandbox/code-factory.git "*)
+            # The mirror follows FAIL_HTTPS_PROBE unless a case sets
+            # FAIL_MIRROR_PROBE on its own.
+            if [ "${FAIL_MIRROR_PROBE:-${FAIL_HTTPS_PROBE:-0}}" = "1" ]; then
+              exit 1
+            fi
+            ;;
         esac
         ;;
       *" clone "*)
@@ -353,8 +360,12 @@ assert_contains "$TRACE_FILE" "timeout 30 git ls-remote git@github.com:rtfpessoa
   "the SSH ls-remote probe was not bounded"
 assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0 ssh_command=ssh -o BatchMode=yes -o ConnectTimeout=15 ssh_auth_sock=$FIXTURE_DIR/ssh-agent.sock args=clone git@github.com:rtfpessoa/code-factory.git" \
   "code-factory did not clone over non-interactive authenticated SSH"
-assert_not_contains "$TRACE_FILE" "https://github.com/rtfpessoa/code-factory.git" \
+assert_not_contains "$TRACE_FILE" "https://github.com/.*/code-factory.git" \
   "code-factory selected HTTPS after SSH authentication succeeded"
+: > "$TRACE_FILE"
+FAIL_HTTPS_PROBE=1 install_code_factory
+assert_contains "$TRACE_FILE" "ssh_auth_sock=$FIXTURE_DIR/ssh-agent.sock args=-C $HOME/.code-factory pull --ff-only git@github.com:rtfpessoa/code-factory.git main" \
+  "the SSH update did not pull from the SSH URL"
 
 rm -rf "$HOME/.code-factory"
 : > "$TRACE_FILE"
@@ -434,7 +445,7 @@ TEST_SSH_ADD_SUCCEED_AFTER=2 \
   || fail "the wait loop did not complete after authentication appeared"
 assert_contains "$FIXTURE_DIR/wait-output" "Waiting up to 20s for authentication" \
   "the wait loop did not announce the missing authentication"
-assert_not_contains "$TRACE_FILE" "args=ls-remote https://github.com/rtfpessoa/code-factory.git" \
+assert_not_contains "$TRACE_FILE" "ls-remote https://" \
   "unauthenticated HTTPS was probed against GitHub"
 assert_contains "$TRACE_FILE" "ssh_auth_sock=$HOME/.ssh/ssh_auth_sock args=clone git@github.com:rtfpessoa/code-factory.git" \
   "the clone did not ride the fixer-symlink agent socket"
@@ -561,6 +572,49 @@ assert_contains "$TRACE_FILE" "clone https://github.com/rtfpessoa/code-factory.g
   "the clone did not use the HTTPS transport"
 assert_contains "$TRACE_FILE" "timeout 30 git .* ls-remote https://github.com/rtfpessoa/code-factory.git HEAD" \
   "the HTTPS ls-remote probe was not bounded"
+
+# Datadog workspace HTTPS: the gh token cannot read the personal repository
+# but can read the internal mirror. The clone falls back to the mirror
+# instead of waiting for an agent, and the next update pulls from it too.
+rm -rf "$HOME/.code-factory" "$HOME/.ssh/ssh_auth_sock"
+rm -f "$FIXTURE_DIR/ssh-add-calls" "$FIXTURE_DIR/clone-attempts"
+: > "$TRACE_FILE"
+FAIL_HTTPS_PROBE=1 FAIL_MIRROR_PROBE=0 \
+CODE_FACTORY_AUTH_WAIT_SECONDS=20 CODE_FACTORY_AUTH_POLL_SECONDS=1 \
+  install_code_factory </dev/null >"$FIXTURE_DIR/wait-output" 2>&1 \
+  || fail "the HTTPS mirror fallback did not install code-factory"
+personal_line="$(grep -n 'ls-remote https://github.com/rtfpessoa/code-factory.git' "$TRACE_FILE" | head -1 | cut -d: -f1 || true)"
+mirror_line="$(grep -n 'ls-remote https://github.com/ddoghq-sandbox/code-factory.git' "$TRACE_FILE" | head -1 | cut -d: -f1 || true)"
+[ -n "$personal_line" ] && [ -n "$mirror_line" ] && [ "$personal_line" -lt "$mirror_line" ] \
+  || fail "the personal repository was not probed before the mirror"
+assert_contains "$TRACE_FILE" "timeout 30 git .* ls-remote https://github.com/ddoghq-sandbox/code-factory.git HEAD" \
+  "the mirror HTTPS probe was not bounded"
+assert_contains "$TRACE_FILE" "credential.https://github.com.useHttpPath=true ls-remote https://github.com/ddoghq-sandbox/code-factory.git HEAD" \
+  "the mirror probe did not send the repository path to the credential helper"
+assert_contains "$TRACE_FILE" "credential.https://github.com.useHttpPath=true clone https://github.com/ddoghq-sandbox/code-factory.git" \
+  "the mirror clone did not send the repository path to the credential helper"
+assert_contains "$TRACE_FILE" "url.https://github.com/ddoghq-sandbox/.insteadOf=https://github.com/ddoghq-sandbox/ .* clone https://github.com/ddoghq-sandbox/code-factory.git" \
+  "the mirror clone did not override the broad GitHub URL rewrite"
+assert_not_contains "$FIXTURE_DIR/wait-output" "Waiting up to" \
+  "the mirror fallback still waited for authentication"
+assert_contains "$TRACE_FILE" "code-factory-init" \
+  "the mirror clone did not run initialization"
+: > "$TRACE_FILE"
+FAIL_HTTPS_PROBE=1 FAIL_MIRROR_PROBE=0 install_code_factory </dev/null \
+  || fail "the HTTPS mirror fallback did not update code-factory"
+assert_contains "$TRACE_FILE" "pull --ff-only https://github.com/ddoghq-sandbox/code-factory.git main" \
+  "the code-factory update did not pull from the mirror"
+
+# Neither HTTPS URL is readable: no transport, so no clone is attempted.
+rm -rf "$HOME/.code-factory"
+: > "$TRACE_FILE"
+if FAIL_HTTPS_PROBE=1 install_code_factory </dev/null >"$FIXTURE_DIR/wait-output" 2>&1; then
+  fail "code-factory was installed although no HTTPS URL was readable"
+fi
+assert_contains "$TRACE_FILE" "ls-remote https://github.com/ddoghq-sandbox/code-factory.git HEAD" \
+  "the mirror was not tried after the personal repository failed"
+assert_not_contains "$TRACE_FILE" "git-clone-config" \
+  "a clone ran although no HTTPS URL was readable"
 
 # Post-install hook: runs between the checkout and init.sh, only when the
 # checkout exists, and never blocks the install on failure.

@@ -70,6 +70,11 @@ The deferred `code-factory` setup is non-interactive:
 - Otherwise it uses HTTPS, but only when `gh auth token` yields a token and
   the config-isolated `ls-remote` proves it (gh's credential helper is
   passed to git explicitly, since the isolation drops `gh auth setup-git`'s).
+  It tries the personal repository first, then the internal mirror
+  `ddoghq-sandbox/code-factory`, because Datadog workspace gh tokens can
+  read only the mirror. The clone or update uses whichever URL answered.
+  Those tokens are scoped per repository, so git also sends the repository
+  path to the helper (`useHttpPath`), as the platform's `~/.gitconfig` does.
 - If neither transport is authenticated, the detached worker waits for one
   to appear instead of failing: fresh workspaces run the deferred install
   before any connection has forwarded an agent. It polls every 10s for up
