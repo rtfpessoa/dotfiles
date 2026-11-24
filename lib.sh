@@ -46,6 +46,39 @@ remove_git_config_section_if_present() {
 # --------------------------------------------------------------------------
 # Stow dotfiles
 # --------------------------------------------------------------------------
+
+# Older Stow runs folded ~/.config/git into the checkout. wmux writes its
+# XDG config through that link, putting the workspace identity at risk
+# whenever the wrapper cleans the checkout. Unfold only our own link.
+prepare_workspace_git_config() {
+  local target="$HOME/.config/git"
+  local source="$SCRIPT_DIR/git/.config/git"
+
+  if [ -L "$target" ] && [ "$target" -ef "$source" ]; then
+    if [ -e "$source/config.lock" ] || [ -L "$source/config.lock" ]; then
+      error "Git config is locked at $target/config.lock; retry after the writer finishes"
+      return 1
+    fi
+    if [ -L "$source/config" ] || { [ -e "$source/config" ] && [ ! -f "$source/config" ]; }; then
+      error "Expected a regular Git config at $target/config; leaving the layout unchanged"
+      return 1
+    fi
+    rm "$target" || return
+    mkdir -m 700 "$target" || return
+    if [ -f "$source/config" ]; then
+      # Never overwrite a new config that a platform writer may have
+      # created after unfolding the directory.
+      mv -n "$source/config" "$target/config" || return
+      if [ -e "$source/config" ] || [ -L "$source/config" ]; then
+        error "Both $source/config and $target/config exist; reconcile before retrying"
+        return 1
+      fi
+    fi
+  fi
+
+  mkdir -p "$target"
+}
+
 # Usage: install_dotfiles dir1 dir2 dir3 ...
 # If no arguments, stows all directories.
 install_dotfiles() {
@@ -60,7 +93,9 @@ install_dotfiles() {
     # never link over it. The aliases and settings reach those machines through
     # the user-layer include chain instead (~/.gitconfig.portable).
     if [ "$stow_dir" = "git" ] && [ -n "${STOW_IGNORE_GITCONFIG:-}" ]; then
-      stow -R --ignore='^\.gitconfig$' -d "$SCRIPT_DIR" -t "$HOME" "$stow_dir"
+      prepare_workspace_git_config || return
+      stow -R --no-folding --ignore='^\.gitconfig$' --ignore='^\.config/git/config(\.lock)?$' \
+        -d "$SCRIPT_DIR" -t "$HOME" "$stow_dir"
     else
       stow -R -d "$SCRIPT_DIR" -t "$HOME" "$stow_dir"
     fi

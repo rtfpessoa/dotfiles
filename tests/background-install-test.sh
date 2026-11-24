@@ -285,6 +285,11 @@ assert_not_contains "$TRACE_FILE" "sudo apt-get" \
   "detached fallback ran heavyweight apt setup in the foreground"
 
 : > "$TRACE_FILE"
+bash "$REPO_DIR/install.sh" --foreground-only
+assert_not_contains "$TRACE_FILE" "tmux " "foreground-only launched a detached worker"
+assert_not_contains "$TRACE_FILE" "sudo apt-get" "foreground-only ran deferred tasks"
+
+: > "$TRACE_FILE"
 bash "$REPO_DIR/install.sh" --deferred
 
 assert_contains "$TRACE_FILE" "flock -n 9" \
@@ -327,10 +332,17 @@ assert_contains "$TRACE_FILE" "flock -n 9" \
 assert_not_contains "$TRACE_FILE" "sudo apt-get" \
   "overlapping deferred installation continued after lock rejection"
 
+cp "$DOTFILES_STATE_DIR/install.status" "$FIXTURE_DIR/last-status"
+status=0
+FLOCK_HELD=1 bash "$REPO_DIR/install.sh" --deferred --require-run || status=$?
+[ "$status" -eq 1 ] || fail "a required run must fail on contention"
+cmp -s "$DOTFILES_STATE_DIR/install.status" "$FIXTURE_DIR/last-status" \
+  || fail "a rejected run replaced the previous install status"
+
 : > "$TRACE_FILE"
-if FAIL_CODE_FACTORY=1 bash "$REPO_DIR/install.sh" --deferred; then
-  fail "deferred installation hid a code-factory failure"
-fi
+status=0
+FAIL_CODE_FACTORY=1 bash "$REPO_DIR/install.sh" --deferred --require-run || status=$?
+[ "$status" -eq 42 ] || fail "required run hid the code-factory exit status"
 assert_contains "$DOTFILES_STATE_DIR/install.status" '"state":"failed"' \
   "deferred failure was not persisted"
 assert_contains "$DOTFILES_STATE_DIR/install.status" '"exit_code":42' \

@@ -18,6 +18,9 @@
 # Git
 /git/.gitconfig.datadog
 /git/.gitconfig.home
+# Legacy folded Stow layout: preserve platform Git state until it is migrated.
+/git/.config/git/config
+/git/.config/git/config.lock
 
 # Apps
 /apps/.config/ghostty/config.local

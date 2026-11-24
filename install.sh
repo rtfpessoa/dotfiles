@@ -544,6 +544,7 @@ finish_deferred_install() {
 }
 
 run_deferred_install() {
+  local require_run="$1"
   local unavailable_started_at
   local code_factory_status=0
   local deferred_status=0
@@ -551,11 +552,14 @@ run_deferred_install() {
   mkdir -p "$DOTFILES_STATE_DIR"
   exec > >(tee -a "$DOTFILES_LOG_FILE") 2>&1
 
-  # Only the detached worker waits for GitHub authentication: fresh
-  # workspaces provision before any connection forwards an agent. Every
-  # other caller of install_code_factory — including the interactive macOS
-  # bootstrap — keeps lib.sh's fail-fast default of 0.
-  export CODE_FACTORY_AUTH_WAIT_SECONDS="${CODE_FACTORY_AUTH_WAIT_SECONDS:-1800}"
+  # The deferred worker may wait for GitHub authentication during fresh
+  # provisioning. An explicit refresh runs this worker synchronously and
+  # fails fast unless a wait was requested via the environment.
+  if [ "$require_run" = 1 ]; then
+    export CODE_FACTORY_AUTH_WAIT_SECONDS="${CODE_FACTORY_AUTH_WAIT_SECONDS:-0}"
+  else
+    export CODE_FACTORY_AUTH_WAIT_SECONDS="${CODE_FACTORY_AUTH_WAIT_SECONDS:-1800}"
+  fi
 
   if ! command -v flock &>/dev/null; then
     unavailable_started_at="$(timestamp)"
@@ -567,6 +571,10 @@ run_deferred_install() {
   exec 9>"$DOTFILES_LOCK_FILE"
 
   if ! flock -n 9; then
+    if [ "$require_run" = 1 ]; then
+      error "Another deferred dotfiles installation is already running; retry after it finishes"
+      return 1
+    fi
     info "Another deferred dotfiles installation is already running; skipping"
     return 0
   fi
@@ -673,26 +681,33 @@ main() {
   validate_linux
   ensure_core_dependencies
   setup_core_dotfiles
-  launch_deferred_install
+}
 
-  info "Foreground installation complete; deferred tooling setup will continue in the background"
+usage_error() {
+  error "Usage: bash install.sh [--foreground-only | --deferred [--require-run]]"
+  exit 2
 }
 
 case "${1:-}" in
   "")
+    [ "$#" -eq 0 ] || usage_error
     main
+    launch_deferred_install
+    info "Foreground installation complete; deferred tooling setup will continue in the background"
+    ;;
+  --foreground-only)
+    [ "$#" -eq 1 ] || usage_error
+    main
+    info "Foreground installation complete"
     ;;
   --deferred)
-    shift
-    if [ "$#" -ne 0 ]; then
-      error "Usage: bash install.sh [--deferred]"
-      exit 2
-    fi
+    case "$#:${2:-}" in
+      1:) require_run=0 ;;
+      2:--require-run) require_run=1 ;;
+      *) usage_error ;;
+    esac
     validate_linux
-    run_deferred_install
+    run_deferred_install "$require_run"
     ;;
-  *)
-    error "Usage: bash install.sh [--deferred]"
-    exit 2
-    ;;
+  *) usage_error ;;
 esac

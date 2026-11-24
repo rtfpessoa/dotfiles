@@ -52,6 +52,10 @@ server or `tmux-resurrect` snapshots. The foreground output prints the unique
 session name and its `tmux -L dotfiles-install attach -t <session>` command.
 Its persistent log and status are available at
 `~/.local/state/dotfiles/install.log` and `~/.local/state/dotfiles/install.status`.
+The Workspaces wrapper can run the same installer synchronously: it uses
+`--foreground-only`, applies its own layer, then invokes
+`--deferred --require-run`. That invocation returns its own result and fails
+if another worker holds the lock; it does not infer success from the status file.
 
 To configure git credentials, set environment variables before running:
 
@@ -139,6 +143,11 @@ the platform owns `~/.gitconfig` there and includes
 includes `~/.dotfiles/git/.gitconfig.portable`. The platform re-includes the managed
 Datadog config after that user layer, so managed keys (identity, signing,
 `hooksPath`, URL routing) still win on a workspace.
+
+On Workspaces, the installer also keeps `~/.config/git` as a real directory.
+If an older Stow layout linked the directory into the checkout, it moves
+the live XDG Git config out and links the static `allowed_signers` file
+individually. Refreshing the checkout no longer removes wmux's identity include.
 
 The Linux installer leaves a platform-owned `~/.gitconfig` ("Managed by
 workspaces") untouched and stows the `git` package with just that file ignored.
