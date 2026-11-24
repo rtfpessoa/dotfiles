@@ -290,6 +290,11 @@ install_zsh_history_substring_search() {
 # --------------------------------------------------------------------------
 
 setup_git() {
+  if [ "${DOTFILES_WORKSPACES_MANAGED:-0}" = 1 ] || platform_owns_gitconfig; then
+    info "Leaving Git identity and signing to Workspaces"
+    return 0
+  fi
+
   if [ -f "$HOME/.gitconfig.extras" ]; then
     info "Git extras already configured, skipping"
     return 0
@@ -310,7 +315,7 @@ setup_git() {
     touch "$HOME/.gitconfig.extras"
   fi
 
-  # SSH commit signing on Linux: the repo gitconfig pins the macOS
+  # SSH commit signing on standalone Linux: the repo gitconfig pins the macOS
   # 1Password op-ssh-sign path (absent on Linux) and a default signing
   # key the local agent may not serve. Route overrides through
   # ~/.gitconfig.machine — the include that comes last in the repo
@@ -408,9 +413,17 @@ setup_core_dotfiles() {
   elif [ -f "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ]; then
     info "Moving existing ~/.gitconfig to ~/.gitconfig.datadog"
     mv "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
-    git config --file "$HOME/.gitconfig.datadog" user.signingkey 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN'
-    remove_git_config_section_if_present "$HOME/.gitconfig.datadog" gpg.ssh
-    remove_git_config_section_if_present "$HOME/.gitconfig.datadog" dd-gitsign
+    if [ "${DOTFILES_WORKSPACES_MANAGED:-0}" != 1 ]; then
+      git config --file "$HOME/.gitconfig.datadog" user.signingkey 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHsIVmGXH+CLtcN2o+q057GdyVitr/ICmNT+OAAEuGBN'
+      remove_git_config_section_if_present "$HOME/.gitconfig.datadog" gpg.ssh
+      remove_git_config_section_if_present "$HOME/.gitconfig.datadog" dd-gitsign
+    fi
+  fi
+  # On first provision the Workspaces wrapper runs before the platform
+  # renders its managed root. Don't stow the macOS root in the meantime:
+  # the renderer would use that symlink's target as its user include.
+  if [ "${DOTFILES_WORKSPACES_MANAGED:-0}" = 1 ]; then
+    export STOW_IGNORE_GITCONFIG=1
   fi
   # Workspace images ship a real ~/.bash_profile (pmux PATH shims,
   # ~/.profile sourcing with the dogbrew setup, dogbrew init). Stow cannot

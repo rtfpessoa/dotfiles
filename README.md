@@ -136,9 +136,13 @@ Datadog config after that user layer, so managed keys (identity, signing,
 `hooksPath`, URL routing) still win on a workspace.
 
 The Linux installer leaves a platform-owned `~/.gitconfig` ("Managed by
-workspaces") untouched and stows the `git` package with just that file ignored; any
-other existing regular file is still archived to `~/.gitconfig.datadog`, and an
-existing `~/.gitconfig` stow symlink is left in place untouched.
+workspaces") untouched and stows the `git` package with just that file ignored.
+It does not generate standalone identity or signer overrides on managed
+workspaces: Workspaces CLI owns commit signing, and wmux owns GitHub transport.
+On first provision, the Workspaces wrapper passes `DOTFILES_WORKSPACES_MANAGED=1`
+to reserve the root before the platform creates it. Other existing regular
+files are still archived to `~/.gitconfig.datadog`, and an existing
+`~/.gitconfig` stow symlink is left in place untouched.
 
 On macOS, the split added a new stow target: after pulling this change into an
 existing checkout, run `stow -R -d ~/dotfiles -t ~ git` (or `bash bootstrap.sh`).

@@ -651,18 +651,42 @@ unset TEST_SSH_ADD_SUCCEED_AFTER
 # --- platform-owned ~/.gitconfig -----------------------------------------
 # The workspaces platform writes ~/.gitconfig itself and re-includes the user
 # layer, so archiving it would drop the managed config and the wmux
-# includeIfs. The git package must be stowed with ~/.gitconfig ignored.
-rm -f "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
+# includeIfs. The git package must be stowed with ~/.gitconfig ignored,
+# and a clean install must not generate standalone identity/signing layers.
+rm -f "$HOME/.gitconfig" "$HOME/.gitconfig.datadog" "$HOME/.gitconfig.extras" \
+  "$HOME/.gitconfig.machine" "$HOME/.gitconfig.personal-signing"
 printf '# Managed by workspaces\n[user]\n\temail = managed@datadoghq.com\n[core]\n\thooksPath = /managed/hooks\n' > "$HOME/.gitconfig"
 cp "$HOME/.gitconfig" "$FIXTURE_DIR/platform.before"
 : > "$TRACE_FILE"
-bash "$REPO_DIR/install.sh"
+GIT_AUTHOR_NAME='Test User' GIT_AUTHOR_EMAIL='test@example.com' \
+  GIT_SIGNING_KEY='ssh-ed25519 TEST' bash "$REPO_DIR/install.sh"
 grep -qF -- '--ignore=^\.gitconfig$' "$TRACE_FILE" \
   || fail "the platform-owned ~/.gitconfig was not excluded from the git stow"
 cmp -s "$HOME/.gitconfig" "$FIXTURE_DIR/platform.before" \
   || fail "the platform-owned ~/.gitconfig was modified"
 [ ! -e "$HOME/.gitconfig.datadog" ] \
   || fail "the installer archived a platform-owned ~/.gitconfig"
+for layer in extras machine personal-signing; do
+  [ ! -e "$HOME/.gitconfig.$layer" ] \
+    || fail "the installer generated a standalone $layer layer on a managed workspace"
+done
+
+# On first provision, the Workspaces wrapper runs before the platform creates
+# its root. With the explicit handoff, the renderer must see no stow symlink
+# to follow and the installer must not create standalone signing layers.
+rm -f "$HOME/.gitconfig"
+: > "$TRACE_FILE"
+DOTFILES_WORKSPACES_MANAGED=1 GIT_AUTHOR_NAME='Test User' \
+  GIT_AUTHOR_EMAIL='test@example.com' GIT_SIGNING_KEY='ssh-ed25519 TEST' \
+  bash "$REPO_DIR/install.sh"
+grep -qF -- '--ignore=^\.gitconfig$' "$TRACE_FILE" \
+  || fail "the first Workspaces install did not reserve the root for the renderer"
+[ ! -e "$HOME/.gitconfig" ] && [ ! -L "$HOME/.gitconfig" ] \
+  || fail "the installer created a Git root before the Workspaces renderer"
+for layer in extras machine personal-signing; do
+  [ ! -e "$HOME/.gitconfig.$layer" ] \
+    || fail "the first Workspaces install generated a standalone $layer layer"
+done
 
 # A hand-written ~/.gitconfig keeps the historical archive-and-stow path.
 rm -f "$HOME/.gitconfig" "$HOME/.gitconfig.datadog"
