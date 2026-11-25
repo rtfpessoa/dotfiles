@@ -128,6 +128,51 @@ SSH_AUTH_SOCK="/path/to/1Password/agent.sock" ssaitch <workspace>
 A raw `ssh <workspace>` session can now complete the full install as long as
 GitHub is reachable with credentials; only the OAuth login needs `ssaitch`.
 
+### Laptop SSH session for a managed GitHub push
+
+This is a one-off exception for a user-initiated push as the managed `ddoghq`
+GitHub account. It forwards the whole 1Password SSH agent: the workspace can
+request signatures from any key the agent makes available while the connection
+is open. The managed public identity ([`ddoghq.pub`](apps/.ssh/keys/ddoghq.pub),
+stowed as `~/.ssh/keys/ddoghq.pub`) selects the GitHub account, not which keys
+are forwarded. It is not a commit-signing override.
+
+Use raw SSH from the laptop to the **exact, trusted workspace** you intend to
+use, with its host key or host CA already trusted from a verified source. Do
+not enable forwarding in SSH config or on a normal `wmux attach`. Keep the
+existing Workspaces SSH transport settings; `ControlPath=none` prevents reuse
+of a multiplexed connection.
+
+Read the [workspace push runbook](https://github.com/ddoghq/workspaces-dotfiles/blob/main/users/rodrigo.fernandes/README.md#direct-push-to-managed-trex)
+first. On the laptop, in Bash or Zsh, note the fingerprint and copy the single
+public-key line (never a private key) for use inside the workspace. Substitute
+the exact workspace SSH host or alias and set the socket path to your local
+1Password SSH agent (the default macOS path is shown). Check the effective
+options locally first; `ssh -G` does not connect or verify the host key:
+
+```bash
+ssh-keygen -lf "$HOME/.ssh/keys/ddoghq.pub"
+cat "$HOME/.ssh/keys/ddoghq.pub"
+workspace='replace-with-exact-workspace-host-or-alias'
+agent_socket="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+test -S "$agent_socket" && ssh -G -o ControlPath=none -o StrictHostKeyChecking=yes \
+  -o "ForwardAgent=\"$agent_socket\"" -- "$workspace"
+```
+
+Confirm the destination and transport match that workspace, `forwardagent`
+shows the 1Password socket, strict host-key checking is enabled, and no active
+`controlpath` is set. Only then open the session; if host verification fails,
+stop rather than relaxing it:
+
+```bash
+ssh -o ControlPath=none -o StrictHostKeyChecking=yes \
+  -o "ForwardAgent=\"$agent_socket\"" -- "$workspace"
+```
+
+Continue from step 2 of the runbook in that same SSH session. Exit the
+session immediately when done, even if the push fails. Normal wmux Git
+transport and Workspaces commit signing are unchanged.
+
 ### Git configuration layers
 
 `git/.gitconfig` is the macOS root: it includes `~/.gitconfig.portable`, keeps the
