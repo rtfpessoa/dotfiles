@@ -18,8 +18,8 @@ CODE_FACTORY_DIR="$HOME/.code-factory"
 CODE_FACTORY_REPO="https://github.com/rtfpessoa/code-factory.git"
 CODE_FACTORY_SSH_REPO="git@github.com:rtfpessoa/code-factory.git"
 CODE_FACTORY_HTTPS_PREFIX="https://github.com/rtfpessoa/"
-# Internal mirror of the same repository, pushed right after it. Datadog
-# workspace gh tokens can read the mirror but not the personal repository.
+# Datadog workspace gh tokens can read the internal mirror but not the
+# personal repository. Their histories can diverge between syncs.
 CODE_FACTORY_MIRROR_REPO="https://github.com/ddoghq-sandbox/code-factory.git"
 CODE_FACTORY_MIRROR_HTTPS_PREFIX="https://github.com/ddoghq-sandbox/"
 
@@ -216,7 +216,7 @@ code_factory_ssh_probe() {
   SSH_AUTH_SOCK="$1" \
   GIT_TERMINAL_PROMPT=0 \
   GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=15" \
-    bounded 30 git ls-remote "$CODE_FACTORY_SSH_REPO" HEAD >/dev/null 2>&1
+    bounded 30 git -C "$3" ls-remote "$2" HEAD >/dev/null 2>&1
 }
 
 # Sets CODE_FACTORY_SSH_SOCK to the working agent socket on success. Must
@@ -225,7 +225,7 @@ code_factory_ssh_probe() {
 # be exported to the clone and to init.sh, which fetches ddoghq repos over
 # SSH itself.
 code_factory_ssh_available() {
-  local sock
+  local repo="$1" dir="$2" sock
 
   CODE_FACTORY_SSH_SOCK=""
 
@@ -236,7 +236,7 @@ code_factory_ssh_available() {
     # semantics do not describe; do not gate on ssh-add here.
     [ -n "${SSH_AUTH_SOCK:-}" ] || return 1
     CODE_FACTORY_SSH_SOCK="$SSH_AUTH_SOCK"
-    if code_factory_git_ssh ls-remote "$CODE_FACTORY_SSH_REPO" HEAD >/dev/null 2>&1; then
+    if code_factory_git_ssh -C "$dir" ls-remote "$repo" HEAD >/dev/null 2>&1; then
       return 0
     fi
     CODE_FACTORY_SSH_SOCK=""
@@ -245,7 +245,7 @@ code_factory_ssh_available() {
 
   while IFS= read -r sock; do
     code_factory_socket_lists_keys "$sock" || continue
-    if code_factory_ssh_probe "$sock"; then
+    if code_factory_ssh_probe "$sock" "$repo" "$dir"; then
       CODE_FACTORY_SSH_SOCK="$sock"
       return 0
     fi
@@ -257,16 +257,16 @@ code_factory_ssh_available() {
 # HTTPS is only attempted when gh holds a token locally (cheap, no network)
 # AND the config-isolated ls-remote proves the credential works. The token
 # gate keeps unauthenticated requests off github.com's rate limits.
-# Tries the personal repository first, then the internal mirror, and sets
-# CODE_FACTORY_HTTPS_URL to the first one the token can read. Like the SSH
-# check, it must be called without a subshell so the global survives.
+# Sets CODE_FACTORY_HTTPS_URL to the first candidate the token can read.
+# Like the SSH check, call without a subshell so the global survives.
 code_factory_https_available() {
-  local url
+  local dir="$1" url
+  shift
 
   CODE_FACTORY_HTTPS_URL=""
   command -v gh >/dev/null 2>&1 || return 1
   [ -n "$(gh auth token 2>/dev/null)" ] || return 1
-  for url in "$CODE_FACTORY_REPO" "$CODE_FACTORY_MIRROR_REPO"; do
+  for url in "$@"; do
     # Bounded like the SSH probe: a stalled HTTPS connection must not hang
     # the deferred worker while it holds the install lock. bounded wraps the
     # raw git invocation directly (timeout cannot exec the shell function
@@ -274,7 +274,7 @@ code_factory_https_available() {
     if GIT_CONFIG_GLOBAL=/dev/null \
       GIT_CONFIG_NOSYSTEM=1 \
       GIT_TERMINAL_PROMPT=0 \
-      bounded 30 git \
+      bounded 30 git -C "$dir" \
         -c "url.${CODE_FACTORY_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_HTTPS_PREFIX}" \
         -c "url.${CODE_FACTORY_MIRROR_HTTPS_PREFIX}.insteadOf=${CODE_FACTORY_MIRROR_HTTPS_PREFIX}" \
         -c credential.helper= \
@@ -292,12 +292,14 @@ code_factory_https_available() {
 # CODE_FACTORY_SSH_SOCK global and, for https, CODE_FACTORY_HTTPS_URL. No
 # subshell capture: callers read the globals directly.
 select_code_factory_transport() {
+  local ssh_url="$1" dir="$2"
+  shift 2
   CODE_FACTORY_TRANSPORT="none"
-  if code_factory_ssh_available; then
+  if code_factory_ssh_available "$ssh_url" "$dir"; then
     CODE_FACTORY_TRANSPORT="ssh"
     return 0
   fi
-  if code_factory_https_available; then
+  if code_factory_https_available "$dir" "$@"; then
     CODE_FACTORY_TRANSPORT="https"
     return 0
   fi
@@ -325,7 +327,10 @@ code_factory_access_error() {
   local operation="$1"
   local transport="$2"
 
-  error "Unable to ${operation} code-factory over ${transport}."
+  error "Unable to ${operation} code-factory over ${transport}. See the Git error above."
+  # A successful probe followed by a failed pull may be a Git history or
+  # worktree problem, not an authentication problem.
+  [ "$operation" != "update" ] || return 0
   error "GitHub authentication must be available non-interactively."
   if [ "$transport" = "ssh" ]; then
     error "Provide a working SSH agent/key for git@github.com or configure HTTPS Git credentials."
@@ -373,28 +378,28 @@ code_factory_auth_poll_seconds() {
 # pre-existing incomplete directory fails closed in install_code_factory
 # before the loop, and a valid checkout is never deleted).
 run_code_factory_checkout() {
-  local transport="$1"
+  local transport="$1" ssh_url="$2"
 
   if [ -d "$CODE_FACTORY_DIR" ]; then
     info "Updating code-factory over $transport..."
-    # Pull by URL: `-c remote.origin.url=...` only adds a second origin URL,
-    # and git keeps fetching from the one in the checkout's own config.
+    # Pull the origin repository by explicit URL so the selected transport
+    # does not require changing the stored origin.
     if [ "$transport" = "ssh" ]; then
       SSH_AUTH_SOCK="$CODE_FACTORY_SSH_SOCK" \
         code_factory_git_ssh -C "$CODE_FACTORY_DIR" \
-          pull --ff-only "$CODE_FACTORY_SSH_REPO" main
+          pull --ff-only "$ssh_url" main
     else
       code_factory_git_https -C "$CODE_FACTORY_DIR" \
-        pull --ff-only "${CODE_FACTORY_HTTPS_URL:-$CODE_FACTORY_REPO}" main
+        pull --ff-only "$CODE_FACTORY_HTTPS_URL" main
     fi
   else
     info "Cloning code-factory over $transport..."
     if [ "$transport" = "ssh" ]; then
       SSH_AUTH_SOCK="$CODE_FACTORY_SSH_SOCK" \
-        code_factory_git_ssh clone "$CODE_FACTORY_SSH_REPO" "$CODE_FACTORY_DIR" \
+        code_factory_git_ssh clone "$ssh_url" "$CODE_FACTORY_DIR" \
         || { rm -rf "$CODE_FACTORY_DIR"; return 1; }
     else
-      code_factory_git_https clone "${CODE_FACTORY_HTTPS_URL:-$CODE_FACTORY_REPO}" "$CODE_FACTORY_DIR" \
+      code_factory_git_https clone "$CODE_FACTORY_HTTPS_URL" "$CODE_FACTORY_DIR" \
         || { rm -rf "$CODE_FACTORY_DIR"; return 1; }
     fi
   fi
@@ -418,15 +423,57 @@ run_code_factory_post_install_hook() {
 
 install_code_factory() {
   local wait_seconds poll_seconds waited effective_poll useless_probes
-  local operation
+  local operation="clone" probe_dir="." origin_url repo_path
+  local ssh_url="$CODE_FACTORY_SSH_REPO"
+  local https_urls=("$CODE_FACTORY_REPO" "$CODE_FACTORY_MIRROR_REPO")
 
   # mcp-auth is not a prerequisite: code-factory's init.sh auto-installs it
   # (fetching ddoghq/ssaitch and building the binary) whenever it is missing.
 
-  if [ -e "$CODE_FACTORY_DIR" ] && ! code_factory_checkout_is_valid; then
-    error "code-factory directory is not a complete Git checkout: $CODE_FACTORY_DIR"
-    error "Remove the incomplete directory and rerun the installer."
-    return 1
+  if [ -e "$CODE_FACTORY_DIR" ]; then
+    if ! code_factory_checkout_is_valid; then
+      error "code-factory directory is not a complete Git checkout: $CODE_FACTORY_DIR"
+      error "Remove the incomplete directory and rerun the installer."
+      return 1
+    fi
+    operation="update"
+    # Read the same repo-local Git config (including URL rewrites) in both
+    # the transport probes and the pull.
+    probe_dir="$CODE_FACTORY_DIR"
+
+    # Pin the repository before probing credentials. A mirror checkout
+    # must not switch to the personal repository when SSH becomes usable.
+    # Read the stored URL, not the result of an insteadOf rewrite. Use
+    # NUL delimiters so a second, empty value still counts as an origin.
+    {
+      if ! IFS= read -r -d '' origin_url || IFS= read -r -d '' _; then
+        origin_url=""
+      fi
+    } < <(git -C "$CODE_FACTORY_DIR" config --local --null --get-all remote.origin.url)
+    case "$origin_url" in
+      https://github.com/*)
+        repo_path="${origin_url#https://github.com/}"
+        ssh_url=""
+        ;;
+      git@github.com:*|git@ddoghq.github.com:*)
+        repo_path="${origin_url#*:}"
+        ssh_url="$origin_url"
+        ;;
+      ssh://git@github.com/*|ssh://git@ddoghq.github.com/*)
+        repo_path="${origin_url#ssh://git@*/}"
+        ssh_url="$origin_url"
+        ;;
+      *) repo_path="" ;;
+    esac
+    case "${repo_path%.git}" in
+      rtfpessoa/code-factory) https_urls=("$CODE_FACTORY_REPO") ;;
+      ddoghq-sandbox/code-factory) https_urls=("$CODE_FACTORY_MIRROR_REPO") ;;
+      *)
+        error "Unable to update code-factory: expected a single origin for the personal repository or the Datadog mirror."
+        return 1
+        ;;
+    esac
+    ssh_url="${ssh_url:-git@github.com:${repo_path%.git}.git}"
   fi
 
   wait_seconds="$(code_factory_auth_wait_seconds)"
@@ -435,10 +482,10 @@ install_code_factory() {
   useless_probes=0
 
   while :; do
-    select_code_factory_transport
+    select_code_factory_transport "$ssh_url" "$probe_dir" "${https_urls[@]}"
 
     if [ "$CODE_FACTORY_TRANSPORT" != "none" ]; then
-      if run_code_factory_checkout "$CODE_FACTORY_TRANSPORT"; then
+      if run_code_factory_checkout "$CODE_FACTORY_TRANSPORT" "$ssh_url"; then
         run_code_factory_post_install_hook
         info "Running code-factory init..."
         # init.sh runs once, never retried: its failures are not auth
@@ -449,16 +496,16 @@ install_code_factory() {
         return $?
       fi
 
-      if [ "$wait_seconds" -eq 0 ]; then
-        operation="clone"
-        [ -d "$CODE_FACTORY_DIR" ] && operation="update"
+      # Report a failed pull as a Git error even after opt-in retries.
+      if [ "$wait_seconds" -eq 0 ] ||
+         { [ "$operation" = "update" ] && [ "$waited" -ge "$wait_seconds" ]; }; then
         code_factory_access_error "$operation" "$CODE_FACTORY_TRANSPORT"
         return 1
       fi
       warn "code-factory fetch failed; retrying while the authentication budget lasts"
     else
       if [ "$wait_seconds" -eq 0 ]; then
-        error "Unable to clone code-factory: no authenticated transport is available."
+        error "Unable to ${operation} code-factory: no authenticated transport is available."
         error "GitHub authentication must be available non-interactively."
         error "Provide a working SSH agent/key for git@github.com, or configure HTTPS credentials with: gh auth login && gh auth setup-git"
         return 1

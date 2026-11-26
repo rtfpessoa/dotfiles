@@ -74,19 +74,23 @@ The deferred `code-factory` setup is non-interactive:
 - Otherwise it uses HTTPS, but only when `gh auth token` yields a token and
   the config-isolated `ls-remote` proves it (gh's credential helper is
   passed to git explicitly, since the isolation drops `gh auth setup-git`'s).
-  It tries the personal repository first, then the internal mirror
-  `ddoghq-sandbox/code-factory`, because Datadog workspace gh tokens can
-  read only the mirror. The clone or update uses whichever URL answered.
-  Those tokens are scoped per repository, so git also sends the repository
-  path to the helper (`useHttpPath`), as the platform's `~/.gitconfig` does.
+  For a new clone, HTTPS tries the personal repository first, then the
+  internal mirror `ddoghq-sandbox/code-factory`, because Datadog workspace
+  gh tokens can read only the mirror. Those tokens are scoped per
+  repository, so git also sends the repository path to the helper
+  (`useHttpPath`), as the platform's `~/.gitconfig` does.
+- For an existing checkout, both transports use the repository recorded
+  in `origin` (personal or mirror). Updates are fast-forward only and do not
+  change the stored remote. A missing, multiple, or unrecognized origin is
+  an error.
 - If neither transport is authenticated, the detached worker waits for one
   to appear instead of failing: fresh workspaces run the deferred install
   before any connection has forwarded an agent. It polls every 10s for up
   to 30 minutes (`CODE_FACTORY_AUTH_WAIT_SECONDS`, default 1800 in the
-  deferred worker; `CODE_FACTORY_AUTH_POLL_SECONDS` for the interval). All
+  detached worker; `CODE_FACTORY_AUTH_POLL_SECONDS` for the interval). All
   other deferred steps (shell, plugins, fonts) complete first — the wait
-  only ever delays code-factory. Foreground and interactive callers,
-  including the macOS bootstrap, keep the fail-fast behavior (wait 0).
+  only ever delays code-factory. Explicit refreshes (`--require-run`) and
+  interactive callers such as macOS bootstrap default to no wait.
 - When the wait expires the status file records the failure; heal it after
   connecting with `dotfiles-retry` (manual: any time; automatic: the fish
   login hook relaunches the deferred worker when the last attempt did not

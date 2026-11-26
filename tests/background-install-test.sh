@@ -52,6 +52,7 @@ export GIT_AUTHOR_EMAIL="test@example.com"
 export SHELL="/bin/bash"
 unset SSH_AUTH_SOCK
 mkdir -p "$HOME/.local/bin" "$HOME/.code-factory/.git" "$FAKE_BIN"
+printf '%s\n' "https://github.com/rtfpessoa/code-factory.git" > "$HOME/.code-factory/.git/fixture-origin"
 
 # A live AF_UNIX socket standing in for a forwarded agent: transport
 # probing checks socket liveness, so a regular file would not do. The
@@ -113,11 +114,19 @@ case "$command_name" in
       *" rev-parse HEAD "*)
         printf 'test-revision\n'
         ;;
+      *" config --local --null --get-all remote.origin.url "*)
+        [ -f "$2/.git/fixture-origin" ] || exit 1
+        while IFS= read -r origin; do
+          printf '%s\0' "$origin"
+        done < "$2/.git/fixture-origin"
+        ;;
       *" ls-remote "*)
         printf 'git-ls-remote terminal_prompt=%s ssh_command=%s ssh_auth_sock=%s args=%s\n' \
           "${GIT_TERMINAL_PROMPT:-}" "${GIT_SSH_COMMAND:-}" "${SSH_AUTH_SOCK:-}" "$*" >> "$TRACE_FILE"
         case " $* " in
-          *" git@github.com:rtfpessoa/code-factory.git "*)
+          *" git@github.com:rtfpessoa/code-factory.git "*|\
+          *" git@github.com:ddoghq-sandbox/code-factory.git "*|\
+          *" git@ddoghq.github.com:ddoghq-sandbox/code-factory.git "*)
             if [ "${FAIL_SSH_PROBE:-0}" = "1" ]; then
               exit 1
             fi
@@ -157,6 +166,7 @@ case "$command_name" in
           fi
         fi
         mkdir -p "$clone_target/.git"
+        printf '%s\n' "${@: -2:1}" > "$clone_target/.git/fixture-origin"
         printf '%s\n' \
           '#!/usr/bin/env bash' \
           "printf 'code-factory-init ssh_auth_sock=%s\\n' \"\${SSH_AUTH_SOCK:-}\" >> \"\$TRACE_FILE\"" \
@@ -364,11 +374,11 @@ rm -rf "$HOME/.code-factory"
 : > "$TRACE_FILE"
 export SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock"
 FAIL_HTTPS_PROBE=1 install_code_factory
-assert_contains "$TRACE_FILE" "git-ls-remote terminal_prompt=0 ssh_command=ssh -o BatchMode=yes -o ConnectTimeout=15 ssh_auth_sock=$FIXTURE_DIR/ssh-agent.sock args=ls-remote git@github.com:rtfpessoa/code-factory.git HEAD" \
+assert_contains "$TRACE_FILE" "git-ls-remote terminal_prompt=0 ssh_command=ssh -o BatchMode=yes -o ConnectTimeout=15 ssh_auth_sock=$FIXTURE_DIR/ssh-agent.sock args=-C \. ls-remote git@github.com:rtfpessoa/code-factory.git HEAD" \
   "code-factory did not probe the authenticated SSH transport"
 assert_contains "$TRACE_FILE" "timeout 10 ssh-add -l" \
   "the ssh-add socket gate was not bounded"
-assert_contains "$TRACE_FILE" "timeout 30 git ls-remote git@github.com:rtfpessoa/code-factory.git HEAD" \
+assert_contains "$TRACE_FILE" "timeout 30 git -C \. ls-remote git@github.com:rtfpessoa/code-factory.git HEAD" \
   "the SSH ls-remote probe was not bounded"
 assert_contains "$TRACE_FILE" "git-clone-config global= nosystem= terminal_prompt=0 ssh_command=ssh -o BatchMode=yes -o ConnectTimeout=15 ssh_auth_sock=$FIXTURE_DIR/ssh-agent.sock args=clone git@github.com:rtfpessoa/code-factory.git" \
   "code-factory did not clone over non-interactive authenticated SSH"
@@ -564,7 +574,7 @@ unset TEST_SSH_ADD_FAILS
 rm -f "$FIXTURE_DIR/ssh-add-calls"
 : > "$TRACE_FILE"
 export SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock"
-code_factory_ssh_available \
+code_factory_ssh_available "$CODE_FACTORY_SSH_REPO" . \
   || fail "a live duplicated agent socket was not accepted"
 probe_count="$(grep -c 'git-ls-remote.*code-factory' "$TRACE_FILE" || true)"
 [ "$probe_count" = "1" ] \
@@ -611,11 +621,90 @@ assert_not_contains "$FIXTURE_DIR/wait-output" "Waiting up to" \
   "the mirror fallback still waited for authentication"
 assert_contains "$TRACE_FILE" "code-factory-init" \
   "the mirror clone did not run initialization"
+# Once the checkout exists, a newly available personal credential must not
+# change its repository. SSH can update the mirror installed over HTTPS.
 : > "$TRACE_FILE"
-FAIL_HTTPS_PROBE=1 FAIL_MIRROR_PROBE=0 install_code_factory </dev/null \
-  || fail "the HTTPS mirror fallback did not update code-factory"
+SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock" install_code_factory </dev/null \
+  || fail "forwarded SSH did not update the existing mirror"
+assert_contains "$TRACE_FILE" "git-ls-remote.*args=-C $HOME/.code-factory ls-remote git@github.com:ddoghq-sandbox/code-factory.git HEAD" \
+  "SSH did not probe from the existing mirror checkout"
+assert_contains "$TRACE_FILE" "pull --ff-only git@github.com:ddoghq-sandbox/code-factory.git main" \
+  "SSH did not pull from the existing mirror"
+assert_not_contains "$TRACE_FILE" "rtfpessoa/code-factory.git" \
+  "SSH probed or updated from the personal repository for a mirror checkout"
+
+# The platform's SSH alias must be honored, and the same repository must
+# be used for HTTPS when that SSH route is not available.
+origin_file="$HOME/.code-factory/.git/fixture-origin"
+printf '%s\n' 'git@ddoghq.github.com:ddoghq-sandbox/code-factory.git' > "$origin_file"
+: > "$TRACE_FILE"
+SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock" install_code_factory </dev/null \
+  || fail "the existing mirror's SSH alias was not usable"
+assert_contains "$TRACE_FILE" "pull --ff-only git@ddoghq.github.com:ddoghq-sandbox/code-factory.git main" \
+  "SSH did not use the existing mirror's alias"
+: > "$TRACE_FILE"
+SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock" FAIL_SSH_PROBE=1 install_code_factory </dev/null \
+  || fail "HTTPS did not update the existing mirror after SSH failed"
+assert_contains "$TRACE_FILE" "ls-remote git@ddoghq.github.com:ddoghq-sandbox/code-factory.git HEAD" \
+  "SSH did not probe the existing mirror's alias"
+assert_contains "$TRACE_FILE" "git-ls-remote.*args=-C $HOME/.code-factory .*ls-remote https://github.com/ddoghq-sandbox/code-factory.git HEAD" \
+  "HTTPS did not probe from the existing mirror checkout"
 assert_contains "$TRACE_FILE" "pull --ff-only https://github.com/ddoghq-sandbox/code-factory.git main" \
-  "the code-factory update did not pull from the mirror"
+  "HTTPS did not pull from the existing mirror"
+assert_not_contains "$TRACE_FILE" "rtfpessoa/code-factory.git" \
+  "HTTPS probed or updated from the personal repository for a mirror checkout"
+
+# A failed update must not run the post-install hook or initialization.
+hook="$HOME/.config/dotfiles/code-factory-post-install.sh"
+mkdir -p "$HOME/.config/dotfiles"
+cat > "$hook" <<'EOF'
+#!/usr/bin/env bash
+printf 'code-factory-hook\n' >> "$TRACE_FILE"
+exit "${TEST_HOOK_EXIT:-0}"
+EOF
+chmod +x "$hook"
+
+: > "$TRACE_FILE"
+if SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock" FAIL_SSH_PROBE=1 FAIL_MIRROR_PROBE=1 \
+  install_code_factory </dev/null; then
+  fail "unreachable mirror was updated from a different repository"
+fi
+assert_not_contains "$TRACE_FILE" 'rtfpessoa/code-factory.git\|git-pull-config\|code-factory-hook\|code-factory-init' \
+  "unreachable mirror triggered a personal probe, update, hook, or init"
+
+# Opting into a wait retains retries, but an authenticated pull failure is
+# still a Git error, not an authentication timeout.
+: > "$TRACE_FILE"
+if SSH_AUTH_SOCK="$FIXTURE_DIR/ssh-agent.sock" FAIL_CODE_FACTORY_GIT=1 \
+  CODE_FACTORY_AUTH_WAIT_SECONDS=1 CODE_FACTORY_AUTH_POLL_SECONDS=1 \
+  install_code_factory </dev/null > "$FIXTURE_DIR/update-output" 2>&1; then
+  fail "a repeatedly failing pull was reported as success"
+fi
+[ "$(grep -c '^git-pull-config' "$TRACE_FILE")" -eq 2 ] \
+  || fail "the failing update did not honor the configured retry budget"
+assert_not_contains "$TRACE_FILE" 'rtfpessoa/code-factory.git\|code-factory-hook\|code-factory-init' \
+  "a failed pull switched repositories or ran the hook or init"
+assert_not_contains "$FIXTURE_DIR/update-output" 'waiting for GitHub authentication' \
+  "the failed pull was misreported as an authentication timeout"
+assert_contains "$FIXTURE_DIR/update-output" 'See the Git error above.' \
+  "the final update diagnostic did not point to the Git error"
+
+for invalid_origin in unknown missing multiple; do
+  case "$invalid_origin" in
+    unknown) printf '%s\n' 'git@github.com:someone-else/code-factory.git' > "$origin_file" ;;
+    missing) rm "$origin_file" ;;
+    multiple)
+      # A second, empty config value still makes the origin ambiguous.
+      printf '%s\n' 'https://github.com/ddoghq-sandbox/code-factory.git' '' > "$origin_file"
+      ;;
+  esac
+  : > "$TRACE_FILE"
+  if install_code_factory </dev/null; then
+    fail "invalid code-factory origin was accepted ($invalid_origin)"
+  fi
+  assert_not_contains "$TRACE_FILE" 'git-ls-remote\|git-pull-config\|code-factory-hook\|code-factory-init' \
+    "invalid code-factory origin triggered a probe, update, hook, or init ($invalid_origin)"
+done
 
 # Neither HTTPS URL is readable: no transport, so no clone is attempted.
 rm -rf "$HOME/.code-factory"
@@ -630,17 +719,10 @@ assert_not_contains "$TRACE_FILE" "git-clone-config" \
 
 # Post-install hook: runs between the checkout and init.sh, only when the
 # checkout exists, and never blocks the install on failure.
-hook="$HOME/.config/dotfiles/code-factory-post-install.sh"
-mkdir -p "$HOME/.config/dotfiles"
-cat > "$hook" <<'EOF'
-#!/usr/bin/env bash
-printf 'code-factory-hook\n' >> "$TRACE_FILE"
-EOF
-chmod +x "$hook"
 rm -rf "$HOME/.code-factory"
 rm -f "$FIXTURE_DIR/ssh-add-calls" "$FIXTURE_DIR/clone-attempts"
 : > "$TRACE_FILE"
-install_code_factory </dev/null \
+TEST_HOOK_EXIT=1 install_code_factory </dev/null \
   || fail "a failing post-install hook was not made non-fatal"
 hook_line="$(grep -n 'code-factory-hook' "$TRACE_FILE" | cut -d: -f1 || true)"
 clone_line="$(grep -n 'git-clone-config' "$TRACE_FILE" | cut -d: -f1 || true)"
